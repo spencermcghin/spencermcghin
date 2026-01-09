@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Character, CreateCharacterDTO } from '../types/Character';
+import type { Character, CreateCharacterDTO } from '../types/Character';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 

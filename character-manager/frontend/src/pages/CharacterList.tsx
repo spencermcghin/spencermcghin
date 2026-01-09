@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { characterApi } from '../services/api';
-import { Character } from '../types/Character';
+import type { Character } from '../types/Character';
 
 export default function CharacterList() {
   const [characters, setCharacters] = useState<Character[]>([]);

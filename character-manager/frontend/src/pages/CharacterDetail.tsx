@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { characterApi } from '../services/api';
-import { Character } from '../types/Character';
+import type { Character } from '../types/Character';
 
 export default function CharacterDetail() {
   const { id } = useParams<{ id: string }>();

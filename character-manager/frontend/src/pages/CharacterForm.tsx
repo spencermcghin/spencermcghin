@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { characterApi } from '../services/api';
-import { CreateCharacterDTO } from '../types/Character';
+import type { CreateCharacterDTO } from '../types/Character';
 
 export default function CharacterForm() {
   const { id } = useParams<{ id: string }>();
