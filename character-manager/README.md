@@ -1,0 +1,162 @@
+# LARP Character Manager
+
+A modern web application for managing live roleplaying (LARP) characters. Track character stats, attributes, skills, inventory, and more.
+
+## Features
+
+- Create and manage multiple LARP characters
+- Track character attributes (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma)
+- Manage skills and inventory
+- Add detailed character backgrounds and notes
+- Clean, responsive UI
+
+## Tech Stack
+
+### Frontend
+- React with TypeScript
+- Vite (build tool)
+- React Router (navigation)
+- Axios (API calls)
+
+### Backend
+- Node.js with Express
+- TypeScript
+- RESTful API architecture
+- CORS enabled
+
+## Project Structure
+
+```
+character-manager/
+├── backend/          # Express API server
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   └── index.ts
+│   ├── package.json
+│   └── tsconfig.json
+├── frontend/         # React application
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── types/
+│   │   └── App.tsx
+│   ├── package.json
+│   └── tsconfig.json
+└── README.md
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd character-manager
+```
+
+2. Install backend dependencies:
+```bash
+cd backend
+npm install
+```
+
+3. Install frontend dependencies:
+```bash
+cd ../frontend
+npm install
+```
+
+### Running the Application
+
+#### Development Mode
+
+1. Start the backend server:
+```bash
+cd backend
+npm run dev
+```
+The API will run on `http://localhost:3000`
+
+2. In a new terminal, start the frontend:
+```bash
+cd frontend
+npm run dev
+```
+The frontend will run on `http://localhost:5173`
+
+3. Open your browser and navigate to `http://localhost:5173`
+
+#### Production Build
+
+1. Build the backend:
+```bash
+cd backend
+npm run build
+npm start
+```
+
+2. Build the frontend:
+```bash
+cd frontend
+npm run build
+npm run preview
+```
+
+## API Endpoints
+
+### Characters
+
+- `GET /api/characters` - Get all characters
+- `GET /api/characters/:id` - Get a specific character
+- `POST /api/characters` - Create a new character
+- `PUT /api/characters/:id` - Update a character
+- `DELETE /api/characters/:id` - Delete a character
+
+## Environment Variables
+
+### Backend (.env)
+```
+PORT=3000
+NODE_ENV=development
+```
+
+### Frontend (.env)
+```
+VITE_API_URL=http://localhost:3000/api
+```
+
+## Development
+
+### Backend
+The backend uses in-memory storage by default. To add database persistence, integrate with MongoDB, PostgreSQL, or your preferred database.
+
+### Frontend
+The frontend is built with React and uses React Router for navigation. API calls are handled through Axios with a centralized API service.
+
+## Future Enhancements
+
+- Database integration (MongoDB/PostgreSQL)
+- User authentication and authorization
+- Character import/export functionality
+- Dice rolling mechanics
+- Campaign management
+- Character sheets PDF export
+- Dark mode
+- Mobile app version
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT
