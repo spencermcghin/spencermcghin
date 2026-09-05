@@ -1,16 +1,19 @@
 # LARP Character Manager
 
-A modern web application for managing live roleplaying (LARP) characters. Track character stats, attributes, skills, inventory, and more.
+A web application for building LARP rulesets and the characters that play by
+them. It is system-agnostic: a **Project** is one ruleset, and the app enforces
+whatever rules that ruleset defines.
 
 ## Features
 
-- Create and manage multiple LARP characters
-- Track character attributes (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma)
-- Manage skills and inventory
-- Add detailed character backgrounds and notes
-- **4 Visual Themes**: Switch between Modern Clean, Dark Fantasy, Parchment, and Forest Realm
-- Clean, responsive UI
-- Theme preferences saved automatically
+- Define a ruleset: currencies, skill trees, archetypes, progression tracks and
+  cost modifiers
+- Archetype-gated skills, so a tree can belong to a class or order
+- A rules engine that enforces costs, prerequisites and level caps, and explains
+  why anything is unavailable
+- Characters validated continuously against their ruleset
+- Import and export rulesets as JSON
+- **4 Visual Themes**: Modern Clean, Dark Fantasy, Parchment, Forest Realm
 
 ## Tech Stack
 
@@ -30,22 +33,23 @@ A modern web application for managing live roleplaying (LARP) characters. Track 
 
 ```
 character-manager/
-├── backend/          # Express API server
+├── shared/           # Ruleset schema + rules engine (used by both sides)
+│   ├── rules-schema.ts
+│   ├── engine.ts
+│   ├── engine.test.ts
+│   └── rulesets/eldritch.ts
+├── backend/          # Express API
 │   ├── src/
 │   │   ├── controllers/
-│   │   ├── models/
+│   │   ├── db/       # Store interface, Postgres and in-memory
 │   │   ├── routes/
 │   │   └── index.ts
-│   ├── package.json
 │   └── tsconfig.json
 ├── frontend/         # React application
 │   ├── src/
 │   │   ├── components/
 │   │   ├── pages/
-│   │   ├── services/
-│   │   ├── types/
-│   │   └── App.tsx
-│   ├── package.json
+│   │   └── services/
 │   └── tsconfig.json
 └── README.md
 ```
@@ -113,22 +117,13 @@ npm run build
 npm run preview
 ```
 
-## API Endpoints
-
-### Characters
-
-- `GET /api/characters` - Get all characters
-- `GET /api/characters/:id` - Get a specific character
-- `POST /api/characters` - Create a new character
-- `PUT /api/characters/:id` - Update a character
-- `DELETE /api/characters/:id` - Delete a character
-
 ## Environment Variables
 
 ### Backend (.env)
 ```
 PORT=3000
 NODE_ENV=development
+DATABASE_URL=postgres://user:pass@host:5432/dbname   # optional in dev
 ```
 
 ### Frontend (.env)
@@ -225,21 +220,22 @@ Backend and frontend can be deployed separately to any hosting service supportin
 ## Development
 
 ### Backend
-The backend uses in-memory storage by default. To add database persistence, integrate with MongoDB, PostgreSQL, or your preferred database.
+Express over the shared rules engine, with Postgres for storage. See
+[Persistence](#persistence) for configuration.
 
 ### Frontend
-The frontend is built with React and uses React Router for navigation. API calls are handled through Axios with a centralized API service.
+React with React Router. It imports the same schema and engine the API uses, so
+rule logic is never duplicated between the two.
 
-## Future Enhancements
+## Roadmap
 
-- Database integration (MongoDB/PostgreSQL)
-- User authentication and authorization
-- Character import/export functionality
-- Dice rolling mechanics
-- Campaign management
-- Character sheets PDF export
-- Dark mode
-- Mobile app version
+- Visual rules designer: drag-and-drop canvas with traits as nodes and
+  prerequisites as edges
+- User accounts and per-project permissions
+- Session timeline, so progression and rule gates can be anchored to events
+- Relationships between characters (patron/retainer style links)
+- Items and crafting
+- Character sheet export
 
 ## Contributing
 
