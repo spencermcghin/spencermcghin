@@ -10,5 +10,13 @@ export default defineConfig({
       // which sits outside Vite's project root.
       allow: ['..'],
     },
+    // Lets the client call /api in development exactly as it does in a
+    // single-service deploy, so neither needs an environment variable.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
 })

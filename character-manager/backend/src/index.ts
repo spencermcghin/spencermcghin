@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -22,9 +24,53 @@ app.get('/api', (_req: Request, res: Response) => {
 app.use('/api/rulesets', rulesetRoutes);
 app.use('/api/characters', characterRoutes);
 
-app.use((_req: Request, res: Response) => {
+// Unmatched API routes are errors, never the SPA shell -- returning HTML to a
+// fetch that expected JSON produces a confusing parse failure at the client.
+app.use('/api', (_req: Request, res: Response) => {
   res.status(404).json({ message: 'Not found' });
 });
+
+/**
+ * Locates a built frontend, if one was deployed alongside the API.
+ *
+ * Single-service deploys (Railway) build the frontend into the same image and
+ * serve it from here. Split deploys (Render static site + web service) simply
+ * will not find a build, and the API runs on its own.
+ */
+function findFrontendBuild(): string | null {
+  const candidates = [
+    process.env.FRONTEND_DIST,
+    // Compiled: <backend>/dist/backend/src/index.js
+    path.resolve(__dirname, '../../../../frontend/dist'),
+    // ts-node: <backend>/src/index.ts
+    path.resolve(__dirname, '../../frontend/dist'),
+  ].filter((p): p is string => Boolean(p));
+
+  for (const dir of candidates) {
+    if (fs.existsSync(path.join(dir, 'index.html'))) return dir;
+  }
+  return null;
+}
+
+const frontendDist = findFrontendBuild();
+
+if (frontendDist) {
+  app.use(express.static(frontendDist));
+  // Client-side routing: any unmatched GET resolves to the SPA shell. Written
+  // as a catch-all middleware rather than app.get('*') because Express 5
+  // rejects a bare wildcard -- its path-to-regexp requires a named parameter.
+  app.use((req: Request, res: Response) => {
+    if (req.method !== 'GET') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+  console.log(`Serving frontend from ${frontendDist}`);
+} else {
+  app.use((_req: Request, res: Response) => {
+    res.status(404).json({ message: 'Not found' });
+  });
+}
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);

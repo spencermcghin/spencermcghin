@@ -2,7 +2,12 @@ import axios from 'axios';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
 import type { TraitOption, Violation } from '../../../shared/engine';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+/**
+ * Same-origin by default, which is what a single-service deploy needs and
+ * what the Vite dev proxy forwards. VITE_API_URL overrides it for split
+ * deploys where the frontend is hosted separately from the API.
+ */
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

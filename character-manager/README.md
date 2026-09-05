@@ -199,23 +199,44 @@ Switch themes using the Theme button in the bottom-right corner. See [THEMES.md]
 
 ## Deployment
 
-### Deploy to Render (Free Tier)
+The API can serve the built frontend from the same origin, so the app deploys
+either as **one service** or as **two**. One service is simpler: no CORS, and
+no build-time API URL to keep in sync.
 
-1. Fork/push this repository to GitHub
-2. Create a Render account at [render.com](https://render.com)
-3. Click "New +" → "Blueprint"
-4. Connect your GitHub repository
-5. Render will automatically detect `render.yaml` and deploy both services
+### Railway (single service, recommended)
 
-The `render.yaml` configuration deploys:
-- Backend API as a Web Service (Node.js)
-- Frontend as a Static Site
+1. New Project → Deploy from GitHub repo
+2. Set the service's **Root Directory** to `character-manager`
+3. Add a **Postgres** database to the project. Railway injects `DATABASE_URL`
+   into the service automatically -- nothing else to configure.
+4. Deploy
 
-**Note**: Free tier services sleep after 15 minutes of inactivity. First request after sleeping may take 30-60 seconds.
+`railway.json` builds both halves and starts the API, which detects
+`frontend/dist` and serves it alongside `/api`. Railway's Postgres does not
+expire, so data persists.
 
-### Manual Deployment
+### Render (two services)
 
-Backend and frontend can be deployed separately to any hosting service supporting Node.js and static sites.
+`render.yaml` deploys the API as a web service and the frontend as a static
+site. This split needs `VITE_API_URL` set on the static site to the API's
+public URL, because the two live on different origins. Set `DATABASE_URL` on
+the API service.
+
+Note that Render's free Postgres is deleted after 30 days and free web
+services sleep after 15 minutes idle, so the first request after a pause takes
+30--60 seconds.
+
+### Anywhere else
+
+Build both, then run the API with `DATABASE_URL` set:
+
+```bash
+npm run build:all
+npm start
+```
+
+The API serves the frontend if it finds a build; point `FRONTEND_DIST` at it
+if your layout differs.
 
 ## Development
 
