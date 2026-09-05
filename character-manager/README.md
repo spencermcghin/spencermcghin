@@ -124,12 +124,46 @@ npm run preview
 PORT=3000
 NODE_ENV=development
 DATABASE_URL=postgres://user:pass@host:5432/dbname   # optional in dev
+CORS_ORIGIN=https://your-frontend.example              # only for split deploys
 ```
 
 ### Frontend (.env)
 ```
 VITE_API_URL=http://localhost:3000/api
 ```
+
+## Accounts
+
+Each account gets its own space. Rulesets and characters belong to the account
+that created them, and one account cannot read, edit or delete another's --
+cross-account requests return 404 rather than 403, since a 403 would confirm
+that an id exists.
+
+New accounts are seeded with a private copy of Eldritch, so the app opens on a
+worked example rather than an empty list.
+
+How it works:
+
+- **Cookie sessions, not tokens in localStorage.** The session cookie is
+  `httpOnly` and `sameSite=lax`, so injected script cannot read it and it does
+  not ride cross-site POSTs. `secure` is set when `NODE_ENV=production`.
+- **Opaque session tokens, stored hashed.** The cookie carries 256 bits of
+  randomness; the database stores only its SHA-256, so a leaked table does not
+  yield usable sessions. Sessions are revoked server-side on sign out.
+- **Passwords hashed with scrypt** from `node:crypto` -- memory-hard, built in,
+  and no native module to fail to compile on a deploy host.
+- Login reports the same message for an unknown address and a wrong password,
+  and runs a hash either way so timing does not distinguish them.
+- Failed logins are throttled per address and IP.
+
+```
+POST /api/auth/register    create an account and sign in
+POST /api/auth/login       sign in
+POST /api/auth/logout      revoke the current session
+GET  /api/auth/me          the signed-in user, or 401
+```
+
+Everything under `/api/rulesets` and `/api/characters` requires a session.
 
 ## Persistence
 

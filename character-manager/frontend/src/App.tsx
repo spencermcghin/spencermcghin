@@ -1,42 +1,103 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import CharacterSheet from './pages/CharacterSheet';
+import SignIn from './pages/SignIn';
 import ThemeSwitcher from './components/ThemeSwitcher';
+import { AuthProvider } from './auth/AuthProvider';
+import { RequireAuth } from './auth/RequireAuth';
+import { useAuth } from './auth/useAuth';
 import './App.css';
 
-function App() {
+function NavAuth() {
+  const { user, loading, logout } = useAuth();
+  const navigate = useNavigate();
+
+  if (loading) return null;
+
+  if (!user) {
+    return <Link to="/signin">Sign in</Link>;
+  }
+
   return (
-    <Router>
-      <div className="app">
-        <nav className="navbar">
-          <div className="nav-container">
-            <Link to="/" className="nav-brand">LARP Character Manager</Link>
-            <div className="nav-links">
-              <Link to="/">Home</Link>
-              <Link to="/projects">Projects</Link>
-            </div>
-          </div>
-        </nav>
-
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/projects/:id" element={<ProjectDetail />} />
-            <Route path="/characters/:id" element={<CharacterSheet />} />
-          </Routes>
-        </main>
-
-        <footer className="footer">
-          <p>&copy; 2026 LARP Character Manager</p>
-        </footer>
-
-        <ThemeSwitcher />
-      </div>
-    </Router>
+    <div className="nav-user">
+      <span className="nav-user-name" title={user.email}>
+        {user.displayName}
+      </span>
+      <button
+        className="nav-signout"
+        onClick={async () => {
+          await logout();
+          navigate('/');
+        }}
+      >
+        Sign out
+      </button>
+    </div>
   );
 }
 
-export default App;
+function Shell() {
+  return (
+    <div className="app">
+      <nav className="navbar">
+        <div className="nav-container">
+          <Link to="/" className="nav-brand">LARP Character Manager</Link>
+          <div className="nav-links">
+            <Link to="/">Home</Link>
+            <Link to="/projects">Projects</Link>
+            <NavAuth />
+          </div>
+        </div>
+      </nav>
+
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route
+            path="/projects"
+            element={
+              <RequireAuth>
+                <Projects />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/projects/:id"
+            element={
+              <RequireAuth>
+                <ProjectDetail />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/characters/:id"
+            element={
+              <RequireAuth>
+                <CharacterSheet />
+              </RequireAuth>
+            }
+          />
+        </Routes>
+      </main>
+
+      <footer className="footer">
+        <p>&copy; 2026 LARP Character Manager</p>
+      </footer>
+
+      <ThemeSwitcher />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Shell />
+      </AuthProvider>
+    </Router>
+  );
+}

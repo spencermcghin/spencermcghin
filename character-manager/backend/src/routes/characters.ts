@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { requireAuth } from '../auth/middleware';
 import {
   deleteCharacter,
   getCharacter,
@@ -7,6 +8,9 @@ import {
 } from '../controllers/characterController';
 
 const router = Router();
+
+// Every ruleset and character is owned; nothing here is public.
+router.use(requireAuth);
 
 router.get('/:id', getCharacter);
 router.get('/:id/sheet', getCharacterSheet);

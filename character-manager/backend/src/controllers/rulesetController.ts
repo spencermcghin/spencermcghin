@@ -9,8 +9,17 @@ function slugify(name: string): string {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
-      .slice(0, 48) || 'ruleset'
+      .slice(0, 40) || 'ruleset'
   );
+}
+
+/**
+ * Ruleset ids are globally unique, so a suffix is always appended rather than
+ * only on collision. Probing for a free slug would otherwise reveal that some
+ * other account holds one.
+ */
+function newRulesetId(name: string): string {
+  return `${slugify(name)}-${randomUUID().slice(0, 8)}`;
 }
 
 /** An empty but valid ruleset, so a new project opens on something coherent. */
@@ -22,12 +31,7 @@ function blankRuleset(id: string, name: string): Ruleset {
     description: '',
     startingBudget: [{ currencyId: 'points', amount: 10 }],
     currencies: [
-      {
-        id: 'points',
-        name: 'Build Points',
-        abbreviation: 'BP',
-        kind: 'progression',
-      },
+      { id: 'points', name: 'Build Points', abbreviation: 'BP', kind: 'progression' },
     ],
     packageTiers: [{ id: 'base', name: 'Archetype', maxHeld: 1 }],
     packageAttributes: [],
@@ -40,47 +44,51 @@ function blankRuleset(id: string, name: string): Ruleset {
       {
         id: 'identity',
         title: 'Identity',
-        fields: [
-          { id: 'name', label: 'Character Name', type: 'shortText', required: true },
-        ],
+        fields: [{ id: 'name', label: 'Character Name', type: 'shortText', required: true }],
       },
     ],
   };
 }
 
-export async function listRulesets(_req: Request, res: Response) {
-  res.json(await getStore().listRulesets());
+/**
+ * Loads a ruleset the caller owns.
+ *
+ * A ruleset owned by someone else reports 404 rather than 403 -- distinguishing
+ * them would confirm that an id exists.
+ */
+async function loadOwned(req: Request, res: Response): Promise<Ruleset | null> {
+  const owned = await getStore().getRuleset(req.params.id ?? req.params.rulesetId);
+  if (!owned || owned.ownerId !== req.user!.id) {
+    res.status(404).json({ message: 'Ruleset not found' });
+    return null;
+  }
+  return owned.value;
+}
+
+export async function listRulesets(req: Request, res: Response) {
+  res.json(await getStore().listRulesets(req.user!.id));
 }
 
 export async function getRuleset(req: Request, res: Response) {
-  const ruleset = await getStore().getRuleset(req.params.id);
-  if (!ruleset) return res.status(404).json({ message: 'Ruleset not found' });
-  res.json(ruleset);
+  const ruleset = await loadOwned(req, res);
+  if (ruleset) res.json(ruleset);
 }
 
 export async function createRuleset(req: Request, res: Response) {
-  const store = getStore();
   const name = String(req.body?.name ?? '').trim();
   if (!name) return res.status(400).json({ message: 'A name is required' });
 
-  // Slug collisions are possible across projects, so fall back to a suffix.
-  let id = slugify(name);
-  if (await store.getRuleset(id)) id = `${id}-${randomUUID().slice(0, 6)}`;
-
-  const ruleset = blankRuleset(id, name);
+  const ruleset = blankRuleset(newRulesetId(name), name);
   if (typeof req.body?.description === 'string') {
     ruleset.description = req.body.description;
   }
 
-  await store.putRuleset(ruleset);
+  await getStore().putRuleset(ruleset, req.user!.id);
   res.status(201).json(ruleset);
 }
 
 export async function replaceRuleset(req: Request, res: Response) {
-  const store = getStore();
-  if (!(await store.getRuleset(req.params.id))) {
-    return res.status(404).json({ message: 'Ruleset not found' });
-  }
+  if (!(await loadOwned(req, res))) return;
 
   const incoming = req.body as Ruleset;
   const problems = validateRulesetShape(incoming);
@@ -89,34 +97,36 @@ export async function replaceRuleset(req: Request, res: Response) {
   }
 
   // The path is authoritative; a mismatched body id would orphan characters.
-  const saved = await store.putRuleset({ ...incoming, id: req.params.id });
+  const saved = await getStore().putRuleset(
+    { ...incoming, id: req.params.id },
+    req.user!.id
+  );
   res.json(saved);
 }
 
 export async function deleteRuleset(req: Request, res: Response) {
-  const removed = await getStore().deleteRuleset(req.params.id);
-  if (!removed) return res.status(404).json({ message: 'Ruleset not found' });
+  if (!(await loadOwned(req, res))) return;
+  await getStore().deleteRuleset(req.params.id);
   res.status(204).send();
 }
 
 export async function importRuleset(req: Request, res: Response) {
-  const store = getStore();
   const incoming = req.body as Ruleset;
   const problems = validateRulesetShape(incoming);
   if (problems.length > 0) {
     return res.status(400).json({ message: 'Invalid ruleset', problems });
   }
 
-  let id = slugify(incoming.name);
-  if (await store.getRuleset(id)) id = `${id}-${randomUUID().slice(0, 6)}`;
-
-  const saved = await store.putRuleset({ ...incoming, id });
+  const saved = await getStore().putRuleset(
+    { ...incoming, id: newRulesetId(incoming.name) },
+    req.user!.id
+  );
   res.status(201).json(saved);
 }
 
 /**
- * Structural check only -- enough to reject a body that would break the
- * engine or the designer. Rule-level coherence is the designer's job.
+ * Structural check only -- enough to reject a body that would break the engine
+ * or the designer. Rule-level coherence is the designer's job.
  */
 function validateRulesetShape(r: unknown): string[] {
   const problems: string[] = [];

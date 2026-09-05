@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { requireAuth } from '../auth/middleware';
 import {
   createRuleset,
   deleteRuleset,
@@ -10,6 +11,9 @@ import {
 import { createCharacter, listCharacters } from '../controllers/characterController';
 
 const router = Router();
+
+// Every ruleset and character is owned; nothing here is public.
+router.use(requireAuth);
 
 // Declared before /:id so "import" is not swallowed as a ruleset id.
 router.post('/import', importRuleset);

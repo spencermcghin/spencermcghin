@@ -12,7 +12,41 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  // The session is an httpOnly cookie, so every request must carry credentials.
+  withCredentials: true,
 });
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  displayName: string;
+  createdAt: string;
+}
+
+export const authApi = {
+  /** Resolves to null when no session is active, rather than throwing. */
+  me: async (): Promise<AuthUser | null> => {
+    try {
+      return (await api.get('/auth/me')).data.user;
+    } catch {
+      return null;
+    }
+  },
+
+  login: async (email: string, password: string): Promise<AuthUser> =>
+    (await api.post('/auth/login', { email, password })).data.user,
+
+  register: async (
+    email: string,
+    password: string,
+    displayName: string
+  ): Promise<AuthUser> =>
+    (await api.post('/auth/register', { email, password, displayName })).data.user,
+
+  logout: async (): Promise<void> => {
+    await api.post('/auth/logout');
+  },
+};
 
 export interface RulesetSummary {
   id: string;

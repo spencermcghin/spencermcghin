@@ -1,11 +1,15 @@
+import { randomUUID } from 'crypto';
 import { eldritch } from '../../../shared/rulesets/eldritch';
 import { MemoryStore } from './memory-store';
 import { PostgresStore } from './postgres-store';
 import type { Store } from './store';
 
-export type { Store, RulesetSummary } from './store';
+export type { Store, RulesetSummary, User, UserWithSecret, Owned } from './store';
 
 let store: Store | null = null;
+let sweeper: NodeJS.Timeout | null = null;
+
+const SESSION_SWEEP_INTERVAL_MS = 60 * 60 * 1000;
 
 export function getStore(): Store {
   if (!store) throw new Error('Store accessed before initStore() completed.');
@@ -27,17 +31,38 @@ export async function initStore(): Promise<Store> {
     );
   }
 
-  await seed(store);
+  // Expired rows are already ignored on lookup; this just stops the table
+  // growing without bound.
+  const sweep = () => {
+    void store
+      ?.deleteExpiredSessions()
+      .catch((err) => console.error('Session sweep failed:', err));
+  };
+  sweep();
+  sweeper = setInterval(sweep, SESSION_SWEEP_INTERVAL_MS);
+  sweeper.unref?.();
+
   return store;
 }
 
+export async function closeStore(): Promise<void> {
+  if (sweeper) clearInterval(sweeper);
+  await store?.close();
+  store = null;
+}
+
 /**
- * Installs Eldritch as a starter ruleset on an empty database, so a fresh
- * deploy has something real to open. Existing data is never overwritten.
+ * Gives a new account something real to open instead of an empty app: a
+ * private copy of Eldritch, which doubles as a worked example of what a
+ * ruleset can express.
+ *
+ * A copy rather than a shared reference, so editing it cannot affect anyone
+ * else. Ruleset ids are globally unique, hence the suffix.
  */
-async function seed(s: Store): Promise<void> {
-  const existing = await s.listRulesets();
-  if (existing.length > 0) return;
-  await s.putRuleset(eldritch);
-  console.log('Seeded starter ruleset: Eldritch');
+export async function seedUserSpace(s: Store, ownerId: string): Promise<void> {
+  const copy = {
+    ...structuredClone(eldritch),
+    id: `eldritch-${randomUUID().slice(0, 8)}`,
+  };
+  await s.putRuleset(copy, ownerId);
 }

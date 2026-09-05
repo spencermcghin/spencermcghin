@@ -816,3 +816,99 @@
 .trait-unaffordable .trait-name {
   color: var(--text-soft);
 }
+
+/* ---------------- Auth ---------------- */
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.nav-user-name {
+  font-size: 0.86rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.nav-signout {
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s var(--ease);
+}
+
+.nav-signout:hover {
+  color: var(--text);
+}
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0 5rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: var(--shadow);
+}
+
+.auth-card h1 {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.auth-card > .muted {
+  margin-bottom: 2rem;
+}
+
+.auth-card form {
+  margin-top: 1.5rem;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.field-hint {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-mute);
+}
+
+.auth-switch {
+  display: block;
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s var(--ease);
+}
+
+.auth-switch:hover {
+  color: var(--accent);
+}

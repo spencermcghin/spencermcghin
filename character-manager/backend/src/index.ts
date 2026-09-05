@@ -1,9 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import express, { Express, NextFunction, Request, Response } from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { attachUser } from './auth/middleware';
 import { initStore } from './db';
+import authRoutes from './routes/auth';
 import characterRoutes from './routes/characters';
 import rulesetRoutes from './routes/rulesets';
 
@@ -12,7 +15,18 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+// Sessions ride on a cookie, so cross-origin requests must be explicitly
+// allowed and must send credentials. Same-origin deploys need neither.
+const allowedOrigin = process.env.CORS_ORIGIN;
+app.use(
+  cors(allowedOrigin ? { origin: allowedOrigin, credentials: true } : undefined)
+);
+
+// Trust the platform proxy so req.ip is the client address rather than the
+// load balancer's -- the login throttle keys on it.
+app.set('trust proxy', 1);
+
+app.use(cookieParser());
 // Rulesets are whole documents; the default 100kb limit is too small for a
 // ruleset the size of a published game.
 app.use(express.json({ limit: '8mb' }));
@@ -21,6 +35,8 @@ app.get('/api', (_req: Request, res: Response) => {
   res.json({ message: 'Character Manager API', version: 2 });
 });
 
+app.use('/api', attachUser);
+app.use('/api/auth', authRoutes);
 app.use('/api/rulesets', rulesetRoutes);
 app.use('/api/characters', characterRoutes);
 

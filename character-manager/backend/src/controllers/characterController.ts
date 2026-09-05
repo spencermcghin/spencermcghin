@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import type { Request, Response } from 'express';
-import type { Character } from '../../../shared/rules-schema';
+import type { Character, Ruleset } from '../../../shared/rules-schema';
 import {
   availableTraits,
   balances,
@@ -10,18 +10,36 @@ import {
 } from '../../../shared/engine';
 import { getStore } from '../db';
 
-export async function listCharacters(req: Request, res: Response) {
-  const store = getStore();
-  if (!(await store.getRuleset(req.params.rulesetId))) {
-    return res.status(404).json({ message: 'Ruleset not found' });
+/**
+ * Resources the caller does not own report 404 rather than 403 -- a 403 would
+ * confirm the id exists.
+ */
+async function loadOwnedRuleset(req: Request, res: Response): Promise<Ruleset | null> {
+  const owned = await getStore().getRuleset(req.params.rulesetId);
+  if (!owned || owned.ownerId !== req.user!.id) {
+    res.status(404).json({ message: 'Ruleset not found' });
+    return null;
   }
-  res.json(await store.listCharacters(req.params.rulesetId));
+  return owned.value;
+}
+
+async function loadOwnedCharacter(req: Request, res: Response): Promise<Character | null> {
+  const owned = await getStore().getCharacter(req.params.id);
+  if (!owned || owned.ownerId !== req.user!.id) {
+    res.status(404).json({ message: 'Character not found' });
+    return null;
+  }
+  return owned.value;
+}
+
+export async function listCharacters(req: Request, res: Response) {
+  if (!(await loadOwnedRuleset(req, res))) return;
+  res.json(await getStore().listCharacters(req.params.rulesetId, req.user!.id));
 }
 
 export async function createCharacter(req: Request, res: Response) {
-  const store = getStore();
-  const ruleset = await store.getRuleset(req.params.rulesetId);
-  if (!ruleset) return res.status(404).json({ message: 'Ruleset not found' });
+  const ruleset = await loadOwnedRuleset(req, res);
+  if (!ruleset) return;
 
   const name = String(req.body?.name ?? '').trim();
   if (!name) return res.status(400).json({ message: 'A name is required' });
@@ -45,20 +63,18 @@ export async function createCharacter(req: Request, res: Response) {
     updatedAt: now,
   };
 
-  await store.putCharacter(character);
+  await getStore().putCharacter(character, req.user!.id);
   res.status(201).json(character);
 }
 
 export async function getCharacter(req: Request, res: Response) {
-  const character = await getStore().getCharacter(req.params.id);
-  if (!character) return res.status(404).json({ message: 'Character not found' });
-  res.json(character);
+  const character = await loadOwnedCharacter(req, res);
+  if (character) res.json(character);
 }
 
 export async function updateCharacter(req: Request, res: Response) {
-  const store = getStore();
-  const existing = await store.getCharacter(req.params.id);
-  if (!existing) return res.status(404).json({ message: 'Character not found' });
+  const existing = await loadOwnedCharacter(req, res);
+  if (!existing) return;
 
   // id and rulesetId are immutable; moving a character between rulesets would
   // leave its traits referencing definitions that no longer exist.
@@ -71,13 +87,13 @@ export async function updateCharacter(req: Request, res: Response) {
     updatedAt: new Date().toISOString(),
   };
 
-  await store.putCharacter(updated);
+  await getStore().putCharacter(updated, req.user!.id);
   res.json(updated);
 }
 
 export async function deleteCharacter(req: Request, res: Response) {
-  const removed = await getStore().deleteCharacter(req.params.id);
-  if (!removed) return res.status(404).json({ message: 'Character not found' });
+  if (!(await loadOwnedCharacter(req, res))) return;
+  await getStore().deleteCharacter(req.params.id);
   res.status(204).send();
 }
 
@@ -87,23 +103,22 @@ export async function deleteCharacter(req: Request, res: Response) {
  * server-side so a client cannot disagree with the rules.
  */
 export async function getCharacterSheet(req: Request, res: Response) {
-  const store = getStore();
-  const character = await store.getCharacter(req.params.id);
-  if (!character) return res.status(404).json({ message: 'Character not found' });
+  const character = await loadOwnedCharacter(req, res);
+  if (!character) return;
 
-  const ruleset = await store.getRuleset(character.rulesetId);
-  if (!ruleset) {
+  const owned = await getStore().getRuleset(character.rulesetId);
+  if (!owned) {
     return res.status(409).json({
       message: 'The ruleset this character belongs to no longer exists',
     });
   }
 
   const phase: Phase = req.query.phase === 'creation' ? 'creation' : 'advancement';
-  const idx = indexRuleset(ruleset);
+  const idx = indexRuleset(owned.value);
 
   res.json({
     character,
-    ruleset,
+    ruleset: owned.value,
     balances: balances(character, idx),
     violations: validate(character, idx, phase),
     available: availableTraits(character, idx, phase),
