@@ -20,6 +20,7 @@ export interface AuthUser {
   id: string;
   email: string;
   displayName: string;
+  appRole: 'admin' | 'user';
   createdAt: string;
 }
 
@@ -48,6 +49,9 @@ export const authApi = {
   },
 };
 
+export type ProjectRole = 'admin' | 'member';
+export type AppRole = 'admin' | 'user';
+
 export interface RulesetSummary {
   id: string;
   name: string;
@@ -55,6 +59,39 @@ export interface RulesetSummary {
   description?: string;
   characterCount: number;
   updatedAt: string;
+  role: ProjectRole;
+}
+
+export interface Member {
+  userId: string;
+  displayName: string;
+  email: string;
+  role: ProjectRole;
+  joinedAt: string;
+}
+
+export interface Invite {
+  id: string;
+  rulesetId: string;
+  createdAt: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  uses: number;
+}
+
+/**
+ * A character as the viewer is allowed to see it. `character` is present only
+ * for a sheet the viewer may open in full -- their own, or any sheet if they
+ * are project staff. Everyone else gets the roster fields alone.
+ */
+export interface RosterEntry {
+  id: string;
+  name: string;
+  packageIds: string[];
+  ownerId: string;
+  ownerName: string;
+  isMine: boolean;
+  character?: Character;
 }
 
 /** Everything the engine derives for a character, computed server-side. */
@@ -64,6 +101,9 @@ export interface CharacterSheet {
   balances: Record<string, number>;
   violations: Violation[];
   available: TraitOption[];
+  /** False when the viewer may read the sheet but not change it. */
+  canEdit: boolean;
+  ownerName: string;
 }
 
 export const rulesetApi = {
@@ -86,7 +126,7 @@ export const rulesetApi = {
 };
 
 export const characterApi = {
-  listForRuleset: async (rulesetId: string): Promise<Character[]> =>
+  listForRuleset: async (rulesetId: string): Promise<RosterEntry[]> =>
     (await api.get(`/rulesets/${rulesetId}/characters`)).data,
 
   create: async (rulesetId: string, name: string): Promise<Character> =>
@@ -109,3 +149,59 @@ export const characterApi = {
 };
 
 export default api;
+
+
+export const memberApi = {
+  list: async (rulesetId: string): Promise<Member[]> =>
+    (await api.get(`/rulesets/${rulesetId}/members`)).data,
+
+  setRole: async (
+    rulesetId: string,
+    userId: string,
+    role: ProjectRole
+  ): Promise<Member[]> =>
+    (await api.patch(`/rulesets/${rulesetId}/members/${userId}`, { role })).data,
+
+  remove: async (rulesetId: string, userId: string): Promise<void> => {
+    await api.delete(`/rulesets/${rulesetId}/members/${userId}`);
+  },
+
+  listInvites: async (rulesetId: string): Promise<Invite[]> =>
+    (await api.get(`/rulesets/${rulesetId}/invites`)).data,
+
+  /** The raw token is returned once, at creation, and is not recoverable. */
+  createInvite: async (
+    rulesetId: string
+  ): Promise<{ invite: Invite; token: string }> =>
+    (await api.post(`/rulesets/${rulesetId}/invites`)).data,
+
+  revokeInvite: async (rulesetId: string, inviteId: string): Promise<void> => {
+    await api.delete(`/rulesets/${rulesetId}/invites/${inviteId}`);
+  },
+};
+
+export const inviteApi = {
+  preview: async (
+    token: string
+  ): Promise<{ projectId: string; projectName: string; alreadyMember: boolean }> =>
+    (await api.get(`/invites/${token}`)).data,
+
+  accept: async (
+    token: string
+  ): Promise<{ projectId: string; role: ProjectRole; joined: boolean }> =>
+    (await api.post(`/invites/${token}/accept`)).data,
+};
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  displayName: string;
+  appRole: AppRole;
+  createdAt: string;
+}
+
+export const adminApi = {
+  listUsers: async (): Promise<AdminUser[]> => (await api.get('/admin/users')).data,
+  setRole: async (userId: string, role: AppRole): Promise<AdminUser[]> =>
+    (await api.patch(`/admin/users/${userId}`, { role })).data,
+};

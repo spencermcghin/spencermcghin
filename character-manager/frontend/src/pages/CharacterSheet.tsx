@@ -26,7 +26,7 @@ export default function CharacterSheet() {
   if (error) return <div className="error">{error}</div>;
   if (!sheet) return <p className="muted">Loading…</p>;
 
-  const { character, ruleset, balances, violations, available } = sheet;
+  const { character, ruleset, balances, violations, available, canEdit, ownerName } = sheet;
 
   const mutate = async (patch: Parameters<typeof characterApi.update>[1]) => {
     setBusy(true);
@@ -63,7 +63,10 @@ export default function CharacterSheet() {
       <div className="header">
         <div>
           <h1>{character.name}</h1>
-          <p className="muted">{ruleset.name}</p>
+          <p className="muted">
+            {ruleset.name} · played by {ownerName}
+            {!canEdit && ' · read only'}
+          </p>
         </div>
         <div className="actions">
           <div className="phase-toggle" role="group" aria-label="Purchase phase">
@@ -121,7 +124,7 @@ export default function CharacterSheet() {
                 return (
                   <button
                     key={p.id}
-                    disabled={busy}
+                    disabled={busy || !canEdit}
                     className={`button button-small ${held ? 'button-primary' : ''}`}
                     onClick={() => togglePackage(p.id, tier.id)}
                     title={p.notes}
@@ -157,7 +160,7 @@ export default function CharacterSheet() {
                     {o.currentLevel > 0 && (
                       <button
                         className="button button-small"
-                        disabled={busy}
+                        disabled={busy || !canEdit}
                         onClick={() => sell(o.traitId, o.currentLevel)}
                       >
                         −
@@ -166,7 +169,7 @@ export default function CharacterSheet() {
                     {o.status === 'available' && o.nextLevel !== null && (
                       <button
                         className="button button-small button-primary"
-                        disabled={busy}
+                        disabled={busy || !canEdit}
                         onClick={() => buy(o.traitId, o.nextLevel!)}
                       >
                         Buy {o.nextLevel} · {o.cost?.amount}

@@ -9,10 +9,18 @@ import {
   replaceRuleset,
 } from '../controllers/rulesetController';
 import { createCharacter, listCharacters } from '../controllers/characterController';
+import {
+  createInvite,
+  listInvites,
+  listMembers,
+  removeMember,
+  revokeInvite,
+  updateMemberRole,
+} from '../controllers/memberController';
 
 const router = Router();
 
-// Every ruleset and character is owned; nothing here is public.
+// Every project is membership-gated; nothing here is public.
 router.use(requireAuth);
 
 // Declared before /:id so "import" is not swallowed as a ruleset id.
@@ -24,7 +32,15 @@ router.get('/:id', getRuleset);
 router.put('/:id', replaceRuleset);
 router.delete('/:id', deleteRuleset);
 
-// Characters are always created within a ruleset.
+router.get('/:id/members', listMembers);
+router.patch('/:id/members/:userId', updateMemberRole);
+router.delete('/:id/members/:userId', removeMember);
+
+router.get('/:id/invites', listInvites);
+router.post('/:id/invites', createInvite);
+router.delete('/:id/invites/:inviteId', revokeInvite);
+
+// Characters are always created within a project.
 router.get('/:rulesetId/characters', listCharacters);
 router.post('/:rulesetId/characters', createCharacter);
 

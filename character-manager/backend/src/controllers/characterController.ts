@@ -8,51 +8,118 @@ import {
   validate,
   type Phase,
 } from '../../../shared/engine';
-import { getStore } from '../db';
+import {
+  canCreateCharacter,
+  canEditCharacter,
+  canViewCharacter,
+  canViewProject,
+  type RosterEntry,
+  type Viewer,
+} from '../auth/permissions';
+import { viewerFor } from '../auth/viewer';
+import { getStore, type CharacterRow } from '../db';
 
-/**
- * Resources the caller does not own report 404 rather than 403 -- a 403 would
- * confirm the id exists.
- */
-async function loadOwnedRuleset(req: Request, res: Response): Promise<Ruleset | null> {
-  const owned = await getStore().getRuleset(req.params.rulesetId);
-  if (!owned || owned.ownerId !== req.user!.id) {
+/** Projects the caller cannot see report 404, so ids cannot be probed. */
+async function loadProject(
+  req: Request,
+  res: Response
+): Promise<{ ruleset: Ruleset; viewer: Viewer } | null> {
+  const id = req.params.rulesetId;
+  const owned = await getStore().getRuleset(id);
+  if (!owned) {
     res.status(404).json({ message: 'Ruleset not found' });
     return null;
   }
-  return owned.value;
+  const viewer = await viewerFor(req, id);
+  if (!canViewProject(viewer)) {
+    res.status(404).json({ message: 'Ruleset not found' });
+    return null;
+  }
+  return { ruleset: owned.value, viewer };
 }
 
-async function loadOwnedCharacter(req: Request, res: Response): Promise<Character | null> {
-  const owned = await getStore().getCharacter(req.params.id);
-  if (!owned || owned.ownerId !== req.user!.id) {
+async function loadCharacter(
+  req: Request,
+  res: Response,
+  level: 'view' | 'edit'
+): Promise<{ row: CharacterRow; viewer: Viewer } | null> {
+  const row = await getStore().getCharacter(req.params.id);
+  if (!row) {
     res.status(404).json({ message: 'Character not found' });
     return null;
   }
-  return owned.value;
+
+  const viewer = await viewerFor(req, row.character.rulesetId);
+  const allowed =
+    level === 'view'
+      ? canViewCharacter(viewer, row.ownerId)
+      : canEditCharacter(viewer, row.ownerId);
+
+  if (!allowed) {
+    // Someone in the project knows this character exists -- it is on the
+    // roster -- so 403 is the honest answer rather than pretending otherwise.
+    if (canViewProject(viewer)) {
+      res.status(403).json({ message: "You can only open your own characters." });
+    } else {
+      res.status(404).json({ message: 'Character not found' });
+    }
+    return null;
+  }
+  return { row, viewer };
 }
 
+function toRoster(row: CharacterRow, viewerId: string): RosterEntry {
+  return {
+    id: row.character.id,
+    name: row.character.name,
+    packageIds: row.character.packageIds,
+    ownerId: row.ownerId,
+    ownerName: row.ownerName,
+    isMine: row.ownerId === viewerId,
+  };
+}
+
+/**
+ * Members see a roster -- who is in the game and roughly what they play --
+ * while project staff and a character's own player see the full record. The
+ * reduction happens here rather than in the client, so a build is never sent
+ * to someone who should not have it.
+ */
 export async function listCharacters(req: Request, res: Response) {
-  if (!(await loadOwnedRuleset(req, res))) return;
-  res.json(await getStore().listCharacters(req.params.rulesetId, req.user!.id));
+  const project = await loadProject(req, res);
+  if (!project) return;
+
+  const rows = await getStore().listCharacters(req.params.rulesetId);
+  const { viewer } = project;
+
+  res.json(
+    rows.map((row) =>
+      canViewCharacter(viewer, row.ownerId)
+        ? { ...toRoster(row, viewer.userId), character: row.character }
+        : toRoster(row, viewer.userId)
+    )
+  );
 }
 
 export async function createCharacter(req: Request, res: Response) {
-  const ruleset = await loadOwnedRuleset(req, res);
-  if (!ruleset) return;
+  const project = await loadProject(req, res);
+  if (!project) return;
+  if (!canCreateCharacter(project.viewer)) {
+    return res.status(403).json({ message: 'You cannot add characters to this project.' });
+  }
 
   const name = String(req.body?.name ?? '').trim();
   if (!name) return res.status(400).json({ message: 'A name is required' });
 
   const now = new Date().toISOString();
   const awarded: Record<string, number> = {};
-  for (const budget of ruleset.startingBudget) {
+  for (const budget of project.ruleset.startingBudget) {
     awarded[budget.currencyId] = budget.amount;
   }
 
   const character: Character = {
     id: randomUUID(),
-    rulesetId: ruleset.id,
+    rulesetId: project.ruleset.id,
     name,
     packageIds: [],
     traitLevels: {},
@@ -68,14 +135,15 @@ export async function createCharacter(req: Request, res: Response) {
 }
 
 export async function getCharacter(req: Request, res: Response) {
-  const character = await loadOwnedCharacter(req, res);
-  if (character) res.json(character);
+  const loaded = await loadCharacter(req, res, 'view');
+  if (loaded) res.json(loaded.row.character);
 }
 
 export async function updateCharacter(req: Request, res: Response) {
-  const existing = await loadOwnedCharacter(req, res);
-  if (!existing) return;
+  const loaded = await loadCharacter(req, res, 'edit');
+  if (!loaded) return;
 
+  const existing = loaded.row.character;
   // id and rulesetId are immutable; moving a character between rulesets would
   // leave its traits referencing definitions that no longer exist.
   const updated: Character = {
@@ -87,12 +155,15 @@ export async function updateCharacter(req: Request, res: Response) {
     updatedAt: new Date().toISOString(),
   };
 
-  await getStore().putCharacter(updated, req.user!.id);
+  // The original owner is preserved: staff editing a player's sheet must not
+  // take the character away from them.
+  await getStore().putCharacter(updated, loaded.row.ownerId);
   res.json(updated);
 }
 
 export async function deleteCharacter(req: Request, res: Response) {
-  if (!(await loadOwnedCharacter(req, res))) return;
+  const loaded = await loadCharacter(req, res, 'edit');
+  if (!loaded) return;
   await getStore().deleteCharacter(req.params.id);
   res.status(204).send();
 }
@@ -103,9 +174,10 @@ export async function deleteCharacter(req: Request, res: Response) {
  * server-side so a client cannot disagree with the rules.
  */
 export async function getCharacterSheet(req: Request, res: Response) {
-  const character = await loadOwnedCharacter(req, res);
-  if (!character) return;
+  const loaded = await loadCharacter(req, res, 'view');
+  if (!loaded) return;
 
+  const character = loaded.row.character;
   const owned = await getStore().getRuleset(character.rulesetId);
   if (!owned) {
     return res.status(409).json({
@@ -122,5 +194,7 @@ export async function getCharacterSheet(req: Request, res: Response) {
     balances: balances(character, idx),
     violations: validate(character, idx, phase),
     available: availableTraits(character, idx, phase),
+    canEdit: canEditCharacter(loaded.viewer, loaded.row.ownerId),
+    ownerName: loaded.row.ownerName,
   });
 }

@@ -63,10 +63,15 @@ export async function register(req: Request, res: Response) {
     return res.status(409).json({ message: 'An account with that email already exists.' });
   }
 
+  // The first account to register administers the app, so a fresh deploy has
+  // an administrator without anyone editing the database by hand.
+  const isFirstUser = (await store.countUsers()) === 0;
+
   const user = await store.createUser({
     email,
     displayName,
     passwordHash: await hashPassword(password),
+    appRole: isFirstUser ? 'admin' : 'user',
   });
 
   // A new space starts with a private copy of Eldritch so the app opens on

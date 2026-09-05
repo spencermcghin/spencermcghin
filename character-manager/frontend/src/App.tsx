@@ -4,6 +4,8 @@ import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import CharacterSheet from './pages/CharacterSheet';
 import SignIn from './pages/SignIn';
+import JoinProject from './pages/JoinProject';
+import AdminUsers from './pages/AdminUsers';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { AuthProvider } from './auth/AuthProvider';
 import { RequireAuth } from './auth/RequireAuth';
@@ -38,6 +40,14 @@ function NavAuth() {
   );
 }
 
+/** The accounts page is only meaningful to app admins, so it is only offered
+ *  to them. The API enforces the restriction regardless. */
+function NavAdmin() {
+  const { user } = useAuth();
+  if (user?.appRole !== 'admin') return null;
+  return <Link to="/admin">Accounts</Link>;
+}
+
 function Shell() {
   return (
     <div className="app">
@@ -47,6 +57,7 @@ function Shell() {
           <div className="nav-links">
             <Link to="/">Home</Link>
             <Link to="/projects">Projects</Link>
+            <NavAdmin />
             <NavAuth />
           </div>
         </div>
@@ -69,6 +80,22 @@ function Shell() {
             element={
               <RequireAuth>
                 <ProjectDetail />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/join/:token"
+            element={
+              <RequireAuth>
+                <JoinProject />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAuth>
+                <AdminUsers />
               </RequireAuth>
             }
           />

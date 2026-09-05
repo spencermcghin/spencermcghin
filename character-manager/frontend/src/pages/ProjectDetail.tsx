@@ -1,36 +1,60 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { characterApi, rulesetApi } from '../services/api';
-import type { Character, Ruleset } from '../../../shared/rules-schema';
+import {
+  characterApi,
+  memberApi,
+  rulesetApi,
+  type Invite,
+  type Member,
+  type ProjectRole,
+  type RosterEntry,
+} from '../services/api';
+import type { Ruleset } from '../../../shared/rules-schema';
+import { useAuth } from '../auth/useAuth';
 
 export default function ProjectDetail() {
   const { id = '' } = useParams();
+  const { user } = useAuth();
   const [ruleset, setRuleset] = useState<Ruleset | null>(null);
-  const [characters, setCharacters] = useState<Character[]>([]);
+  const [roster, setRoster] = useState<RosterEntry[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [invites, setInvites] = useState<Invite[]>([]);
+  const [newLink, setNewLink] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const myRole: ProjectRole | null =
+    members.find((m) => m.userId === user?.id)?.role ?? null;
+  const isStaff = myRole === 'admin' || user?.appRole === 'admin';
+
+  const load = useCallback(async () => {
     try {
-      const [r, cs] = await Promise.all([
+      const [r, cs, ms] = await Promise.all([
         rulesetApi.get(id),
         characterApi.listForRuleset(id),
+        memberApi.list(id),
       ]);
       setRuleset(r);
-      setCharacters(cs);
+      setRoster(cs);
+      setMembers(ms);
       setError(null);
     } catch {
       setError('Could not load this project.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [load]);
+
+  // Invites are staff-only, so this request would 403 for a member.
+  useEffect(() => {
+    if (!isStaff) return;
+    memberApi.listInvites(id).then(setInvites).catch(() => setInvites([]));
+  }, [id, isStaff]);
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +64,14 @@ export default function ProjectDetail() {
     await load();
   };
 
+  const makeInvite = async () => {
+    const { token } = await memberApi.createInvite(id);
+    setNewLink(`${window.location.origin}/join/${token}`);
+    setInvites(await memberApi.listInvites(id));
+  };
+
   const exportJson = () => {
     if (!ruleset) return;
-    // Downloads are inert inside the artifact sandbox but work in a browser.
     const blob = new Blob([JSON.stringify(ruleset, null, 2)], {
       type: 'application/json',
     });
@@ -71,7 +100,7 @@ export default function ProjectDetail() {
         <div>
           <h1>{ruleset.name}</h1>
           <p className="muted">
-            Version {ruleset.version}
+            Version {ruleset.version} · <span className="role-badge">{myRole ?? 'app admin'}</span>
             {ruleset.description ? ` · ${ruleset.description}` : ''}
           </p>
         </div>
@@ -96,18 +125,111 @@ export default function ProjectDetail() {
         </div>
 
         <div className="info-card">
-          <h2>Starting Budget</h2>
-          <dl>
-            {ruleset.startingBudget.map((b) => {
-              const c = ruleset.currencies.find((x) => x.id === b.currencyId);
-              return [
-                <dt key={`${b.currencyId}-t`}>{c?.name ?? b.currencyId}</dt>,
-                <dd key={`${b.currencyId}-d`}>{b.amount}</dd>,
-              ];
-            })}
-          </dl>
+          <h2>Members</h2>
+          <ul className="member-list">
+            {members.map((m) => (
+              <li key={m.userId}>
+                <span className="member-name">
+                  {m.displayName}
+                  {m.userId === user?.id && <span className="you-tag">you</span>}
+                </span>
+                {isStaff ? (
+                  <span className="member-actions">
+                    <select
+                      value={m.role}
+                      aria-label={`Role for ${m.displayName}`}
+                      onChange={async (e) => {
+                        try {
+                          setMembers(
+                            await memberApi.setRole(
+                              id,
+                              m.userId,
+                              e.target.value as ProjectRole
+                            )
+                          );
+                        } catch {
+                          setError('A project must keep at least one admin.');
+                        }
+                      }}
+                    >
+                      <option value="admin">admin</option>
+                      <option value="member">member</option>
+                    </select>
+                    <button
+                      className="button button-small button-danger"
+                      onClick={async () => {
+                        if (!confirm(`Remove ${m.displayName} from this project?`)) return;
+                        try {
+                          await memberApi.remove(id, m.userId);
+                          await load();
+                        } catch {
+                          setError('A project must keep at least one admin.');
+                        }
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </span>
+                ) : (
+                  <span className="role-badge">{m.role}</span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
+
+      {isStaff && (
+        <div className="info-card full-width" style={{ marginBottom: '2.5rem' }}>
+          <h2>Invite Players</h2>
+          <p className="muted">
+            Anyone with the link joins as a member. Links expire after 30 days and
+            can be revoked at any time.
+          </p>
+          <div className="chip-row" style={{ marginTop: '1rem' }}>
+            <button className="button button-primary button-small" onClick={makeInvite}>
+              Create invite link
+            </button>
+          </div>
+
+          {newLink && (
+            <div className="invite-link">
+              <code>{newLink}</code>
+              <button
+                className="button button-small"
+                onClick={() => navigator.clipboard?.writeText(newLink)}
+              >
+                Copy
+              </button>
+            </div>
+          )}
+
+          {invites.filter((i) => !i.revokedAt).length > 0 && (
+            <ul className="invite-list">
+              {invites
+                .filter((i) => !i.revokedAt)
+                .map((i) => (
+                  <li key={i.id}>
+                    <span className="muted">
+                      created {new Date(i.createdAt).toLocaleDateString()} · used{' '}
+                      {i.uses} time{i.uses === 1 ? '' : 's'}
+                    </span>
+                    <button
+                      className="button button-small button-danger"
+                      onClick={async () => {
+                        await memberApi.revokeInvite(id, i.id);
+                        setInvites(await memberApi.listInvites(id));
+                        setNewLink(null);
+                      }}
+                    >
+                      Revoke
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="header" style={{ marginTop: '2.5rem' }}>
         <h1 style={{ fontSize: '1.75rem' }}>Characters</h1>
@@ -125,13 +247,13 @@ export default function ProjectDetail() {
         </button>
       </form>
 
-      {characters.length === 0 ? (
+      {roster.length === 0 ? (
         <div className="empty-state">
-          <p>No characters in this ruleset yet.</p>
+          <p>No characters in this project yet.</p>
         </div>
       ) : (
         <div className="character-grid">
-          {characters.map((c) => (
+          {roster.map((c) => (
             <div key={c.id} className="character-card">
               <h2>{c.name}</h2>
               <p className="character-info">
@@ -142,13 +264,16 @@ export default function ProjectDetail() {
                   : 'No archetype'}
               </p>
               <p className="character-background">
-                {Object.keys(c.traitLevels).length} skill
-                {Object.keys(c.traitLevels).length === 1 ? '' : 's'}
+                Played by {c.isMine ? 'you' : c.ownerName}
               </p>
               <div className="card-actions">
-                <Link to={`/characters/${c.id}`} className="button button-small">
-                  Open Sheet
-                </Link>
+                {c.character ? (
+                  <Link to={`/characters/${c.id}`} className="button button-small">
+                    Open Sheet
+                  </Link>
+                ) : (
+                  <span className="muted">Sheet is private</span>
+                )}
               </div>
             </div>
           ))}

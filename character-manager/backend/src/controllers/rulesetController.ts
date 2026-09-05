@@ -1,6 +1,12 @@
 import { randomUUID } from 'crypto';
 import type { Request, Response } from 'express';
 import type { Ruleset } from '../../../shared/rules-schema';
+import {
+  canDeleteProject,
+  canEditRuleset,
+  canViewProject,
+} from '../auth/permissions';
+import { viewerFor } from '../auth/viewer';
 import { getStore } from '../db';
 
 function slugify(name: string): string {
@@ -51,27 +57,51 @@ function blankRuleset(id: string, name: string): Ruleset {
 }
 
 /**
- * Loads a ruleset the caller owns.
+ * Loads a ruleset the caller may act on at the given level.
  *
- * A ruleset owned by someone else reports 404 rather than 403 -- distinguishing
- * them would confirm that an id exists.
+ * A project the caller cannot see reports 404 rather than 403, so an id
+ * cannot be confirmed by probing. An insufficient role inside a project they
+ * *can* see reports 403, which is honest and actionable.
  */
-async function loadOwned(req: Request, res: Response): Promise<Ruleset | null> {
-  const owned = await getStore().getRuleset(req.params.id ?? req.params.rulesetId);
-  if (!owned || owned.ownerId !== req.user!.id) {
+async function loadFor(
+  req: Request,
+  res: Response,
+  level: 'view' | 'edit' | 'delete'
+): Promise<{ ruleset: Ruleset; ownerId: string } | null> {
+  const id = req.params.id ?? req.params.rulesetId;
+  const owned = await getStore().getRuleset(id);
+  if (!owned) {
     res.status(404).json({ message: 'Ruleset not found' });
     return null;
   }
-  return owned.value;
+
+  const viewer = await viewerFor(req, id);
+  if (!canViewProject(viewer)) {
+    res.status(404).json({ message: 'Ruleset not found' });
+    return null;
+  }
+
+  const allowed =
+    level === 'view'
+      ? true
+      : level === 'edit'
+        ? canEditRuleset(viewer)
+        : canDeleteProject(viewer);
+
+  if (!allowed) {
+    res.status(403).json({ message: 'Only project admins can do that.' });
+    return null;
+  }
+  return { ruleset: owned.value, ownerId: owned.ownerId };
 }
 
 export async function listRulesets(req: Request, res: Response) {
-  res.json(await getStore().listRulesets(req.user!.id));
+  res.json(await getStore().listRulesetsForUser(req.user!.id));
 }
 
 export async function getRuleset(req: Request, res: Response) {
-  const ruleset = await loadOwned(req, res);
-  if (ruleset) res.json(ruleset);
+  const loaded = await loadFor(req, res, 'view');
+  if (loaded) res.json(loaded.ruleset);
 }
 
 export async function createRuleset(req: Request, res: Response) {
@@ -83,12 +113,16 @@ export async function createRuleset(req: Request, res: Response) {
     ruleset.description = req.body.description;
   }
 
-  await getStore().putRuleset(ruleset, req.user!.id);
+  const store = getStore();
+  await store.putRuleset(ruleset, req.user!.id);
+  // Whoever creates a project administers it.
+  await store.addMember(ruleset.id, req.user!.id, 'admin');
   res.status(201).json(ruleset);
 }
 
 export async function replaceRuleset(req: Request, res: Response) {
-  if (!(await loadOwned(req, res))) return;
+  const loaded = await loadFor(req, res, 'edit');
+  if (!loaded) return;
 
   const incoming = req.body as Ruleset;
   const problems = validateRulesetShape(incoming);
@@ -97,15 +131,17 @@ export async function replaceRuleset(req: Request, res: Response) {
   }
 
   // The path is authoritative; a mismatched body id would orphan characters.
+  // The original owner is preserved -- an admin editing someone else's
+  // project must not take ownership of it as a side effect.
   const saved = await getStore().putRuleset(
     { ...incoming, id: req.params.id },
-    req.user!.id
+    loaded.ownerId
   );
   res.json(saved);
 }
 
 export async function deleteRuleset(req: Request, res: Response) {
-  if (!(await loadOwned(req, res))) return;
+  if (!(await loadFor(req, res, 'delete'))) return;
   await getStore().deleteRuleset(req.params.id);
   res.status(204).send();
 }
@@ -117,10 +153,12 @@ export async function importRuleset(req: Request, res: Response) {
     return res.status(400).json({ message: 'Invalid ruleset', problems });
   }
 
-  const saved = await getStore().putRuleset(
+  const store = getStore();
+  const saved = await store.putRuleset(
     { ...incoming, id: newRulesetId(incoming.name) },
     req.user!.id
   );
+  await store.addMember(saved.id, req.user!.id, 'admin');
   res.status(201).json(saved);
 }
 

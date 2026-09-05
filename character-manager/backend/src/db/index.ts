@@ -4,7 +4,16 @@ import { MemoryStore } from './memory-store';
 import { PostgresStore } from './postgres-store';
 import type { Store } from './store';
 
-export type { Store, RulesetSummary, User, UserWithSecret, Owned } from './store';
+export type {
+  Store,
+  RulesetSummary,
+  User,
+  UserWithSecret,
+  Owned,
+  Member,
+  Invite,
+  CharacterRow,
+} from './store';
 
 let store: Store | null = null;
 let sweeper: NodeJS.Timeout | null = null;
@@ -65,4 +74,7 @@ export async function seedUserSpace(s: Store, ownerId: string): Promise<void> {
     id: `eldritch-${randomUUID().slice(0, 8)}`,
   };
   await s.putRuleset(copy, ownerId);
+  // The creator is a project admin; without this row they could not open the
+  // project they just received.
+  await s.addMember(copy.id, ownerId, 'admin');
 }

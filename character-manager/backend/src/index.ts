@@ -6,8 +6,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { attachUser } from './auth/middleware';
 import { initStore } from './db';
+import adminRoutes from './routes/admin';
 import authRoutes from './routes/auth';
 import characterRoutes from './routes/characters';
+import inviteRoutes from './routes/invites';
 import rulesetRoutes from './routes/rulesets';
 
 dotenv.config();
@@ -39,6 +41,8 @@ app.use('/api', attachUser);
 app.use('/api/auth', authRoutes);
 app.use('/api/rulesets', rulesetRoutes);
 app.use('/api/characters', characterRoutes);
+app.use('/api/invites', inviteRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Unmatched API routes are errors, never the SPA shell -- returning HTML to a
 // fetch that expected JSON produces a confusing parse failure at the client.

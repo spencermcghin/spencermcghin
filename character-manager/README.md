@@ -165,6 +165,57 @@ GET  /api/auth/me          the signed-in user, or 401
 
 Everything under `/api/rulesets` and `/api/characters` requires a session.
 
+## Roles
+
+Two levels, because a LARP has two kinds of authority: who runs the app, and
+who runs a game.
+
+| | App admin | Project admin | Member |
+|---|---|---|---|
+| Manage accounts, open any project | ✓ | | |
+| Edit the ruleset, delete the project | ✓ | ✓ | |
+| Invite and remove members, set roles | ✓ | ✓ | |
+| Open any character sheet in the project | ✓ | ✓ | |
+| Create and edit **own** characters | ✓ | ✓ | ✓ |
+| See the roster (names, archetypes, players) | ✓ | ✓ | ✓ |
+
+**The first account to register becomes the app admin**, so a fresh deploy has
+an administrator without anyone editing the database. Whoever creates a project
+administers it.
+
+**Members see a roster, not sheets.** Everyone in a project can see who is
+playing and roughly what they play; full builds are visible only to the
+character's own player and to project staff. The reduction happens server-side,
+so a build is never sent to a client that should not have it.
+
+**Project admins can edit any character in their project.** Staff routinely
+need to award points or correct a build, and refusing that would push the work
+into a database console. Editing never transfers ownership -- the character
+stays with its player.
+
+**Joining is by invite link.** A project admin mints a link, shares it, and
+anyone with an account who follows it joins as a member. Links expire after 30
+days and can be revoked. As with sessions, the link carries a random token and
+the database stores only its hash, so the raw link is shown once at creation
+and is not recoverable afterwards.
+
+A project always keeps at least one admin, and the last app administrator
+cannot be demoted -- either would leave the system unmanageable with no route
+back short of a database edit.
+
+```
+GET    /api/rulesets/:id/members              list members
+PATCH  /api/rulesets/:id/members/:userId      set a member's role
+DELETE /api/rulesets/:id/members/:userId      remove a member
+GET    /api/rulesets/:id/invites              list live invites
+POST   /api/rulesets/:id/invites              mint a link
+DELETE /api/rulesets/:id/invites/:inviteId    revoke a link
+GET    /api/invites/:token                    preview before joining
+POST   /api/invites/:token/accept             join
+GET    /api/admin/users                       app admins only
+PATCH  /api/admin/users/:id                   set an account's app role
+```
+
 ## Persistence
 
 Rulesets and characters are stored in Postgres as JSONB documents. A ruleset is

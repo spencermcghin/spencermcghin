@@ -81,19 +81,22 @@ export default function Projects() {
               <h2>{p.name}</h2>
               <p className="character-info">
                 v{p.version} · {p.characterCount}{' '}
-                {p.characterCount === 1 ? 'character' : 'characters'}
+                {p.characterCount === 1 ? 'character' : 'characters'} ·{' '}
+                <span className="role-badge">{p.role}</span>
               </p>
               {p.description && <p className="character-background">{p.description}</p>}
               <div className="card-actions">
                 <Link to={`/projects/${p.id}`} className="button button-small">
                   Open
                 </Link>
-                <button
-                  className="button button-small button-danger"
-                  onClick={() => remove(p.id, p.name)}
-                >
-                  Delete
-                </button>
+                {p.role === 'admin' && (
+                  <button
+                    className="button button-small button-danger"
+                    onClick={() => remove(p.id, p.name)}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
