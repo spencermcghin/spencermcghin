@@ -2,31 +2,50 @@ import { useState, useEffect } from 'react';
 import './ThemeSwitcher.css';
 
 export const THEMES = [
-  { id: 'modern', name: 'Modern Clean', swatch: 'linear-gradient(135deg,#eef0f6,#5b5bd6)' },
-  { id: 'dark-fantasy', name: 'Dark Fantasy', swatch: 'linear-gradient(135deg,#0d0a0a,#d4af37)' },
+  { id: 'gothic', name: 'Gothic', swatch: 'linear-gradient(135deg,#0a0908,#c6a86d)' },
   { id: 'parchment', name: 'Parchment', swatch: 'linear-gradient(135deg,#f0e4cc,#8c2f28)' },
   { id: 'forest', name: 'Forest Realm', swatch: 'linear-gradient(135deg,#0c1a12,#4fc98a)' },
+  { id: 'clean', name: 'Daylight', swatch: 'linear-gradient(135deg,#eef0f6,#5b5bd6)' },
 ] as const;
 
+const DEFAULT_THEME = 'gothic';
 const STORAGE_KEY = 'theme';
 
+/** Themes that have been renamed, so a stored choice still resolves. */
+const LEGACY_IDS: Record<string, string> = {
+  modern: 'clean',
+  'dark-fantasy': 'gothic',
+};
+
+function normalize(id: string | null): string {
+  if (!id) return DEFAULT_THEME;
+  const mapped = LEGACY_IDS[id] ?? id;
+  return THEMES.some((t) => t.id === mapped) ? mapped : DEFAULT_THEME;
+}
+
 export function applyTheme(id: string) {
-  if (id === 'modern') {
-    delete document.documentElement.dataset.theme;
-  } else {
-    document.documentElement.dataset.theme = id;
-  }
+  // The default lives on bare :root, so it carries no attribute.
+  if (id === DEFAULT_THEME) delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = id;
 }
 
 export default function ThemeSwitcher() {
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem(STORAGE_KEY) || 'modern'
-  );
+  const [theme, setTheme] = useState(() => {
+    try {
+      return normalize(localStorage.getItem(STORAGE_KEY));
+    } catch {
+      return DEFAULT_THEME;
+    }
+  });
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     applyTheme(theme);
-    localStorage.setItem(STORAGE_KEY, theme);
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch {
+      // Private browsing can refuse writes; the theme still applies for now.
+    }
   }, [theme]);
 
   useEffect(() => {

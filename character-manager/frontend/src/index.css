@@ -1,20 +1,62 @@
 /* ============================================================
-   Design tokens. Every theme is a re-declaration of this set —
-   components never reference a raw color.
+   Design tokens.
+
+   :root is the default look -- gothic dark. Every other theme is a
+   re-declaration of the same token set under a [data-theme] selector, so
+   components never reference a raw colour.
    ============================================================ */
 
 :root {
+  /* Body text stays in a face built for screen reading. The decorative
+     faces are reserved for display sizes and ornament, where their
+     character reads as atmosphere rather than an obstacle. */
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-heading: 'Cinzel', Georgia, serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-ornament: 'Pirata One', 'Cinzel', Georgia, serif;
 
-  --radius-sm: 8px;
-  --radius: 16px;
-  --radius-lg: 24px;
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 18px;
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Modern Clean — luminous porcelain + indigo */
+  /* Gothic — soot and candlelight, antique gold, a bruise of oxblood */
+  --bg: #0a0908;
+  --bg-deep: #040303;
+  --surface: rgba(26, 22, 19, 0.72);
+  --surface-solid: #16120f;
+  --border: rgba(198, 168, 109, 0.15);
+  --border-strong: rgba(198, 168, 109, 0.38);
+
+  --text: #ece3d4;
+  --text-soft: #b9aa90;
+  --text-mute: #8b7f6c;
+
+  --accent: #c6a86d;
+  --accent-2: #9c3b32;
+  --accent-ink: #0a0806;
+  --accent-wash: rgba(198, 168, 109, 0.09);
+
+  --danger: #b04138;
+  --danger-ink: #f6e6e2;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.7), 0 28px 60px rgba(0, 0, 0, 0.6);
+  --glow: rgba(198, 168, 109, 0.30);
+
+  --aurora-1: rgba(198, 168, 109, 0.16);
+  --aurora-2: rgba(156, 59, 50, 0.16);
+  --aurora-3: rgba(74, 52, 28, 0.24);
+
+  --grain: 0.05;
+  /* Light falls off toward the edges so the page reads as lit rather than
+     painted flat. 0 keeps a theme evenly lit. */
+  --falloff: 0.55;
+}
+
+/* ---------- Clean — porcelain and indigo, for daylight ---------- */
+[data-theme='clean'] {
   --bg: #eef0f6;
   --bg-deep: #e2e5ef;
   --surface: rgba(255, 255, 255, 0.72);
@@ -24,7 +66,7 @@
 
   --text: #171a2e;
   --text-soft: #4a5070;
-  --text-mute: #7d84a3;
+  --text-mute: #6f7694;
 
   --accent: #5b5bd6;
   --accent-2: #9d6bd8;
@@ -42,42 +84,11 @@
   --aurora-2: rgba(157, 107, 216, 0.24);
   --aurora-3: rgba(86, 176, 214, 0.20);
 
-  --grain: 0.035;
+  --grain: 0.03;
+  --falloff: 0;
 }
 
-/* ---------- Dark Fantasy — obsidian + gold leaf ---------- */
-[data-theme='dark-fantasy'] {
-  --bg: #0d0a0a;
-  --bg-deep: #060404;
-  --surface: rgba(38, 28, 24, 0.62);
-  --surface-solid: #1a1211;
-  --border: rgba(212, 175, 55, 0.16);
-  --border-strong: rgba(212, 175, 55, 0.38);
-
-  --text: #f2e6cf;
-  --text-soft: #c4ad86;
-  --text-mute: #8d7a5c;
-
-  --accent: #d4af37;
-  --accent-2: #b8863b;
-  --accent-ink: #14100a;
-  --accent-wash: rgba(212, 175, 55, 0.12);
-
-  --danger: #b5322f;
-  --danger-ink: #ffe8e4;
-
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-  --shadow-lift: 0 2px 8px rgba(0, 0, 0, 0.6), 0 28px 56px rgba(0, 0, 0, 0.75);
-  --glow: rgba(212, 175, 55, 0.42);
-
-  --aurora-1: rgba(212, 175, 55, 0.20);
-  --aurora-2: rgba(139, 46, 42, 0.22);
-  --aurora-3: rgba(94, 62, 21, 0.26);
-
-  --grain: 0.055;
-}
-
-/* ---------- Parchment — aged vellum + oxblood ---------- */
+/* ---------- Parchment — aged vellum and oxblood ---------- */
 [data-theme='parchment'] {
   --bg: #f0e4cc;
   --bg-deep: #e2d2b4;
@@ -88,7 +99,7 @@
 
   --text: #33261a;
   --text-soft: #6b5335;
-  --text-mute: #96795a;
+  --text-mute: #8a6d4e;
 
   --accent: #8c2f28;
   --accent-2: #b5793a;
@@ -106,21 +117,22 @@
   --aurora-2: rgba(140, 47, 40, 0.16);
   --aurora-3: rgba(150, 121, 90, 0.24);
 
-  --grain: 0.085;
+  --grain: 0.055;
+  --falloff: 0.14;
 }
 
-/* ---------- Forest Realm — deep canopy + jade ---------- */
+/* ---------- Forest — deep canopy and jade ---------- */
 [data-theme='forest'] {
   --bg: #0c1a12;
   --bg-deep: #050d08;
-  --surface: rgba(24, 48, 34, 0.60);
+  --surface: rgba(24, 48, 34, 0.62);
   --surface-solid: #12261a;
   --border: rgba(122, 200, 150, 0.16);
   --border-strong: rgba(122, 200, 150, 0.36);
 
   --text: #dff2e4;
   --text-soft: #9dc9ab;
-  --text-mute: #6e9a7e;
+  --text-mute: #7aa88a;
 
   --accent: #4fc98a;
   --accent-2: #2f9b86;
@@ -138,7 +150,8 @@
   --aurora-2: rgba(47, 155, 134, 0.24);
   --aurora-3: rgba(126, 168, 74, 0.18);
 
-  --grain: 0.05;
+  --grain: 0.04;
+  --falloff: 0.4;
 }
 
 /* ============================================================
@@ -168,7 +181,7 @@ body {
   transition: background-color 0.6s var(--ease), color 0.6s var(--ease);
 }
 
-/* Slow-drifting aurora field. Fixed, behind everything, non-interactive. */
+/* Slow-drifting light field. Fixed, behind everything, non-interactive. */
 body::before {
   content: '';
   position: fixed;
@@ -176,15 +189,22 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
+    radial-gradient(
+      118% 88% at 50% 40%,
+      transparent 42%,
+      rgba(0, 0, 0, var(--falloff)) 100%
+    ),
     radial-gradient(38% 42% at 18% 22%, var(--aurora-1) 0%, transparent 68%),
     radial-gradient(34% 38% at 82% 18%, var(--aurora-2) 0%, transparent 66%),
     radial-gradient(46% 46% at 64% 84%, var(--aurora-3) 0%, transparent 70%),
     var(--bg-deep);
-  filter: blur(24px) saturate(120%);
-  animation: drift 34s ease-in-out infinite alternate;
+  filter: blur(26px) saturate(115%);
+  animation: drift 38s ease-in-out infinite alternate;
 }
 
-/* Film grain — keeps the large gradients from banding. */
+/* Grain, kept faint -- just enough to stop the large gradients banding.
+   Its strength is the whole point of --grain, so this layer carries no other
+   background; anything else here would be forced to share the opacity. */
 body::after {
   content: '';
   position: fixed;
