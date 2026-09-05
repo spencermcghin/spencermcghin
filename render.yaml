@@ -1,0 +1,31 @@
+services:
+  # Backend API Service
+  - type: web
+    name: larp-character-manager-api
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd character-manager/backend && npm install && npm run build
+    startCommand: cd character-manager/backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    healthCheckPath: /api
+
+  # Frontend Static Site
+  - type: web
+    name: larp-character-manager-web
+    runtime: static
+    region: oregon
+    plan: free
+    buildCommand: cd character-manager/frontend && npm install && npm run build
+    staticPublishPath: character-manager/frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://larp-character-manager-api.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
