@@ -321,6 +321,26 @@ browser would not send it cross-site even once CORS passed.
 Note the trade: `SameSite=None` gives up the CSRF protection that `lax`
 provides for free. A single-origin deploy keeps it.
 
+**Checking the configuration.** Open `https://<api>.onrender.com/api` in a
+browser. It reports what the API thinks its own CORS setup is:
+
+```json
+{ "corsMode": "wildcard", "signInWorksCrossOrigin": false }
+```
+
+`"corsMode": "wildcard"` means `CORS_ORIGIN` is unset, and no browser on
+another origin will be able to sign in. Once it is set and the service has
+redeployed, the same URL reports `"allow:https://<web>.onrender.com"` and
+`"signInWorksCrossOrigin": true`.
+
+**Avoiding CORS altogether on Render.** A static site can proxy `/api` to the
+API service, so the browser only ever sees one origin -- no CORS, and the
+session cookie keeps `SameSite=lax`. `render.yaml` carries the rewrite as a
+commented block: uncomment it, point it at the API's URL, and delete
+`VITE_API_URL` so the client calls a relative `/api`. This is the documented
+Render approach but is not exercised by this repository's tests, unlike the
+`CORS_ORIGIN` route above.
+
 Note that Render's free Postgres is deleted after 30 days and free web
 services sleep after 15 minutes idle, so the first request after a pause takes
 30--60 seconds.

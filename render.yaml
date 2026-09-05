@@ -34,9 +34,22 @@ services:
     buildCommand: cd character-manager/frontend && npm install --include=dev && npm run build
     staticPublishPath: character-manager/frontend/dist
     envVars:
+      # Points the browser at the API's own origin, which makes every request
+      # cross-site and therefore requires CORS_ORIGIN on the API service.
+      #
+      # The alternative below removes that requirement entirely: proxy /api
+      # through this static site so the browser only ever sees one origin.
+      # To use it, delete this variable and uncomment the /api rewrite --
+      # with no VITE_API_URL the client calls a relative /api by default.
       - key: VITE_API_URL
         value: https://larp-character-manager-api.onrender.com/api
     routes:
+      # Same-origin option. Must be listed before the SPA fallback, which
+      # would otherwise swallow /api. Adjust the host to match the API
+      # service's actual URL.
+      # - type: rewrite
+      #   source: /api/*
+      #   destination: https://larp-character-manager-api.onrender.com/api/*
       - type: rewrite
         source: /*
         destination: /index.html

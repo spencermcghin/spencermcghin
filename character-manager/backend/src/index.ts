@@ -25,6 +25,8 @@ app.use(
   cors(allowedOrigin ? { origin: allowedOrigin, credentials: true } : undefined)
 );
 
+const frontendDist = findFrontendBuild();
+
 // Trust the platform proxy so req.ip is the client address rather than the
 // load balancer's -- the login throttle keys on it.
 app.set('trust proxy', 1);
@@ -35,7 +37,16 @@ app.use(cookieParser());
 app.use(express.json({ limit: '8mb' }));
 
 app.get('/api', (_req: Request, res: Response) => {
-  res.json({ message: 'Character Manager API', version: 2 });
+  // corsMode is reported so a misconfigured deploy can be diagnosed by
+  // opening this URL, rather than by reading response headers. It exposes no
+  // secret -- a wildcard is already visible in Access-Control-Allow-Origin.
+  res.json({
+    message: 'Character Manager API',
+    version: 2,
+    corsMode: allowedOrigin ? `allow:${allowedOrigin}` : 'wildcard',
+    servesFrontend: Boolean(frontendDist),
+    signInWorksCrossOrigin: Boolean(allowedOrigin),
+  });
 });
 
 app.use('/api', attachUser);
@@ -59,21 +70,28 @@ app.use('/api', (_req: Request, res: Response) => {
  * will not find a build, and the API runs on its own.
  */
 function findFrontendBuild(): string | null {
+  // An explicitly configured path is authoritative. Falling back from a bad
+  // FRONTEND_DIST would hide the misconfiguration behind a build that happens
+  // to be lying around.
+  if (process.env.FRONTEND_DIST) {
+    const dir = process.env.FRONTEND_DIST;
+    if (fs.existsSync(path.join(dir, 'index.html'))) return dir;
+    console.warn(`FRONTEND_DIST is set to ${dir}, which has no index.html.`);
+    return null;
+  }
+
   const candidates = [
-    process.env.FRONTEND_DIST,
     // Compiled: <backend>/dist/backend/src/index.js
     path.resolve(__dirname, '../../../../frontend/dist'),
     // ts-node: <backend>/src/index.ts
     path.resolve(__dirname, '../../frontend/dist'),
-  ].filter((p): p is string => Boolean(p));
+  ];
 
   for (const dir of candidates) {
     if (fs.existsSync(path.join(dir, 'index.html'))) return dir;
   }
   return null;
 }
-
-const frontendDist = findFrontendBuild();
 
 if (frontendDist) {
   app.use(express.static(frontendDist));
