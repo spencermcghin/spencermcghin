@@ -3,9 +3,9 @@ import './ThemeSwitcher.css';
 
 const themes = [
   { id: 'default', name: 'Modern Clean', file: null },
-  { id: 'dark-fantasy', name: 'Dark Fantasy', file: '/src/themes/dark-fantasy.css' },
-  { id: 'parchment', name: 'Parchment', file: '/src/themes/parchment.css' },
-  { id: 'forest-realm', name: 'Forest Realm', file: '/src/themes/forest-realm.css' },
+  { id: 'dark-fantasy', name: 'Dark Fantasy', file: '/themes/dark-fantasy.css' },
+  { id: 'parchment', name: 'Parchment', file: '/themes/parchment.css' },
+  { id: 'forest-realm', name: 'Forest Realm', file: '/themes/forest-realm.css' },
 ];
 
 export default function ThemeSwitcher() {

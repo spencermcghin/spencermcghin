@@ -59,7 +59,8 @@ The LARP Character Manager includes four distinct visual themes to match differe
 
 ## Customizing Themes
 
-Theme files are located in `frontend/src/themes/`:
+Theme files are located in `frontend/public/themes/` (served as static assets so they
+load the same way in dev and in a production build):
 - `dark-fantasy.css`
 - `parchment.css`
 - `forest-realm.css`

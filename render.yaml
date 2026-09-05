@@ -5,7 +5,7 @@ services:
     runtime: node
     region: oregon
     plan: free
-    buildCommand: cd character-manager/backend && npm install && npm run build
+    buildCommand: cd character-manager/backend && npm install --include=dev && npm run build
     startCommand: cd character-manager/backend && npm start
     envVars:
       - key: NODE_ENV
@@ -20,7 +20,7 @@ services:
     runtime: static
     region: oregon
     plan: free
-    buildCommand: cd character-manager/frontend && npm install && npm run build
+    buildCommand: cd character-manager/frontend && npm install --include=dev && npm run build
     staticPublishPath: character-manager/frontend/dist
     envVars:
       - key: VITE_API_URL
