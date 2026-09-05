@@ -1,16 +1,243 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: #213547;
-  background-color: #f5f5f5;
+/* ============================================================
+   Design tokens. Every theme is a re-declaration of this set —
+   components never reference a raw color.
+   ============================================================ */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-heading: 'Cinzel', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --radius-sm: 8px;
+  --radius: 16px;
+  --radius-lg: 24px;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Modern Clean — luminous porcelain + indigo */
+  --bg: #eef0f6;
+  --bg-deep: #e2e5ef;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-solid: #ffffff;
+  --border: rgba(23, 26, 46, 0.10);
+  --border-strong: rgba(23, 26, 46, 0.18);
+
+  --text: #171a2e;
+  --text-soft: #4a5070;
+  --text-mute: #7d84a3;
+
+  --accent: #5b5bd6;
+  --accent-2: #9d6bd8;
+  --accent-ink: #ffffff;
+  --accent-wash: rgba(91, 91, 214, 0.10);
+
+  --danger: #d93a5c;
+  --danger-ink: #ffffff;
+
+  --shadow: 0 1px 2px rgba(23, 26, 46, 0.04), 0 8px 24px rgba(23, 26, 46, 0.06);
+  --shadow-lift: 0 2px 4px rgba(23, 26, 46, 0.06), 0 24px 48px rgba(23, 26, 46, 0.12);
+  --glow: rgba(91, 91, 214, 0.28);
+
+  --aurora-1: rgba(91, 91, 214, 0.28);
+  --aurora-2: rgba(157, 107, 216, 0.24);
+  --aurora-3: rgba(86, 176, 214, 0.20);
+
+  --grain: 0.035;
+}
+
+/* ---------- Dark Fantasy — obsidian + gold leaf ---------- */
+[data-theme='dark-fantasy'] {
+  --bg: #0d0a0a;
+  --bg-deep: #060404;
+  --surface: rgba(38, 28, 24, 0.62);
+  --surface-solid: #1a1211;
+  --border: rgba(212, 175, 55, 0.16);
+  --border-strong: rgba(212, 175, 55, 0.38);
+
+  --text: #f2e6cf;
+  --text-soft: #c4ad86;
+  --text-mute: #8d7a5c;
+
+  --accent: #d4af37;
+  --accent-2: #b8863b;
+  --accent-ink: #14100a;
+  --accent-wash: rgba(212, 175, 55, 0.12);
+
+  --danger: #b5322f;
+  --danger-ink: #ffe8e4;
+
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  --shadow-lift: 0 2px 8px rgba(0, 0, 0, 0.6), 0 28px 56px rgba(0, 0, 0, 0.75);
+  --glow: rgba(212, 175, 55, 0.42);
+
+  --aurora-1: rgba(212, 175, 55, 0.20);
+  --aurora-2: rgba(139, 46, 42, 0.22);
+  --aurora-3: rgba(94, 62, 21, 0.26);
+
+  --grain: 0.055;
+}
+
+/* ---------- Parchment — aged vellum + oxblood ---------- */
+[data-theme='parchment'] {
+  --bg: #f0e4cc;
+  --bg-deep: #e2d2b4;
+  --surface: rgba(253, 248, 236, 0.82);
+  --surface-solid: #fdf8ec;
+  --border: rgba(112, 84, 50, 0.20);
+  --border-strong: rgba(112, 84, 50, 0.42);
+
+  --text: #33261a;
+  --text-soft: #6b5335;
+  --text-mute: #96795a;
+
+  --accent: #8c2f28;
+  --accent-2: #b5793a;
+  --accent-ink: #fdf3e0;
+  --accent-wash: rgba(140, 47, 40, 0.09);
+
+  --danger: #8c2f28;
+  --danger-ink: #fdf3e0;
+
+  --shadow: 0 1px 2px rgba(80, 58, 32, 0.10), 0 10px 26px rgba(80, 58, 32, 0.12);
+  --shadow-lift: 0 2px 6px rgba(80, 58, 32, 0.14), 0 26px 52px rgba(80, 58, 32, 0.20);
+  --glow: rgba(140, 47, 40, 0.26);
+
+  --aurora-1: rgba(181, 121, 58, 0.28);
+  --aurora-2: rgba(140, 47, 40, 0.16);
+  --aurora-3: rgba(150, 121, 90, 0.24);
+
+  --grain: 0.085;
+}
+
+/* ---------- Forest Realm — deep canopy + jade ---------- */
+[data-theme='forest'] {
+  --bg: #0c1a12;
+  --bg-deep: #050d08;
+  --surface: rgba(24, 48, 34, 0.60);
+  --surface-solid: #12261a;
+  --border: rgba(122, 200, 150, 0.16);
+  --border-strong: rgba(122, 200, 150, 0.36);
+
+  --text: #dff2e4;
+  --text-soft: #9dc9ab;
+  --text-mute: #6e9a7e;
+
+  --accent: #4fc98a;
+  --accent-2: #2f9b86;
+  --accent-ink: #051108;
+  --accent-wash: rgba(79, 201, 138, 0.12);
+
+  --danger: #cf6141;
+  --danger-ink: #fff1ea;
+
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-lift: 0 2px 8px rgba(0, 0, 0, 0.45), 0 28px 56px rgba(0, 0, 0, 0.6);
+  --glow: rgba(79, 201, 138, 0.38);
+
+  --aurora-1: rgba(79, 201, 138, 0.22);
+  --aurora-2: rgba(47, 155, 134, 0.24);
+  --aurora-3: rgba(126, 168, 74, 0.18);
+
+  --grain: 0.05;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.6s var(--ease), color 0.6s var(--ease);
+}
+
+/* Slow-drifting aurora field. Fixed, behind everything, non-interactive. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -25%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 42% at 18% 22%, var(--aurora-1) 0%, transparent 68%),
+    radial-gradient(34% 38% at 82% 18%, var(--aurora-2) 0%, transparent 66%),
+    radial-gradient(46% 46% at 64% 84%, var(--aurora-3) 0%, transparent 70%),
+    var(--bg-deep);
+  filter: blur(24px) saturate(120%);
+  animation: drift 34s ease-in-out infinite alternate;
+}
+
+/* Film grain — keeps the large gradients from banding. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(2.5%, -2%, 0) scale(1.08);
+  }
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

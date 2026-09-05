@@ -1,84 +1,75 @@
 import { useState, useEffect } from 'react';
 import './ThemeSwitcher.css';
 
-const themes = [
-  { id: 'default', name: 'Modern Clean', file: null },
-  { id: 'dark-fantasy', name: 'Dark Fantasy', file: '/themes/dark-fantasy.css' },
-  { id: 'parchment', name: 'Parchment', file: '/themes/parchment.css' },
-  { id: 'forest-realm', name: 'Forest Realm', file: '/themes/forest-realm.css' },
-];
+export const THEMES = [
+  { id: 'modern', name: 'Modern Clean', swatch: 'linear-gradient(135deg,#eef0f6,#5b5bd6)' },
+  { id: 'dark-fantasy', name: 'Dark Fantasy', swatch: 'linear-gradient(135deg,#0d0a0a,#d4af37)' },
+  { id: 'parchment', name: 'Parchment', swatch: 'linear-gradient(135deg,#f0e4cc,#8c2f28)' },
+  { id: 'forest', name: 'Forest Realm', swatch: 'linear-gradient(135deg,#0c1a12,#4fc98a)' },
+] as const;
+
+const STORAGE_KEY = 'theme';
+
+export function applyTheme(id: string) {
+  if (id === 'modern') {
+    delete document.documentElement.dataset.theme;
+  } else {
+    document.documentElement.dataset.theme = id;
+  }
+}
 
 export default function ThemeSwitcher() {
-  const [currentTheme, setCurrentTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'default';
-  });
-  const [isOpen, setIsOpen] = useState(false);
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem(STORAGE_KEY) || 'modern'
+  );
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // Remove any existing theme stylesheets
-    const existingTheme = document.getElementById('theme-stylesheet');
-    if (existingTheme) {
-      existingTheme.remove();
-    }
+    applyTheme(theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme]);
 
-    // Load new theme if not default
-    const theme = themes.find(t => t.id === currentTheme);
-    if (theme && theme.file) {
-      const link = document.createElement('link');
-      link.id = 'theme-stylesheet';
-      link.rel = 'stylesheet';
-      link.href = theme.file;
-      document.head.appendChild(link);
-    }
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
 
-    // Save theme preference
-    localStorage.setItem('theme', currentTheme);
-  }, [currentTheme]);
-
-  const handleThemeChange = (themeId: string) => {
-    setCurrentTheme(themeId);
-    setIsOpen(false);
-  };
+  const active = THEMES.find((t) => t.id === theme) ?? THEMES[0];
 
   return (
     <div className="theme-switcher">
-      <button
-        className="theme-toggle"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Change theme"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm0 2h4v12H4V4zm6 0h6v4h-6V4zm0 6h6v6h-6v-6z" />
-        </svg>
-        <span>Theme</span>
-      </button>
+      {open && <div className="theme-scrim" onClick={() => setOpen(false)} />}
 
-      {isOpen && (
-        <>
-          <div
-            className="theme-overlay"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="theme-menu">
-            <h3>Choose Theme</h3>
-            {themes.map((theme) => (
-              <button
-                key={theme.id}
-                className={`theme-option ${currentTheme === theme.id ? 'active' : ''}`}
-                onClick={() => handleThemeChange(theme.id)}
-              >
-                <span className="theme-indicator"></span>
-                {theme.name}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      <div className={`theme-menu ${open ? 'is-open' : ''}`} role="listbox">
+        <p className="theme-menu-label">Theme</p>
+        {THEMES.map((t) => (
+          <button
+            key={t.id}
+            role="option"
+            aria-selected={t.id === theme}
+            className={`theme-option ${t.id === theme ? 'is-active' : ''}`}
+            onClick={() => {
+              setTheme(t.id);
+              setOpen(false);
+            }}
+          >
+            <span className="theme-swatch" style={{ background: t.swatch }} />
+            {t.name}
+          </button>
+        ))}
+      </div>
+
+      <button
+        className="theme-trigger"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-label={`Theme: ${active.name}. Change theme.`}
+      >
+        <span className="theme-swatch" style={{ background: active.swatch }} />
+        <span className="theme-trigger-text">{active.name}</span>
+      </button>
     </div>
   );
 }

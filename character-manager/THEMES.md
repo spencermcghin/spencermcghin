@@ -1,68 +1,46 @@
 # Theme Guide
 
-The LARP Character Manager includes four distinct visual themes to match different roleplaying aesthetics.
+Four palettes, switchable at runtime from the pill in the bottom-right corner.
 
-## Available Themes
+## Themes
 
-### 1. Modern Clean (Default)
-- **Style**: Contemporary, card-based design
-- **Colors**: Blues, grays, white backgrounds
-- **Best for**: Clean, professional look; easy reading
-- **Font**: System fonts (sans-serif)
+| Theme | `data-theme` | Palette |
+|---|---|---|
+| Modern Clean (default) | *(none)* | Porcelain + indigo |
+| Dark Fantasy | `dark-fantasy` | Obsidian + gold leaf |
+| Parchment | `parchment` | Aged vellum + oxblood |
+| Forest Realm | `forest` | Deep canopy + jade |
 
-### 2. Dark Fantasy
-- **Style**: Gothic medieval aesthetic
-- **Colors**: Dark browns, blacks, gold accents
-- **Best for**: Dark fantasy, grimdark settings
-- **Font**: Cinzel (serif)
-- **Features**: 
-  - Gold accents and borders
-  - Gradient backgrounds
-  - Gothic atmosphere
-  - Glowing text effects
+## How it works
 
-### 3. Parchment
-- **Style**: Classic D&D aged paper
-- **Colors**: Beige, tan, browns
-- **Best for**: Traditional fantasy, D&D campaigns
-- **Font**: Merriweather, Garamond (serif)
-- **Features**:
-  - Parchment texture background
-  - Ornamental corner decorations
-  - Double borders
-  - Aged paper aesthetic
+Themes are **design tokens**, not separate stylesheets. `src/index.css` declares
+the full token set on `:root`, and each theme re-declares only those tokens under
+a `[data-theme="..."]` selector:
 
-### 4. Forest Realm
-- **Style**: Nature-inspired earthy design
-- **Colors**: Greens, earth tones
-- **Best for**: Druid campaigns, nature settings
-- **Font**: Lora, Georgia (serif)
-- **Features**:
-  - Deep forest greens
-  - Natural gradients
-  - Organic feel
-  - Glowing accents
+```css
+:root            { --accent: #5b5bd6; --bg: #eef0f6; /* ... */ }
+[data-theme='forest'] { --accent: #4fc98a; --bg: #0c1a12; /* ... */ }
+```
 
-## How to Switch Themes
+`src/App.css` references tokens exclusively — no component rule contains a literal
+color. Switching themes sets one attribute on `<html>`; every color updates
+instantly with no network request and no cascade conflict.
 
-1. Click the **Theme** button in the bottom-right corner
-2. Select your preferred theme from the menu
-3. Your choice is saved automatically in browser storage
+The selected theme is stored in `localStorage` under `theme`, and an inline script
+in `index.html` applies it before first paint so there is no flash of the default
+palette on load.
 
-## Technical Details
+## Adding a theme
 
-- Themes are CSS-only, no JavaScript required
-- Theme preference persists across sessions
-- Each theme is a standalone CSS file
-- Themes override the base App.css styles
-- All themes are fully responsive
+1. Add a `[data-theme='your-id']` block to `src/index.css` overriding the tokens.
+2. Add an entry to the `THEMES` array in `src/components/ThemeSwitcher.tsx`
+   with a matching `id` and a `swatch` gradient for the picker.
 
-## Customizing Themes
+No component CSS needs to change.
 
-Theme files are located in `frontend/public/themes/` (served as static assets so they
-load the same way in dev and in a production build):
-- `dark-fantasy.css`
-- `parchment.css`
-- `forest-realm.css`
+## Notes
 
-You can modify these files or create new themes following the same CSS structure.
+- Typography loads from Google Fonts (Cinzel, Cormorant Garamond, Inter) with
+  system fallbacks, so the app degrades gracefully if fonts are blocked.
+- The animated aurora background and all transitions are disabled automatically
+  under `prefers-reduced-motion: reduce`.
