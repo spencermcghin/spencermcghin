@@ -9,7 +9,8 @@
     "dev:frontend": "cd frontend && npm run dev",
     "build:backend": "cd backend && npm run build",
     "build:frontend": "cd frontend && npm run build",
-    "build:all": "npm run build:backend && npm run build:frontend"
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "test:engine": "rm -rf .engine-build && ./backend/node_modules/.bin/tsc -p shared/tsconfig.json && node --test .engine-build/engine.test.js"
   },
   "keywords": ["larp", "character", "roleplaying", "manager"],
   "author": "",

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "typeRoots": ["../backend/node_modules/@types"],
+    "types": ["node"],
+    "outDir": "../.engine-build",
+    "rootDir": "."
+  },
+  "include": ["**/*.ts"]
+}

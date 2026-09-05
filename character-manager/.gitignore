@@ -5,3 +5,6 @@ dist/
 .env.production
 *.log
 .DS_Store
+
+# engine test build output
+character-manager/.engine-build/
