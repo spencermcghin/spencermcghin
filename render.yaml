@@ -18,8 +18,6 @@ services:
   - type: web
     name: larp-character-manager-web
     runtime: static
-    region: oregon
-    plan: free
     buildCommand: cd character-manager/frontend && npm install --include=dev && npm run build
     staticPublishPath: character-manager/frontend/dist
     envVars:
