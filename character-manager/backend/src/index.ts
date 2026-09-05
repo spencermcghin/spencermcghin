@@ -21,11 +21,26 @@ const port = process.env.PORT || 3000;
 // origin: a credentialed request refuses a wildcard Access-Control-Allow-Origin.
 // Same-origin deploys need no CORS configuration at all.
 const allowedOrigin = process.env.CORS_ORIGIN;
-app.use(
-  cors(allowedOrigin ? { origin: allowedOrigin, credentials: true } : undefined)
-);
-
 const frontendDist = findFrontendBuild();
+
+if (allowedOrigin) {
+  // Split deploy: name the exact frontend origin. A credentialed request
+  // refuses a wildcard Access-Control-Allow-Origin.
+  app.use(cors({ origin: allowedOrigin, credentials: true }));
+} else if (!frontendDist) {
+  // API-only and unconfigured. Permissive CORS is a development convenience;
+  // it grants nothing, since every endpoint needs a session cookie that a
+  // wildcard response can never carry.
+  app.use(cors());
+}
+// Otherwise this process serves both halves from one origin, so the browser
+// never performs a CORS check and no headers are needed.
+
+const corsMode = allowedOrigin
+  ? `allow:${allowedOrigin}`
+  : frontendDist
+    ? 'same-origin'
+    : 'wildcard';
 
 // Trust the platform proxy so req.ip is the client address rather than the
 // load balancer's -- the login throttle keys on it.
@@ -43,8 +58,10 @@ app.get('/api', (_req: Request, res: Response) => {
   res.json({
     message: 'Character Manager API',
     version: 2,
-    corsMode: allowedOrigin ? `allow:${allowedOrigin}` : 'wildcard',
+    corsMode,
     servesFrontend: Boolean(frontendDist),
+    // Same-origin deploys need no cross-origin sign-in, so this being false
+    // alongside corsMode 'same-origin' is the healthy arrangement.
     signInWorksCrossOrigin: Boolean(allowedOrigin),
   });
 });
@@ -124,7 +141,12 @@ initStore()
           `CORS: credentialed requests allowed from ${allowedOrigin} ` +
             '(session cookie is SameSite=None; Secure)'
         );
-      } else if (!frontendDist) {
+      } else if (frontendDist) {
+        console.log(
+          'CORS: not needed -- frontend and API share one origin ' +
+            '(session cookie keeps SameSite=Lax)'
+        );
+      } else {
         // No frontend to serve and no origin allowed: any browser client is
         // necessarily on another origin and will be refused. Worth saying so
         // out loud rather than leaving it to be discovered in a console.
