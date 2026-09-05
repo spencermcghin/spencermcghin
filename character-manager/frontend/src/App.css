@@ -313,6 +313,9 @@
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
+  /* Without this a long label (INFLUENCE) sets the track's min-content
+     width and the tiles come out uneven. */
+  min-width: 0;
   gap: 0.25rem;
   padding: 1rem 0.5rem;
   border: 1px solid var(--border);
@@ -643,4 +646,173 @@
   .character-form form {
     padding: 1.5rem;
   }
+}
+
+/* ---------------- Projects & sheet ---------------- */
+
+.muted {
+  color: var(--text-mute);
+  font-size: 0.95rem;
+}
+
+.projects .header,
+.project-detail .header,
+.character-sheet .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.projects h1,
+.project-detail h1,
+.character-sheet h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+.project-detail .actions,
+.character-sheet .actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.inline-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.inline-form input {
+  flex: 1;
+  min-width: 220px;
+  padding: 0.78rem 1rem;
+  font-family: inherit;
+  font-size: 0.96rem;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.inline-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-wash);
+}
+
+.phase-toggle {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ok {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.violations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.violations li {
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--danger);
+  background: var(--surface-solid);
+  border-left: 3px solid var(--danger);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.9rem;
+}
+
+.attribute-item dd.negative {
+  color: var(--danger);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ---------------- Trait menu ---------------- */
+
+.trait-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.trait {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.trait:last-child {
+  border-bottom: none;
+}
+
+.trait-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.trait-name {
+  font-weight: 500;
+}
+
+.trait-level {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 100px;
+}
+
+.trait-reason {
+  font-size: 0.82rem;
+  color: var(--text-mute);
+}
+
+.trait-cost {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--text-mute);
+}
+
+.trait-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+}
+
+/* Locked traits stay visible but recede -- the reason is the useful part. */
+.trait-locked .trait-name,
+.trait-maxed .trait-name {
+  color: var(--text-mute);
+}
+
+.trait-unaffordable .trait-name {
+  color: var(--text-soft);
 }

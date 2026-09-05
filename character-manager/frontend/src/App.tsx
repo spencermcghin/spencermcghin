@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
-import CharacterList from './pages/CharacterList';
-import CharacterDetail from './pages/CharacterDetail';
-import CharacterForm from './pages/CharacterForm';
+import Projects from './pages/Projects';
+import ProjectDetail from './pages/ProjectDetail';
+import CharacterSheet from './pages/CharacterSheet';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import './App.css';
 
@@ -15,7 +15,7 @@ function App() {
             <Link to="/" className="nav-brand">LARP Character Manager</Link>
             <div className="nav-links">
               <Link to="/">Home</Link>
-              <Link to="/characters">Characters</Link>
+              <Link to="/projects">Projects</Link>
             </div>
           </div>
         </nav>
@@ -23,10 +23,9 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/characters" element={<CharacterList />} />
-            <Route path="/characters/new" element={<CharacterForm />} />
-            <Route path="/characters/:id" element={<CharacterDetail />} />
-            <Route path="/characters/:id/edit" element={<CharacterForm />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:id" element={<ProjectDetail />} />
+            <Route path="/characters/:id" element={<CharacterSheet />} />
           </Routes>
         </main>
 

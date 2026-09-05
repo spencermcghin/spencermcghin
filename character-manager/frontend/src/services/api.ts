@@ -1,37 +1,70 @@
 import axios from 'axios';
-import type { Character, CreateCharacterDTO } from '../types/Character';
+import type { Character, Ruleset } from '../../../shared/rules-schema';
+import type { TraitOption, Violation } from '../../../shared/engine';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
+export interface RulesetSummary {
+  id: string;
+  name: string;
+  version: string;
+  description?: string;
+  characterCount: number;
+  updatedAt: string;
+}
+
+/** Everything the engine derives for a character, computed server-side. */
+export interface CharacterSheet {
+  character: Character;
+  ruleset: Ruleset;
+  balances: Record<string, number>;
+  violations: Violation[];
+  available: TraitOption[];
+}
+
+export const rulesetApi = {
+  list: async (): Promise<RulesetSummary[]> => (await api.get('/rulesets')).data,
+
+  get: async (id: string): Promise<Ruleset> => (await api.get(`/rulesets/${id}`)).data,
+
+  create: async (name: string, description?: string): Promise<Ruleset> =>
+    (await api.post('/rulesets', { name, description })).data,
+
+  save: async (ruleset: Ruleset): Promise<Ruleset> =>
+    (await api.put(`/rulesets/${ruleset.id}`, ruleset)).data,
+
+  remove: async (id: string): Promise<void> => {
+    await api.delete(`/rulesets/${id}`);
+  },
+
+  import: async (ruleset: Ruleset): Promise<Ruleset> =>
+    (await api.post('/rulesets/import', ruleset)).data,
+};
+
 export const characterApi = {
-  getAll: async (): Promise<Character[]> => {
-    const response = await api.get<Character[]>('/characters');
-    return response.data;
-  },
+  listForRuleset: async (rulesetId: string): Promise<Character[]> =>
+    (await api.get(`/rulesets/${rulesetId}/characters`)).data,
 
-  getById: async (id: string): Promise<Character> => {
-    const response = await api.get<Character>(`/characters/${id}`);
-    return response.data;
-  },
+  create: async (rulesetId: string, name: string): Promise<Character> =>
+    (await api.post(`/rulesets/${rulesetId}/characters`, { name })).data,
 
-  create: async (character: CreateCharacterDTO): Promise<Character> => {
-    const response = await api.post<Character>('/characters', character);
-    return response.data;
-  },
+  get: async (id: string): Promise<Character> => (await api.get(`/characters/${id}`)).data,
 
-  update: async (id: string, character: Partial<Character>): Promise<Character> => {
-    const response = await api.put<Character>(`/characters/${id}`, character);
-    return response.data;
-  },
+  sheet: async (
+    id: string,
+    phase: 'creation' | 'advancement' = 'advancement'
+  ): Promise<CharacterSheet> =>
+    (await api.get(`/characters/${id}/sheet`, { params: { phase } })).data,
 
-  delete: async (id: string): Promise<void> => {
+  update: async (id: string, patch: Partial<Character>): Promise<Character> =>
+    (await api.put(`/characters/${id}`, patch)).data,
+
+  remove: async (id: string): Promise<void> => {
     await api.delete(`/characters/${id}`);
   },
 };

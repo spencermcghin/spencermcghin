@@ -12,6 +12,11 @@ services:
         value: production
       - key: PORT
         value: 3000
+      # Set in the Render dashboard. Any Postgres connection string works
+      # (Render, Neon, Supabase). Without it the API falls back to in-memory
+      # storage and every restart wipes the data.
+      - key: DATABASE_URL
+        sync: false
     healthCheckPath: /api
 
   # Frontend Static Site

@@ -136,6 +136,61 @@ NODE_ENV=development
 VITE_API_URL=http://localhost:3000/api
 ```
 
+## Persistence
+
+Rulesets and characters are stored in Postgres as JSONB documents. A ruleset is
+a deeply nested tree with polymorphic `Condition` nodes and is always read and
+written whole, so normalising it into tables would add machinery without buying
+a query the app needs.
+
+Configure it with a standard connection string:
+
+```
+DATABASE_URL=postgres://user:pass@host:5432/dbname
+```
+
+Any Postgres works -- Render, Neon, Supabase, or a local instance. Tables are
+created on boot, and an empty database is seeded with Eldritch as a starter
+ruleset.
+
+If `DATABASE_URL` is unset the API falls back to in-memory storage so `npm run
+dev` needs no database. It logs a warning at startup; data is lost on restart.
+
+**On Render's free tier:** free Postgres instances are deleted after 30 days,
+and free web services have no persistent disk. For something longer-lived,
+point `DATABASE_URL` at a provider with a non-expiring free tier.
+
+## API
+
+```
+GET    /api/rulesets                    list projects
+POST   /api/rulesets                    create a project
+GET    /api/rulesets/:id                full ruleset
+PUT    /api/rulesets/:id                replace a ruleset
+DELETE /api/rulesets/:id                delete a ruleset and its characters
+POST   /api/rulesets/import             import a ruleset from JSON
+
+GET    /api/rulesets/:id/characters     characters in a ruleset
+POST   /api/rulesets/:id/characters     create a character
+GET    /api/characters/:id              raw character
+GET    /api/characters/:id/sheet        character plus engine-computed
+                                        balances, violations and the gated
+                                        menu of what can be bought next
+PUT    /api/characters/:id              update
+DELETE /api/characters/:id              delete
+```
+
+## Rules engine
+
+`shared/` holds a system-agnostic ruleset schema and the engine that enforces
+it. Both the API and the UI evaluate rules through the same code, so a rule
+behaves identically wherever it is checked. See [THEMES.md](./THEMES.md) for
+theming and run the engine tests with:
+
+```bash
+npm run test:engine
+```
+
 ## Themes
 
 The app includes 4 visual themes optimized for different LARP aesthetics:

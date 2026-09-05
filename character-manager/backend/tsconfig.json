@@ -4,7 +4,10 @@
     "module": "commonjs",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    // The backend imports the shared schema and engine, so the compilation
+    // root is the project root. Output lands at dist/backend/src and
+    // dist/shared -- see the "main" and "start" entries in package.json.
+    "rootDir": "..",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -12,6 +15,6 @@
     "resolveJsonModule": true,
     "moduleResolution": "node"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*", "../shared/**/*"],
+  "exclude": ["node_modules", "../shared/**/*.test.ts", "../frontend/**/*"]
 }
