@@ -17,8 +17,9 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-// Sessions ride on a cookie, so cross-origin requests must be explicitly
-// allowed and must send credentials. Same-origin deploys need neither.
+// Sessions ride on a cookie, so a split deploy must name the exact frontend
+// origin: a credentialed request refuses a wildcard Access-Control-Allow-Origin.
+// Same-origin deploys need no CORS configuration at all.
 const allowedOrigin = process.env.CORS_ORIGIN;
 app.use(
   cors(allowedOrigin ? { origin: allowedOrigin, credentials: true } : undefined)
@@ -100,6 +101,20 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 initStore()
   .then(() => {
     app.listen(port, () => {
+      if (allowedOrigin) {
+        console.log(
+          `CORS: credentialed requests allowed from ${allowedOrigin} ` +
+            '(session cookie is SameSite=None; Secure)'
+        );
+      } else if (!frontendDist) {
+        // No frontend to serve and no origin allowed: any browser client is
+        // necessarily on another origin and will be refused. Worth saying so
+        // out loud rather than leaving it to be discovered in a console.
+        console.warn(
+          'CORS: no CORS_ORIGIN set and no frontend build found. A browser on ' +
+            'another origin cannot sign in -- set CORS_ORIGIN to its URL.'
+        );
+      }
       console.log(`Server is running on port ${port}`);
     });
   })

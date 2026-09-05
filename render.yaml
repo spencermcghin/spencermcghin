@@ -17,6 +17,14 @@ services:
       # storage and every restart wipes the data.
       - key: DATABASE_URL
         sync: false
+      # Required for this split deploy: the frontend is on a different origin,
+      # and a credentialed request refuses a wildcard Access-Control-Allow-Origin.
+      # Set it to the static site's full URL, e.g.
+      #   https://larp-character-manager-web.onrender.com
+      # Setting it also switches the session cookie to SameSite=None; Secure,
+      # without which the browser will not send it cross-site.
+      - key: CORS_ORIGIN
+        sync: false
     healthCheckPath: /api
 
   # Frontend Static Site

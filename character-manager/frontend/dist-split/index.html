@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Build LARP rulesets and the characters that play by them." />
+    <meta name="color-scheme" content="dark light" />
+    <title>LARP Character Manager</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&family=Pirata+One&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--
+      Apply the saved theme before first paint so there is no flash of the
+      default palette. Kept inline and dependency-free for that reason.
+
+      The default is gothic, which lives on bare :root, so only a non-default
+      choice sets an attribute. Themes that have been renamed are mapped here
+      so an existing visitor's stored choice still resolves.
+    -->
+    <script>
+      (function () {
+        var legacy = { modern: 'clean', 'dark-fantasy': 'gothic' };
+        try {
+          var t = localStorage.getItem('theme');
+          if (t && legacy[t]) t = legacy[t];
+          if (t && t !== 'gothic') document.documentElement.dataset.theme = t;
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DLCaDFGc.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-sP0j0GmR.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

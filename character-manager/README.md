@@ -303,13 +303,46 @@ expire, so data persists.
 ### Render (two services)
 
 `render.yaml` deploys the API as a web service and the frontend as a static
-site. This split needs `VITE_API_URL` set on the static site to the API's
-public URL, because the two live on different origins. Set `DATABASE_URL` on
-the API service.
+site. Because the two live on different origins, this split needs **three**
+variables set, not one:
+
+| Service | Variable | Value |
+|---|---|---|
+| Static site | `VITE_API_URL` | `https://<api>.onrender.com/api` |
+| Web service | `DATABASE_URL` | your Postgres connection string |
+| Web service | `CORS_ORIGIN` | `https://<web>.onrender.com` |
+
+`CORS_ORIGIN` is not optional here. Without it the API answers with a wildcard
+`Access-Control-Allow-Origin`, which a browser rejects outright on any request
+carrying credentials -- and every request carries the session cookie. Setting
+it also switches that cookie to `SameSite=None; Secure`, without which the
+browser would not send it cross-site even once CORS passed.
+
+Note the trade: `SameSite=None` gives up the CSRF protection that `lax`
+provides for free. A single-origin deploy keeps it.
 
 Note that Render's free Postgres is deleted after 30 days and free web
 services sleep after 15 minutes idle, so the first request after a pause takes
 30--60 seconds.
+
+### Seeding a demo account
+
+To get something to look at without clicking through setup:
+
+```bash
+DATABASE_URL=postgres://... npm run seed:demo
+```
+
+It creates an account with a populated project -- four characters in different
+states, including one deliberately illegal so the rules check has something to
+report. The password is generated and printed once; set `DEMO_PASSWORD` and
+`DEMO_EMAIL` to choose your own. It refuses to run if that address already
+exists, and never runs on boot: seeding a known account automatically would put
+predictable credentials on every deployment.
+
+You do not strictly need it. The **first account to register becomes the app
+admin**, so signing up on a fresh install gets you in with a copy of Eldritch
+already in your space.
 
 ### Anywhere else
 
