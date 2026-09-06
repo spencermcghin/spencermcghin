@@ -17,6 +17,7 @@ function base(): Ruleset {
     packageTiers: [{ id: 'basic', name: 'Basic', maxHeld: 1 }],
     packageAttributes: [],
     traitAttributes: [],
+    qualities: [],
     packages: [],
     traitGroups: [{ id: 'general', name: 'General' }],
     traits: [],
@@ -259,4 +260,61 @@ test('normalizing keeps values it does not recognise', () => {
   const out = normalizeRuleset(withExtra) as unknown as Record<string, unknown>;
   assert.equal(out.futureField, 42);
   assert.deepEqual(out.traits, eldritch.traits);
+});
+
+/* ---------------- qualities and manual checks ---------------- */
+
+test('requiring a quality that does not exist is a dangling reference', () => {
+  const r = base();
+  r.traits = [trait('picking', { kind: 'quality', qualityId: 'no-such-kit' })];
+  const issues = validateRuleset(r);
+  assert.ok(
+    issues.some(
+      (i) => i.code === 'dangling-reference' && /quality "no-such-kit"/.test(i.message)
+    )
+  );
+});
+
+test('a declared quality satisfies the reference', () => {
+  const r = base();
+  r.qualities = [{ id: 'kit', name: 'Kit', grantedBy: 'player' }];
+  r.traits = [trait('picking', { kind: 'quality', qualityId: 'kit' })];
+  assert.deepEqual(validateRuleset(r), []);
+});
+
+test('a manual check with nothing written in it warns', () => {
+  const r = base();
+  r.traits = [trait('picking', { kind: 'manual', text: '   ' })];
+  const issues = validateRuleset(r);
+  assert.ok(issues.some((i) => i.code === 'empty-check' && i.severity === 'warning'));
+  assert.equal(issues.filter((i) => i.severity === 'error').length, 0);
+});
+
+test('a manual check that says something does not warn', () => {
+  const r = base();
+  r.traits = [trait('picking', { kind: 'manual', text: 'Staff must approve.' })];
+  assert.deepEqual(validateRuleset(r), []);
+});
+
+test('duplicate quality ids are reported', () => {
+  const r = base();
+  r.qualities = [
+    { id: 'kit', name: 'Kit', grantedBy: 'player' },
+    { id: 'kit', name: 'Another Kit', grantedBy: 'staff' },
+  ];
+  assert.ok(
+    validateRuleset(r).some(
+      (i) => i.code === 'duplicate-id' && i.subject?.kind === 'quality'
+    )
+  );
+});
+
+test('a ruleset stored before qualities existed validates', () => {
+  const legacy = { ...eldritch } as Record<string, unknown>;
+  delete legacy.qualities;
+  const issues = validateRuleset(legacy as unknown as Ruleset);
+  // The rules that needed the qualities now point at nothing, which is
+  // exactly what the author needs told.
+  assert.ok(issues.some((i) => i.code === 'dangling-reference'));
+  assert.doesNotThrow(() => validateRuleset(legacy as unknown as Ruleset));
 });

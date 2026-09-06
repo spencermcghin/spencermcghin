@@ -58,9 +58,51 @@ export type Condition =
   | { kind: 'anyPackage'; packageIds: Id[] }
   /** Position on a progression track, e.g. Rank >= 2. */
   | { kind: 'track'; trackId: Id; minStep: number }
+  /** Character holds a named quality: an item, an origin, a plot boon. */
+  | { kind: 'quality'; qualityId: Id }
+  /**
+   * A requirement no engine can decide: staff judgement, something that
+   * happened in play, a test run at the event. It never blocks a purchase --
+   * it is carried onto the sheet so a human can check it.
+   *
+   * Without this, an author meeting such a rule has two bad options: leave it
+   * out of the rules entirely, or write `never` and make the skill
+   * unbuyable. Saying "this one is decided by a person" is the honest third.
+   */
+  | { kind: 'manual'; text: string }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
+
+/* ------------------------------------------------------------------ *
+ * Qualities
+ *
+ * Facts about a character that are not skills, archetypes or track
+ * positions, but that rules gate on anyway: a piece of equipment, an origin,
+ * a plot boon, membership of a faction. The Eldritch guide has both kinds --
+ * Lockpicking needs "a lockpicking kit", Wayfinding needs "the Dusklander
+ * background" -- and with no way to express them, a prerequisite like that
+ * could only be written in prose and would go unenforced.
+ *
+ * Deliberately not modelled as items and backgrounds specifically. What one
+ * game calls a background another calls a bloodline, a clearance or a patron;
+ * naming only the general shape keeps the schema system-agnostic, and
+ * `category` hands each game its own vocabulary back in the UI.
+ * ------------------------------------------------------------------ */
+
+export interface Quality {
+  id: Id;
+  name: string;
+  /** This game's word for the sort of thing it is: "Background", "Gear". */
+  category?: string;
+  description?: string;
+  /**
+   * player - the player records it themselves; they know they own a kit.
+   * staff  - only project staff may give or take it, because it represents
+   *          something the game awarded rather than something a player has.
+   */
+  grantedBy: 'player' | 'staff';
+}
 
 /* ------------------------------------------------------------------ *
  * Grants
@@ -280,6 +322,8 @@ export interface Ruleset {
    * source book is the same at every level, the verbals it grants are not.
    */
   traitAttributes: { key: string; label: string; scope: 'trait' | 'tier' }[];
+  /** Non-skill facts a rule may require. See the Qualities section above. */
+  qualities: Quality[];
   packages: CharacterPackage[];
   traitGroups: TraitGroup[];
   traits: Trait[];
@@ -302,6 +346,8 @@ export interface Character {
   traitLevels: Record<Id, number>;
   /** trackId -> current step index. */
   trackPositions: Record<Id, number>;
+  /** Qualities the character holds. Unordered; a set in all but name. */
+  qualityIds: Id[];
   /**
    * currencyId -> total ever awarded. Remaining balance is derived by the
    * engine as awarded minus computed spend, so a stored balance can never

@@ -66,6 +66,7 @@ async function main() {
     packageIds: [],
     traitLevels: {},
     trackPositions: {},
+    qualityIds: [],
     awarded: { cp: 4, influence: 0, coin: 0 },
     fieldValues: { name },
     createdAt: now,

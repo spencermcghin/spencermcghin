@@ -734,6 +734,44 @@
   font-size: 0.9rem;
 }
 
+/* Outstanding manual checks. Shaped like the violation list so the eye finds
+   them in the same place, but in the accent rather than the danger colour --
+   nothing is wrong with the build, someone just has to look at it. */
+.check-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.check-list li {
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-soft);
+  background: var(--surface-solid);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.9rem;
+}
+
+.check-list strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.quality-group + .quality-group {
+  margin-top: 1.1rem;
+}
+
+.quality-group h3 {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin: 0 0 0.5rem;
+}
+
 .attribute-item dd.negative {
   color: var(--danger);
 }
@@ -791,6 +829,17 @@
 .trait-reason {
   font-size: 0.82rem;
   color: var(--text-mute);
+}
+
+/* A requirement the app cannot judge. Marked, not treated as an obstacle:
+   the purchase is allowed, someone just has to confirm it. */
+.trait-check {
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--accent);
+  padding: 0.1rem 0.5rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 100px;
 }
 
 .trait-cost {

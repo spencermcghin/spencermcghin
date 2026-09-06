@@ -49,6 +49,24 @@ function buildEldritchThroughTheEditor(): Ruleset {
   /* --- metadata fields skills may carry --- */
   r = edit.addTraitAttribute(r, { key: 'calls', label: 'Calls', scope: 'tier' });
 
+  /* --- the non-skill things rules gate on --- */
+  r = edit.addQuality(r, {
+    id: 'lockpicking-kit',
+    name: 'Lockpicking Kit',
+    category: 'Equipment',
+    description: 'Picks and a tension wrench. A player knows whether they own one.',
+    grantedBy: 'player',
+  });
+  r = edit.addQuality(r, {
+    id: 'dusklander',
+    name: 'Dusklander Background',
+    category: 'Background',
+    description:
+      'Raised beyond the last wardstone. Agreed with staff at character ' +
+      'approval, so a player cannot simply award it to themselves.',
+    grantedBy: 'staff',
+  });
+
   /* --- archetype tiers and the display-only card fields --- */
   r = edit.addPackageTier(r, { id: 'basic', name: 'Basic Archetype', maxHeld: 1 });
   r = edit.addPackageTier(r, { id: 'advanced', name: 'Advanced Archetype', maxHeld: 1 });
@@ -289,6 +307,42 @@ function buildEldritchThroughTheEditor(): Ruleset {
       of: [
         { kind: 'trait', traitId: 'artificer', minLevel: 3 },
         { kind: 'trait', traitId: 'bowyer', minLevel: 2 },
+      ],
+    },
+    grants: [],
+  });
+
+  // The gates that are not skills: something owned, and something a person
+  // has to judge.
+  r = edit.addTrait(r, {
+    id: 'lockpicking',
+    name: 'Lockpicking',
+    groupId: 'general',
+    summary:
+      'Every lock is a small argument about who is allowed through. ' +
+      'Requires a kit; bare hands and optimism open nothing.',
+    tags: [],
+    tiers: [],
+  });
+  r = edit.addTier(r, 'lockpicking', {
+    level: 1,
+    description: 'Open a simple lock, given a minute and no one shouting.',
+    cost: { currencyId: 'cp', amount: 1 },
+    requires: { kind: 'quality', qualityId: 'lockpicking-kit' },
+    grants: [],
+  });
+  r = edit.addTier(r, 'lockpicking', {
+    level: 2,
+    description: 'Open a warded lock, and know when one is trapped.',
+    cost: { currencyId: 'cp', amount: 1 },
+    requires: {
+      kind: 'all',
+      of: [
+        { kind: 'trait', traitId: 'lockpicking', minLevel: 1 },
+        {
+          kind: 'manual',
+          text: 'Staff must watch you open a practice lock at check-in.',
+        },
       ],
     },
     grants: [],
@@ -767,4 +821,26 @@ test('editing one level does not disturb the others', () => {
     bowyer.tiers[1].requires,
     eldritch.traits.find((t) => t.id === 'bowyer')!.tiers[1].requires
   );
+});
+
+/* ---------------- qualities ---------------- */
+
+test('deleting a quality leaves the rules that need it, and reports the break', () => {
+  // Same principle as removeGroup: rewriting rules the author did not touch
+  // would be worse than naming what broke.
+  const before = buildEldritchThroughTheEditor();
+  assert.deepEqual(validateRuleset(before), []);
+
+  const after = edit.removeQuality(before, 'lockpicking-kit');
+  const tier = after.traits.find((t) => t.id === 'lockpicking')!.tiers[0];
+  assert.deepEqual(tier.requires, { kind: 'quality', qualityId: 'lockpicking-kit' });
+  assert.ok(validateRuleset(after).some((i) => i.code === 'dangling-reference'));
+});
+
+test('a quality can be renamed without touching the rules that use it', () => {
+  const r = edit.updateQuality(buildEldritchThroughTheEditor(), 'lockpicking-kit', {
+    name: 'Thieves’ Tools',
+  });
+  assert.equal(r.qualities.find((q) => q.id === 'lockpicking-kit')!.name, 'Thieves’ Tools');
+  assert.deepEqual(validateRuleset(r), []);
 });

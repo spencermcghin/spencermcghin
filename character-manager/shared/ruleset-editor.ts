@@ -25,6 +25,7 @@ import type {
   PackageTier,
   ProgressionTrack,
   PurchaseRule,
+  Quality,
   Ruleset,
   SheetField,
   SheetSection,
@@ -54,6 +55,7 @@ export function emptyRuleset(id: Id, name: string): Ruleset {
     packageTiers: [],
     packageAttributes: [],
     traitAttributes: [],
+    qualities: [],
     packages: [],
     traitGroups: [],
     traits: [],
@@ -150,6 +152,30 @@ export function addPackageAttribute(
   attribute: { key: string; label: string }
 ): Ruleset {
   return { ...r, packageAttributes: [...r.packageAttributes, attribute] };
+}
+
+/* ------------------------------------------------------------------ *
+ * Qualities
+ * ------------------------------------------------------------------ */
+
+export function addQuality(r: Ruleset, quality: Quality): Ruleset {
+  return { ...r, qualities: [...r.qualities, quality] };
+}
+
+export function updateQuality(r: Ruleset, id: Id, patch: Partial<Quality>): Ruleset {
+  return {
+    ...r,
+    qualities: r.qualities.map((q) => (q.id === id ? { ...q, ...patch } : q)),
+  };
+}
+
+/**
+ * Removes a quality. Conditions that require it are left pointing at it, on
+ * the same principle as removeGroup: validateRuleset names the break, which
+ * is more useful than silently rewriting rules the author did not touch.
+ */
+export function removeQuality(r: Ruleset, id: Id): Ruleset {
+  return { ...r, qualities: r.qualities.filter((q) => q.id !== id) };
 }
 
 /* ------------------------------------------------------------------ *

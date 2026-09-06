@@ -11,8 +11,12 @@
  *   - stacking modifiers       (Gentry 25% off rank, applied successively)
  *   - a second progression axis (Rank, bought with Influence)
  *   - choice grants            ("Hunting - 1 or Farming - 1")
+ *   - non-skill prerequisites  (a skill needing a lockpicking kit)
+ *   - prerequisites no engine can decide (a check run by staff)
  *
- * Source: Eldritch Player's Guide - 2026.
+ * Source: Eldritch Player's Guide - 2026. The mechanical shapes are taken
+ * from the guide; where a skill's prose is not quoted from it, it is written
+ * here to make the fixture readable and should not be treated as canon.
  */
 
 import type { Ruleset, Trait, TraitTier } from '../rules-schema';
@@ -64,6 +68,29 @@ export const eldritch: Ruleset = {
   // the things players actually look up at an event have somewhere to live.
   traitAttributes: [
     { key: 'calls', label: 'Calls', scope: 'tier' },
+  ],
+
+  // Prerequisites the guide states that are not skills, ranks or archetypes.
+  // Without these they could only be written in prose and would go
+  // unenforced, which is exactly how a build passes review and fails at the
+  // door.
+  qualities: [
+    {
+      id: 'lockpicking-kit',
+      name: 'Lockpicking Kit',
+      category: 'Equipment',
+      description: 'Picks and a tension wrench. A player knows whether they own one.',
+      grantedBy: 'player',
+    },
+    {
+      id: 'dusklander',
+      name: 'Dusklander Background',
+      category: 'Background',
+      description:
+        'Raised beyond the last wardstone. Agreed with staff at character ' +
+        'approval, so a player cannot simply award it to themselves.',
+      grantedBy: 'staff',
+    },
   ],
 
   packageAttributes: [
@@ -260,6 +287,43 @@ export const eldritch: Ruleset = {
             of: [
               { kind: 'trait', traitId: 'artificer', minLevel: 3 },
               { kind: 'trait', traitId: 'bowyer', minLevel: 2 },
+            ],
+          },
+          grants: [],
+        },
+      ],
+    },
+
+    // The two gates that are not about skills at all: a thing the character
+    // has to own, and a judgement only a person can make.
+    {
+      id: 'lockpicking',
+      name: 'Lockpicking',
+      groupId: 'general',
+      summary:
+        'Every lock is a small argument about who is allowed through. ' +
+        'Requires a kit; bare hands and optimism open nothing.',
+      tags: [],
+      tiers: [
+        {
+          level: 1,
+          description: 'Open a simple lock, given a minute and no one shouting.',
+          cost: { currencyId: 'cp', amount: 1 },
+          requires: { kind: 'quality', qualityId: 'lockpicking-kit' },
+          grants: [],
+        },
+        {
+          level: 2,
+          description: 'Open a warded lock, and know when one is trapped.',
+          cost: { currencyId: 'cp', amount: 1 },
+          requires: {
+            kind: 'all',
+            of: [
+              { kind: 'trait', traitId: 'lockpicking', minLevel: 1 },
+              {
+                kind: 'manual',
+                text: 'Staff must watch you open a practice lock at check-in.',
+              },
             ],
           },
           grants: [],

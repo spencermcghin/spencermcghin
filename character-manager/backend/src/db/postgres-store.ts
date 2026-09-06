@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Pool } from 'pg';
-import { normalizeRuleset } from '../../../shared/normalize';
+import { normalizeCharacter, normalizeRuleset } from '../../../shared/normalize';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
 import type { AppRole, ProjectRole } from '../auth/permissions';
 import type {
@@ -490,7 +490,7 @@ function toCharacterRow(row: {
   owner_name: string | null;
 }): CharacterRow {
   return {
-    character: row.data,
+    character: normalizeCharacter(row.data),
     ownerId: row.owner_id,
     ownerName: row.owner_name ?? 'Unknown',
   };

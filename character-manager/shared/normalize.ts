@@ -15,7 +15,7 @@
  * would silently destroy data written by a newer version.
  */
 
-import type { Ruleset } from './rules-schema';
+import type { Character, Ruleset } from './rules-schema';
 
 /** Fields that are arrays on Ruleset, and must exist even when empty. */
 const ARRAY_FIELDS = [
@@ -24,6 +24,7 @@ const ARRAY_FIELDS = [
   'packageTiers',
   'packageAttributes',
   'traitAttributes',
+  'qualities',
   'packages',
   'traitGroups',
   'traits',
@@ -68,4 +69,26 @@ export function normalizeRuleset(raw: unknown): Ruleset {
   }));
 
   return r as unknown as Ruleset;
+}
+
+/**
+ * The same job for a stored character.
+ *
+ * Characters are documents too, and one saved before qualities existed has
+ * no qualityIds. The engine could defend itself at each use, but that is the
+ * arrangement this file exists to replace: repair once, on read.
+ */
+export function normalizeCharacter(raw: unknown): Character {
+  const c = { ...(raw as Record<string, unknown>) };
+
+  if (!Array.isArray(c.packageIds)) c.packageIds = [];
+  if (!Array.isArray(c.qualityIds)) c.qualityIds = [];
+  if (typeof c.traitLevels !== 'object' || c.traitLevels === null) c.traitLevels = {};
+  if (typeof c.trackPositions !== 'object' || c.trackPositions === null) {
+    c.trackPositions = {};
+  }
+  if (typeof c.awarded !== 'object' || c.awarded === null) c.awarded = {};
+  if (typeof c.fieldValues !== 'object' || c.fieldValues === null) c.fieldValues = {};
+
+  return c as unknown as Character;
 }

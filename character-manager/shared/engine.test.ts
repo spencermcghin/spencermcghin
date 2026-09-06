@@ -6,6 +6,8 @@ import {
   availableTraits,
   balances,
   indexRuleset,
+  manualChecks,
+  pendingChecks,
   trackStepCost,
   traitTierCost,
   validate,
@@ -22,6 +24,7 @@ function character(over: Partial<Character> = {}): Character {
     packageIds: [],
     traitLevels: {},
     trackPositions: {},
+    qualityIds: [],
     awarded: { cp: 4, influence: 0, coin: 0 },
     fieldValues: {},
     createdAt: '',
@@ -214,6 +217,99 @@ test('a legal Gentry character validates clean', () => {
   const c = character({
     packageIds: ['gentry'],
     traitLevels: { academics: 1, income: 1 },
+    awarded: { cp: 4, influence: 0, coin: 0 },
+  });
+  assert.deepEqual(validate(c, idx), []);
+});
+
+/* ---------------- qualities and manual checks ---------------- */
+
+test('a skill gated on a quality is locked until the character has it', () => {
+  const without = optionFor(character({}), 'lockpicking');
+  assert.equal(without.status, 'locked');
+  assert.equal(without.reason, 'Requires Lockpicking Kit');
+
+  const withKit = optionFor(character({ qualityIds: ['lockpicking-kit'] }), 'lockpicking');
+  assert.equal(withKit.status, 'available');
+});
+
+test('a character stored before qualities existed does not crash the engine', () => {
+  // qualityIds is required on Character now, but a document written earlier
+  // simply does not have it, and reading one must not throw.
+  const legacy = character({});
+  delete (legacy as Partial<Character>).qualityIds;
+  assert.equal(optionFor(legacy, 'lockpicking').status, 'locked');
+});
+
+test('a manual check does not block the purchase, but is reported', () => {
+  const c = character({
+    qualityIds: ['lockpicking-kit'],
+    traitLevels: { lockpicking: 1 },
+    awarded: { cp: 50, influence: 0, coin: 0 },
+  });
+  const option = optionFor(c, 'lockpicking');
+
+  // Locking it would make the skill unbuyable for everyone forever, since
+  // nothing the engine can see will ever satisfy it.
+  assert.equal(option.status, 'available');
+  assert.equal(option.nextLevel, 2);
+  assert.deepEqual(option.checks, [
+    'Staff must watch you open a practice lock at check-in.',
+  ]);
+});
+
+test('a skill with nothing to check carries no checks', () => {
+  const option = optionFor(character({ qualityIds: ['lockpicking-kit'] }), 'lockpicking');
+  assert.equal(option.checks, undefined);
+});
+
+test('manual checks on what a character already holds are listed for staff', () => {
+  const c = character({
+    qualityIds: ['lockpicking-kit'],
+    traitLevels: { lockpicking: 2 },
+    awarded: { cp: 50, influence: 0, coin: 0 },
+  });
+  assert.deepEqual(pendingChecks(c, idx), [
+    {
+      subject: 'Lockpicking 2',
+      text: 'Staff must watch you open a practice lock at check-in.',
+    },
+  ]);
+});
+
+test('a level not yet taken contributes no outstanding check', () => {
+  const c = character({
+    qualityIds: ['lockpicking-kit'],
+    traitLevels: { lockpicking: 1 },
+    awarded: { cp: 50, influence: 0, coin: 0 },
+  });
+  assert.deepEqual(pendingChecks(c, idx), []);
+});
+
+test('a manual clause under "any" is not presented as a requirement', () => {
+  // The sibling clause may already satisfy it, so sending staff after it
+  // would be chasing a requirement that does not apply.
+  assert.deepEqual(
+    manualChecks({
+      kind: 'any',
+      of: [
+        { kind: 'always' },
+        { kind: 'manual', text: 'Staff approval' },
+      ],
+    }),
+    []
+  );
+});
+
+test('a character holding a quality the ruleset dropped is reported', () => {
+  const c = character({ qualityIds: ['a-kit-that-was-deleted'] });
+  assert.ok(validate(c, idx).some((v) => v.code === 'unknown-quality'));
+});
+
+test('a character with a legitimate quality validates clean', () => {
+  const c = character({
+    qualityIds: ['lockpicking-kit'],
+    traitLevels: { lockpicking: 1 },
     awarded: { cp: 4, influence: 0, coin: 0 },
   });
   assert.deepEqual(validate(c, idx), []);

@@ -225,6 +225,8 @@ export default function RulesetEditor() {
         </div>
       )}
 
+      <QualityPanel ruleset={ruleset} canEdit={canEdit} apply={apply} />
+
       {buckets.map((b) => (
         <section key={b.key} className="ed-group">
           <div className="ed-group-head">
@@ -261,6 +263,140 @@ export default function RulesetEditor() {
         </section>
       ))}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * The things a rule can require that are not skills.
+ *
+ * Above the skill list rather than tucked away, because a quality has to
+ * exist before a prerequisite can name it -- the clause editor's "+ Quality"
+ * button has nothing to offer until something is defined here.
+ */
+function QualityPanel({
+  ruleset,
+  canEdit,
+  apply,
+}: {
+  ruleset: Ruleset;
+  canEdit: boolean;
+  apply: (next: (r: Ruleset) => Ruleset) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const addQuality = () => {
+    let n = 1;
+    while (ruleset.qualities.some((q) => q.id === `quality-${n}`)) n++;
+    apply((r) =>
+      edit.addQuality(r, {
+        id: `quality-${n}`,
+        name: 'New quality',
+        grantedBy: 'player',
+      })
+    );
+    setOpen(true);
+  };
+
+  // Nothing defined and nothing to define it with: an empty panel would just
+  // be noise on a ruleset that has no use for one.
+  if (ruleset.qualities.length === 0 && !canEdit) return null;
+
+  return (
+    <section className="ed-group ed-qualities">
+      <div className="ed-group-head">
+        <button className="ed-caret" onClick={() => setOpen(!open)} aria-expanded={open}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="3"
+               style={{ transform: open ? 'rotate(90deg)' : undefined }}>
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+        <span className="ed-group-name">Qualities</span>
+        <span className="ed-group-count">{ruleset.qualities.length}</span>
+        <span className="ed-hint">
+          Gear, backgrounds, boons — anything a rule needs that isn't a skill
+        </span>
+        {canEdit && (
+          <button className="ed-add" onClick={addQuality}>
+            + Quality
+          </button>
+        )}
+      </div>
+
+      {open && ruleset.qualities.length === 0 && (
+        <p className="ed-empty">
+          None yet. Add one and any skill can then require it.
+        </p>
+      )}
+
+      {open &&
+        ruleset.qualities.map((q) => (
+          <div key={q.id} className="ed-quality">
+            <div className="ed-quality-head">
+              <input
+                className="ed-skill-name"
+                value={q.name}
+                readOnly={!canEdit}
+                onChange={(e) =>
+                  apply((r) => edit.updateQuality(r, q.id, { name: e.target.value }))
+                }
+              />
+              <input
+                className="ed-quality-cat"
+                value={q.category ?? ''}
+                readOnly={!canEdit}
+                placeholder="Category"
+                onChange={(e) =>
+                  apply((r) => edit.updateQuality(r, q.id, { category: e.target.value }))
+                }
+              />
+              <div className="cl-seg" title="Who may put this on a character">
+                {(['player', 'staff'] as const).map((who) => (
+                  <button
+                    key={who}
+                    className={q.grantedBy === who ? 'is-on' : ''}
+                    disabled={!canEdit}
+                    onClick={() =>
+                      apply((r) => edit.updateQuality(r, q.id, { grantedBy: who }))
+                    }
+                  >
+                    {who === 'player' ? 'Player' : 'Staff'}
+                  </button>
+                ))}
+              </div>
+              {canEdit && (
+                <button
+                  className="ed-del"
+                  title="Delete quality"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        `Delete "${q.name}"? Rules that require it will report the break.`
+                      )
+                    ) {
+                      apply((r) => edit.removeQuality(r, q.id));
+                    }
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            <textarea
+              className="ed-tier-desc"
+              rows={2}
+              value={q.description ?? ''}
+              readOnly={!canEdit}
+              placeholder="What it is, and how a character comes to have it."
+              onChange={(e) =>
+                apply((r) => edit.updateQuality(r, q.id, { description: e.target.value }))
+              }
+            />
+          </div>
+        ))}
+    </section>
   );
 }
 
@@ -486,6 +622,8 @@ function ClauseEditor({
         return ruleset.packages.find((p) => p.id === clause.packageId)?.name ?? clause.packageId;
       case 'packageTier':
         return ruleset.packageTiers.find((t) => t.id === clause.tier)?.name ?? clause.tier;
+      case 'quality':
+        return ruleset.qualities.find((q) => q.id === clause.qualityId)?.name ?? clause.qualityId;
       default:
         return 'Nested condition';
     }
@@ -520,6 +658,8 @@ function ClauseEditor({
               : clause.kind === 'track' ? 'Track'
               : clause.kind === 'package' ? 'Archetype'
               : clause.kind === 'packageTier' ? 'Any of tier'
+              : clause.kind === 'quality' ? 'Has'
+              : clause.kind === 'manual' ? 'A person checks'
               : 'Nested'}
           </span>
 
@@ -575,6 +715,30 @@ function ClauseEditor({
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
+          )}
+
+          {clause.kind === 'quality' && (
+            <select
+              value={clause.qualityId}
+              disabled={!canEdit}
+              onChange={(e) => replace(i, { ...clause, qualityId: e.target.value })}
+            >
+              {ruleset.qualities.map((q) => (
+                <option key={q.id} value={q.id}>
+                  {q.category ? `${q.name} · ${q.category}` : q.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {clause.kind === 'manual' && (
+            <input
+              className="cl-text"
+              value={clause.text}
+              disabled={!canEdit}
+              placeholder="What a person has to confirm"
+              onChange={(e) => replace(i, { ...clause, text: e.target.value })}
+            />
           )}
 
           {edit.isOpaqueClause(clause) && (
@@ -633,6 +797,24 @@ function ClauseEditor({
               + Archetype
             </button>
           )}
+          {ruleset.qualities.length > 0 && (
+            <button
+              onClick={() =>
+                write([...clauses, {
+                  kind: 'quality',
+                  qualityId: ruleset.qualities[0].id,
+                }])
+              }
+            >
+              + Quality
+            </button>
+          )}
+          <button
+            title="For a requirement the app cannot check by itself"
+            onClick={() => write([...clauses, { kind: 'manual', text: '' }])}
+          >
+            + Staff check
+          </button>
         </div>
       )}
     </div>

@@ -5,12 +5,14 @@ import {
   availableTraits,
   balances,
   indexRuleset,
+  pendingChecks,
   validate,
   type Phase,
 } from '../../../shared/engine';
 import {
   canCreateCharacter,
   canEditCharacter,
+  canGrantStaffQualities,
   canViewCharacter,
   canViewProject,
   type RosterEntry,
@@ -124,6 +126,7 @@ export async function createCharacter(req: Request, res: Response) {
     packageIds: [],
     traitLevels: {},
     trackPositions: {},
+    qualityIds: [],
     awarded,
     fieldValues: { name },
     createdAt: now,
@@ -137,6 +140,36 @@ export async function createCharacter(req: Request, res: Response) {
 export async function getCharacter(req: Request, res: Response) {
   const loaded = await loadCharacter(req, res, 'view');
   if (loaded) res.json(loaded.row.character);
+}
+
+/**
+ * Keeps staff-granted qualities as they were when the editor is not staff.
+ *
+ * A player may hold one -- it is on their sheet -- but only staff may add or
+ * remove it. Enforced here rather than by hiding the control, because a
+ * hidden control is not a permission.
+ */
+async function reconcileQualities(
+  submitted: string[],
+  existing: string[],
+  rulesetId: string,
+  viewer: Viewer
+): Promise<string[]> {
+  if (canGrantStaffQualities(viewer)) return submitted;
+
+  const owned = await getStore().getRuleset(rulesetId);
+  const staffOnly = new Set(
+    (owned?.value.qualities ?? [])
+      .filter((q) => q.grantedBy === 'staff')
+      .map((q) => q.id)
+  );
+
+  // Take the player's list for everything else, and the stored list for the
+  // staff-granted ones, so neither can be smuggled in or dropped.
+  return [
+    ...submitted.filter((id) => !staffOnly.has(id)),
+    ...existing.filter((id) => staffOnly.has(id)),
+  ];
 }
 
 export async function updateCharacter(req: Request, res: Response) {
@@ -154,6 +187,13 @@ export async function updateCharacter(req: Request, res: Response) {
     createdAt: existing.createdAt,
     updatedAt: new Date().toISOString(),
   };
+
+  updated.qualityIds = await reconcileQualities(
+    Array.isArray(updated.qualityIds) ? updated.qualityIds : [],
+    existing.qualityIds ?? [],
+    existing.rulesetId,
+    loaded.viewer
+  );
 
   // The original owner is preserved: staff editing a player's sheet must not
   // take the character away from them.
@@ -194,7 +234,9 @@ export async function getCharacterSheet(req: Request, res: Response) {
     balances: balances(character, idx),
     violations: validate(character, idx, phase),
     available: availableTraits(character, idx, phase),
+    checks: pendingChecks(character, idx),
     canEdit: canEditCharacter(loaded.viewer, loaded.row.ownerId),
+    canGrantStaffQualities: canGrantStaffQualities(loaded.viewer),
     ownerName: loaded.row.ownerName,
   });
 }

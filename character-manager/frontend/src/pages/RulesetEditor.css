@@ -424,3 +424,42 @@
   color: var(--accent);
   border-style: solid;
 }
+
+/* ---------------- qualities ---------------- */
+
+.ed-qualities .ed-group-head { gap: 0.5rem; }
+
+.ed-quality {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ed-quality:last-child { border-bottom: none; }
+
+.ed-quality-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ed-quality-cat {
+  width: 9rem;
+  padding: 0.28rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.ed-quality-cat:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* A staff check is prose, so it gets the room the id pickers do not need. */
+.cl-row .cl-text { flex: 1; min-width: 12rem; }

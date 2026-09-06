@@ -57,6 +57,15 @@ export function canEditCharacter(v: Viewer, characterOwnerId: string): boolean {
   return v.userId === characterOwnerId || isAdmin(v);
 }
 
+/**
+ * A quality marked `grantedBy: 'staff'` represents something the game gave
+ * the character, so a player editing their own sheet must not be able to
+ * award it to themselves. Everything else about that sheet they can edit.
+ */
+export function canGrantStaffQualities(v: Viewer): boolean {
+  return isAdmin(v);
+}
+
 /** Only app admins manage accounts. */
 export function canAdministerApp(v: Viewer): boolean {
   return v.appRole === 'admin';

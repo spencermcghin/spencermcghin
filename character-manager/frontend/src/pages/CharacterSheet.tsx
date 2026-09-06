@@ -26,7 +26,17 @@ export default function CharacterSheet() {
   if (error) return <div className="error">{error}</div>;
   if (!sheet) return <p className="muted">Loading…</p>;
 
-  const { character, ruleset, balances, violations, available, canEdit, ownerName } = sheet;
+  const {
+    character,
+    ruleset,
+    balances,
+    violations,
+    available,
+    checks,
+    canEdit,
+    canGrantStaffQualities,
+    ownerName,
+  } = sheet;
 
   const mutate = async (patch: Parameters<typeof characterApi.update>[1]) => {
     setBusy(true);
@@ -56,7 +66,27 @@ export default function CharacterSheet() {
     void mutate({ traitLevels: next });
   };
 
+  const toggleQuality = (qualityId: string) => {
+    const held = character.qualityIds.includes(qualityId);
+    void mutate({
+      qualityIds: held
+        ? character.qualityIds.filter((q) => q !== qualityId)
+        : [...character.qualityIds, qualityId],
+    });
+  };
+
   const progression = ruleset.currencies.filter((c) => c.kind === 'progression');
+
+  // Grouped by the game's own word for them, so a ruleset that separates
+  // equipment from backgrounds reads that way here too.
+  const qualityGroups = ruleset.qualities.reduce<Record<string, typeof ruleset.qualities>>(
+    (acc, q) => {
+      const key = q.category?.trim() || 'Qualities';
+      (acc[key] ??= []).push(q);
+      return acc;
+    },
+    {}
+  );
 
   return (
     <div className="character-sheet">
@@ -112,6 +142,60 @@ export default function CharacterSheet() {
         </div>
       </div>
 
+      {checks.length > 0 && (
+        <div className="info-card full-width" style={{ marginBottom: '1.5rem' }}>
+          <h2>Needs a person</h2>
+          <p className="muted">
+            The rules ask for these, and nothing here can decide them. They are
+            settled at check-in, not by the app.
+          </p>
+          <ul className="check-list">
+            {checks.map((c, i) => (
+              <li key={i}>
+                <strong>{c.subject}</strong> — {c.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {ruleset.qualities.length > 0 && (
+        <div className="info-card full-width" style={{ marginBottom: '1.5rem' }}>
+          <h2>Qualities</h2>
+          {Object.entries(qualityGroups).map(([category, qualities]) => (
+            <div key={category} className="quality-group">
+              <h3>{category}</h3>
+              <div className="chip-row">
+                {qualities.map((q) => {
+                  const held = character.qualityIds.includes(q.id);
+                  // A staff-granted quality is shown to everyone -- it is on
+                  // the character -- but only staff can change it. The server
+                  // enforces this too; disabling the button is a courtesy,
+                  // not the rule.
+                  const mine = q.grantedBy === 'player' || canGrantStaffQualities;
+                  return (
+                    <button
+                      key={q.id}
+                      disabled={busy || !canEdit || !mine}
+                      className={`button button-small ${held ? 'button-primary' : ''}`}
+                      onClick={() => toggleQuality(q.id)}
+                      title={
+                        mine
+                          ? q.description
+                          : `${q.description ? q.description + ' ' : ''}Awarded by staff.`
+                      }
+                    >
+                      {q.name}
+                      {q.grantedBy === 'staff' && ' · staff'}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {ruleset.packageTiers.map((tier) => {
         const options = ruleset.packages.filter((p) => p.tier === tier.id);
         if (options.length === 0) return null;
@@ -155,6 +239,11 @@ export default function CharacterSheet() {
                     {o.status !== 'available' && o.reason && (
                       <span className="trait-reason">{o.reason}</span>
                     )}
+                    {o.checks?.map((c) => (
+                      <span key={c} className="trait-check" title="Settled by a person">
+                        {c}
+                      </span>
+                    ))}
                   </div>
                   <div className="trait-actions">
                     {o.currentLevel > 0 && (

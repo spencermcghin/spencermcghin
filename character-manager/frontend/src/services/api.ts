@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
-import type { TraitOption, Violation } from '../../../shared/engine';
+import type { PendingCheck, TraitOption, Violation } from '../../../shared/engine';
 
 /**
  * Same-origin by default, which is what a single-service deploy needs and
@@ -128,8 +128,12 @@ export interface CharacterSheet {
   balances: Record<string, number>;
   violations: Violation[];
   available: TraitOption[];
+  /** Requirements on this build that only a person can settle. */
+  checks: PendingCheck[];
   /** False when the viewer may read the sheet but not change it. */
   canEdit: boolean;
+  /** True for project staff, who alone may award staff-granted qualities. */
+  canGrantStaffQualities: boolean;
   ownerName: string;
 }
 

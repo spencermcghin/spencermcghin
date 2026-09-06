@@ -15,6 +15,7 @@ import type {
   Id,
   Modifier,
   ProgressionTrack,
+  Quality,
   Ruleset,
   Trait,
   TraitGroup,
@@ -32,6 +33,7 @@ export interface RulesetIndex {
   groups: Map<Id, TraitGroup>;
   packages: Map<Id, CharacterPackage>;
   tracks: Map<Id, ProgressionTrack>;
+  qualities: Map<Id, Quality>;
 }
 
 export function indexRuleset(ruleset: Ruleset): RulesetIndex {
@@ -41,6 +43,7 @@ export function indexRuleset(ruleset: Ruleset): RulesetIndex {
     groups: new Map(ruleset.traitGroups.map((g) => [g.id, g])),
     packages: new Map(ruleset.packages.map((p) => [p.id, p])),
     tracks: new Map(ruleset.tracks.map((t) => [t.id, t])),
+    qualities: new Map((ruleset.qualities ?? []).map((q) => [q.id, q])),
   };
 }
 
@@ -70,6 +73,13 @@ export function evaluate(
       return condition.packageIds.some((id) => character.packageIds.includes(id));
     case 'track':
       return (character.trackPositions[condition.trackId] ?? -1) >= condition.minStep;
+    case 'quality':
+      return (character.qualityIds ?? []).includes(condition.qualityId);
+    case 'manual':
+      // Not the engine's to decide, so it does not stand in the way. The text
+      // reaches the sheet through manualChecks, where a person can act on it;
+      // returning false instead would lock the skill for everyone forever.
+      return true;
     case 'all':
       return condition.of.every((c) => evaluate(c, character, idx));
     case 'any':
@@ -107,6 +117,10 @@ export function describeCondition(condition: Condition, idx: RulesetIndex): stri
       const track = idx.tracks.get(condition.trackId);
       return `${track?.name ?? condition.trackId} ${condition.minStep}+`;
     }
+    case 'quality':
+      return idx.qualities.get(condition.qualityId)?.name ?? condition.qualityId;
+    case 'manual':
+      return condition.text;
     case 'all':
       return condition.of.map((c) => describeCondition(c, idx)).join(' and ');
     case 'any':
@@ -114,6 +128,21 @@ export function describeCondition(condition: Condition, idx: RulesetIndex): stri
     case 'not':
       return `not (${describeCondition(condition.of, idx)})`;
   }
+}
+
+/**
+ * The manual clauses in a condition that actually bear on a character.
+ *
+ * Only clauses conjoined at the top level count. One sitting under `any` may
+ * already be moot because a sibling clause is satisfied, and one under `not`
+ * has had its sense inverted; presenting either as "a person must check this"
+ * would send staff after requirements that do not apply. Same policy as
+ * prerequisiteEdges and trackGates, for the same reason.
+ */
+export function manualChecks(condition: Condition): string[] {
+  if (condition.kind === 'manual') return [condition.text];
+  if (condition.kind === 'all') return condition.of.flatMap(manualChecks);
+  return [];
 }
 
 /* ------------------------------------------------------------------ *
@@ -384,6 +413,13 @@ export interface TraitOption {
   status: 'available' | 'locked' | 'unaffordable' | 'maxed';
   /** Present when status is not 'available'. */
   reason?: string;
+  /**
+   * Requirements a person has to confirm before this purchase is really
+   * legitimate. Present only when the rules put one there; the option is
+   * still 'available', because refusing the purchase over something the
+   * engine admits it cannot judge would be worse than flagging it.
+   */
+  checks?: string[];
 }
 
 /** Walks up the group chain; a trait is gated by every ancestor group. */
@@ -403,6 +439,17 @@ function groupChainAllows(
     current = current.parentId ? idx.groups.get(current.parentId) : undefined;
   }
   return { ok: true };
+}
+
+/** Manual clauses inherited from a trait's group and every group above it. */
+function groupChainChecks(groupId: Id, idx: RulesetIndex): string[] {
+  const out: string[] = [];
+  let current = idx.groups.get(groupId);
+  while (current) {
+    if (current.requires) out.push(...manualChecks(current.requires));
+    current = current.parentId ? idx.groups.get(current.parentId) : undefined;
+  }
+  return out;
 }
 
 function capFor(
@@ -474,13 +521,71 @@ export function availableTraits(
     const cost = traitTierCost(trait.id, nextTier.level, character, idx);
     const affordable = cost ? (bal[cost.currencyId] ?? 0) >= cost.amount : true;
 
+    const checks = [
+      ...groupChainChecks(trait.groupId, idx),
+      ...(trait.requires ? manualChecks(trait.requires) : []),
+      ...manualChecks(nextTier.requires),
+    ];
+
     return {
       ...base,
       cost,
       status: affordable ? 'available' : 'unaffordable',
       reason: affordable ? undefined : 'Insufficient points',
+      checks: checks.length > 0 ? checks : undefined,
     };
   });
+}
+
+/* ------------------------------------------------------------------ *
+ * Manual checks outstanding
+ * ------------------------------------------------------------------ */
+
+export interface PendingCheck {
+  /** What the check hangs off, already worded for display: "Lockpicking 1". */
+  subject: string;
+  text: string;
+}
+
+/**
+ * Every manual requirement attached to something the character already has.
+ *
+ * availableTraits answers "what should a person confirm before this
+ * purchase". This answers "what on this sheet was never confirmed", which is
+ * the question staff have at check-in, long after the purchase was made.
+ */
+export function pendingChecks(character: Character, idx: RulesetIndex): PendingCheck[] {
+  const out: PendingCheck[] = [];
+
+  for (const id of character.packageIds) {
+    const pkg = idx.packages.get(id);
+    if (!pkg) continue;
+    for (const text of manualChecks(pkg.requires)) {
+      out.push({ subject: pkg.name, text });
+    }
+  }
+
+  for (const [traitId, level] of Object.entries(character.traitLevels)) {
+    const trait = idx.traits.get(traitId);
+    if (!trait) continue;
+
+    // Gates on the skill and its groups apply however far up the ladder the
+    // character went, so they are reported once against the skill itself.
+    const overall = [
+      ...groupChainChecks(trait.groupId, idx),
+      ...(trait.requires ? manualChecks(trait.requires) : []),
+    ];
+    for (const text of overall) out.push({ subject: trait.name, text });
+
+    for (const tier of trait.tiers) {
+      if (tier.level > level) continue;
+      for (const text of manualChecks(tier.requires)) {
+        out.push({ subject: `${trait.name} ${tier.level}`, text });
+      }
+    }
+  }
+
+  return out;
 }
 
 /* ------------------------------------------------------------------ *
@@ -490,6 +595,7 @@ export function availableTraits(
 export interface Violation {
   code:
     | 'unknown-trait'
+    | 'unknown-quality'
     | 'unmet-prerequisite'
     | 'cap-exceeded'
     | 'group-locked'
@@ -533,6 +639,18 @@ export function validate(
         code: 'package-requirement',
         subject: id,
         message: `${pkg.name} requires ${describeCondition(pkg.requires, idx)}.`,
+      });
+    }
+  }
+
+  // A quality the ruleset dropped leaves the character claiming something
+  // nothing can check, which is worth saying out loud rather than ignoring.
+  for (const qualityId of character.qualityIds ?? []) {
+    if (!idx.qualities.has(qualityId)) {
+      violations.push({
+        code: 'unknown-quality',
+        subject: qualityId,
+        message: `Character has "${qualityId}", which is not defined in this ruleset.`,
       });
     }
   }
