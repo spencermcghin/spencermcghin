@@ -108,6 +108,14 @@ export default function ProjectDetail() {
           <button className="button" onClick={exportJson}>
             Export
           </button>
+          <Link to="/design-options" className="button">
+            Builder options
+          </Link>
+          {isStaff && (
+            <Link to={`/projects/${id}/design`} className="button button-primary">
+              Open Designer
+            </Link>
+          )}
         </div>
       </div>
 

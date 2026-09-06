@@ -125,8 +125,22 @@ export interface Trait {
   id: Id;
   name: string;
   groupId: Id;
+  /**
+   * Prose describing the skill as a whole -- what it is in the fiction, as
+   * opposed to what each level mechanically does. Shown above the levels.
+   * Newlines are preserved; keep it as long as it deserves to be.
+   */
+  summary?: string;
   /** Classifiers that conditions and purchase rules target: "crafting". */
   tags: string[];
+  /**
+   * Ruleset-defined fields with no engine semantics, keyed by
+   * Ruleset.traitAttributes. This is where a game puts the things its own
+   * players need on the page -- Eldritch's community planner carries a
+   * "Calls" column for the verbals a skill grants, which is the first thing
+   * anyone looks up at an event.
+   */
+  attributes?: Record<string, string>;
   /**
    * Gate on the trait as a whole, on top of its group's gate. Use for a
    * single skill restricted to certain archetypes without its own tree.
@@ -138,10 +152,17 @@ export interface Trait {
 export interface TraitTier {
   /** 1-based. Tier N normally requires tier N-1, stated in `requires`. */
   level: number;
+  /** What this level does, mechanically. Newlines are preserved. */
   description: string;
+  /**
+   * May be negative: a refund. Eldritch's Chemist Refund costs -1 CP,
+   * handing a point back for taking it.
+   */
   cost: Cost;
   requires: Condition;
   grants: Grant[];
+  /** Per-level metadata, keyed by Ruleset.traitAttributes. */
+  attributes?: Record<string, string>;
 }
 
 /* ------------------------------------------------------------------ *
@@ -253,6 +274,12 @@ export interface Ruleset {
   currencies: Currency[];
   packageTiers: PackageTier[];
   packageAttributes: { key: string; label: string }[];
+  /**
+   * Declares the metadata fields skills may carry. `scope` decides whether a
+   * value belongs to the skill as a whole or varies per level: a skill's
+   * source book is the same at every level, the verbals it grants are not.
+   */
+  traitAttributes: { key: string; label: string; scope: 'trait' | 'tier' }[];
   packages: CharacterPackage[];
   traitGroups: TraitGroup[];
   traits: Trait[];

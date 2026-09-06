@@ -46,6 +46,9 @@ function buildEldritchThroughTheEditor(): Ruleset {
   });
   r = edit.setStartingBudget(r, [{ currencyId: 'cp', amount: 4 }]);
 
+  /* --- metadata fields skills may carry --- */
+  r = edit.addTraitAttribute(r, { key: 'calls', label: 'Calls', scope: 'tier' });
+
   /* --- archetype tiers and the display-only card fields --- */
   r = edit.addPackageTier(r, { id: 'basic', name: 'Basic Archetype', maxHeld: 1 });
   r = edit.addPackageTier(r, { id: 'advanced', name: 'Advanced Archetype', maxHeld: 1 });
@@ -312,6 +315,9 @@ function buildEldritchThroughTheEditor(): Ruleset {
     id: 'shield-wall',
     name: 'Shield Wall',
     groupId: 'knight-tree',
+    summary:
+      'Two shields braced together hold a corridor no single knight could. ' +
+      'Taught in the outer wards, where the walls are thin and the retreat is long.',
     tags: [],
     tiers: [],
   });
@@ -322,6 +328,8 @@ function buildEldritchThroughTheEditor(): Ruleset {
     requires: { kind: 'always' },
     grants: [],
   });
+  // Set through the editor, as an author would, rather than passed inline.
+  r = edit.setTierAttribute(r, 'shield-wall', 1, 'calls', 'Resist');
 
   /* --- the second progression axis --- */
   r = edit.addTrack(r, {
@@ -474,4 +482,156 @@ test('node positions are recorded without touching the rules', () => {
   // Layout is presentation: the rules are byte-identical either way.
   assert.deepEqual({ ...after, layout: undefined }, { ...before, layout: undefined });
   assert.deepEqual(validateRuleset(after), []);
+});
+
+/* ------------------------------------------------------------------ *
+ * Prerequisites as canvas edges
+ * ------------------------------------------------------------------ */
+
+test('an existing compound prerequisite reads back as two edges', () => {
+  // Bowyer 2 requires Artificer 2 and Bowyer 1. The canvas must show both.
+  const tier = eldritch.traits
+    .find((t) => t.id === 'bowyer')!
+    .tiers.find((t) => t.level === 2)!;
+  assert.deepEqual(edit.prerequisiteEdges(tier.requires), [
+    { traitId: 'artificer', minLevel: 2 },
+    { traitId: 'bowyer', minLevel: 1 },
+  ]);
+});
+
+test('drawing an edge onto an unconditional skill replaces "always"', () => {
+  const r = edit.addPrerequisite(eldritch, 'shield-wall', 1, 'one-hand-weapon', 1);
+  const tier = r.traits.find((t) => t.id === 'shield-wall')!.tiers[0];
+  assert.deepEqual(tier.requires, {
+    kind: 'trait',
+    traitId: 'one-hand-weapon',
+    minLevel: 1,
+  });
+});
+
+test('drawing an edge onto an existing condition conjoins rather than replaces', () => {
+  // Banner of Mercy already requires Rank 2; that must survive.
+  const r = edit.addPrerequisite(eldritch, 'banner-of-mercy', 1, 'shield-wall', 1);
+  const tier = r.traits.find((t) => t.id === 'banner-of-mercy')!.tiers[0];
+  assert.deepEqual(tier.requires, {
+    kind: 'all',
+    of: [
+      { kind: 'track', trackId: 'rank', minStep: 2 },
+      { kind: 'trait', traitId: 'shield-wall', minLevel: 1 },
+    ],
+  });
+});
+
+test('drawing an edge into an existing "all" appends to it', () => {
+  const r = edit.addPrerequisite(eldritch, 'bowyer', 2, 'academics', 1);
+  const tier = r.traits.find((t) => t.id === 'bowyer')!.tiers.find((t) => t.level === 2)!;
+  assert.deepEqual(edit.prerequisiteEdges(tier.requires), [
+    { traitId: 'artificer', minLevel: 2 },
+    { traitId: 'bowyer', minLevel: 1 },
+    { traitId: 'academics', minLevel: 1 },
+  ]);
+});
+
+test('re-drawing an existing edge changes its level instead of duplicating it', () => {
+  // Otherwise a condition could end up demanding Artificer 2 and Artificer 3.
+  const r = edit.addPrerequisite(eldritch, 'bowyer', 2, 'artificer', 3);
+  const tier = r.traits.find((t) => t.id === 'bowyer')!.tiers.find((t) => t.level === 2)!;
+  const edges = edit.prerequisiteEdges(tier.requires);
+  assert.equal(edges.filter((e) => e.traitId === 'artificer').length, 1);
+  assert.deepEqual(
+    edges.find((e) => e.traitId === 'artificer'),
+    { traitId: 'artificer', minLevel: 3 }
+  );
+});
+
+test('deleting one edge of a compound prerequisite keeps the other', () => {
+  const r = edit.removePrerequisite(eldritch, 'bowyer', 2, 'artificer');
+  const tier = r.traits.find((t) => t.id === 'bowyer')!.tiers.find((t) => t.level === 2)!;
+  // One clause left, so the wrapping `all` collapses away.
+  assert.deepEqual(tier.requires, { kind: 'trait', traitId: 'bowyer', minLevel: 1 });
+});
+
+test('deleting the last edge leaves the skill unconditional, not broken', () => {
+  let r = edit.removePrerequisite(eldritch, 'bowyer', 1, 'artificer');
+  const tier = r.traits.find((t) => t.id === 'bowyer')!.tiers[0];
+  assert.deepEqual(tier.requires, { kind: 'always' });
+  assert.deepEqual(validateRuleset(r), []);
+});
+
+test('a clause under "any" is not exposed as an edge', () => {
+  // An edge means a hard requirement. "A or B" is not that, so it stays a
+  // raw condition rather than being flattened into misleading edges.
+  const condition = {
+    kind: 'any' as const,
+    of: [
+      { kind: 'trait' as const, traitId: 'a', minLevel: 1 },
+      { kind: 'trait' as const, traitId: 'b', minLevel: 1 },
+    ],
+  };
+  assert.deepEqual(edit.prerequisiteEdges(condition), []);
+});
+
+test('closing a loop by drawing an edge is caught immediately', () => {
+  // Artificer already gates Bowyer; pointing Artificer back at Bowyer makes
+  // both unbuyable. This is the mistake a canvas makes easiest.
+  const r = edit.addPrerequisite(eldritch, 'artificer', 1, 'bowyer', 1);
+  const issue = validateRuleset(r).find((i) => i.code === 'prerequisite-cycle');
+  assert.ok(issue, 'expected the new edge to be reported as a cycle');
+  assert.match(issue.message, /Artificer/);
+  assert.match(issue.message, /Bowyer/);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Descriptions and metadata
+ * ------------------------------------------------------------------ */
+
+test('a skill carries prose and per-level metadata', () => {
+  const shieldWall = eldritch.traits.find((t) => t.id === 'shield-wall')!;
+  assert.match(shieldWall.summary ?? '', /outer wards/);
+  assert.equal(shieldWall.tiers[0].attributes?.calls, 'Resist');
+});
+
+test('metadata under an undeclared key warns rather than vanishing silently', () => {
+  // Otherwise an author types into a field that was never declared and the
+  // value is simply never shown, with nothing to explain why.
+  const r = edit.setTierAttribute(eldritch, 'shield-wall', 1, 'notAField', 'x');
+  const issue = validateRuleset(r).find((i) => i.code === 'undeclared-attribute');
+  assert.ok(issue);
+  assert.equal(issue.severity, 'warning');
+  assert.match(issue.message, /notAField/);
+});
+
+test('a declared field accepts values on every skill that wants one', () => {
+  let r = edit.addTraitAttribute(eldritch, {
+    key: 'sourceBook',
+    label: 'Source',
+    scope: 'trait',
+  });
+  r = edit.setTraitAttribute(r, 'academics', 'sourceBook', "Player's Guide 2026");
+  assert.equal(
+    r.traits.find((t) => t.id === 'academics')?.attributes?.sourceBook,
+    "Player's Guide 2026"
+  );
+  assert.deepEqual(validateRuleset(r), []);
+});
+
+test('a refund is a negative cost, and reduces spend', () => {
+  // Eldritch's Chemist Refund costs -1 CP; the engine must not treat a cost
+  // as necessarily positive.
+  let r = edit.addTrait(eldritch, {
+    id: 'chemist-refund',
+    name: 'Chemist Refund',
+    groupId: 'general',
+    tags: [],
+    tiers: [],
+  });
+  r = edit.addTier(r, 'chemist-refund', {
+    level: 1,
+    description: 'Hands a character point back.',
+    cost: { currencyId: 'cp', amount: -1 },
+    requires: { kind: 'trait', traitId: 'alchemy', minLevel: 1 },
+    grants: [],
+  });
+  assert.deepEqual(validateRuleset(r), []);
 });

@@ -6,6 +6,8 @@ import CharacterSheet from './pages/CharacterSheet';
 import SignIn from './pages/SignIn';
 import JoinProject from './pages/JoinProject';
 import AdminUsers from './pages/AdminUsers';
+import DesignOptions from './pages/DesignOptions';
+import RulesetDesigner from './pages/RulesetDesigner';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { AuthProvider } from './auth/AuthProvider';
 import { RequireAuth } from './auth/RequireAuth';
@@ -80,6 +82,22 @@ function Shell() {
             element={
               <RequireAuth>
                 <ProjectDetail />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/design-options"
+            element={
+              <RequireAuth>
+                <DesignOptions />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/projects/:id/design"
+            element={
+              <RequireAuth>
+                <RulesetDesigner />
               </RequireAuth>
             }
           />

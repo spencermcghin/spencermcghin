@@ -15,6 +15,7 @@ function base(): Ruleset {
     currencies: [{ id: 'cp', name: 'Points', kind: 'progression' }],
     packageTiers: [{ id: 'basic', name: 'Basic', maxHeld: 1 }],
     packageAttributes: [],
+    traitAttributes: [],
     packages: [],
     traitGroups: [{ id: 'general', name: 'General' }],
     traits: [],

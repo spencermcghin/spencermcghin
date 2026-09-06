@@ -41,6 +41,7 @@ function blankRuleset(id: string, name: string): Ruleset {
     ],
     packageTiers: [{ id: 'base', name: 'Archetype', maxHeld: 1 }],
     packageAttributes: [],
+    traitAttributes: [],
     packages: [],
     traitGroups: [{ id: 'general', name: 'General Skills' }],
     traits: [],

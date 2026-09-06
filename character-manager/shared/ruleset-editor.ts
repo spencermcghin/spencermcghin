@@ -17,6 +17,7 @@
 
 import type {
   CharacterPackage,
+  Condition,
   Cost,
   Currency,
   Grant,
@@ -52,6 +53,7 @@ export function emptyRuleset(id: Id, name: string): Ruleset {
     currencies: [],
     packageTiers: [],
     packageAttributes: [],
+    traitAttributes: [],
     packages: [],
     traitGroups: [],
     traits: [],
@@ -105,6 +107,41 @@ export function addPackageTier(r: Ruleset, tier: PackageTier): Ruleset {
 
 export function removePackageTier(r: Ruleset, id: string): Ruleset {
   return { ...r, packageTiers: r.packageTiers.filter((t) => t.id !== id) };
+}
+
+/** Declares a metadata field every skill (or skill level) may fill in. */
+export function addTraitAttribute(
+  r: Ruleset,
+  attribute: { key: string; label: string; scope: 'trait' | 'tier' }
+): Ruleset {
+  return { ...r, traitAttributes: [...r.traitAttributes, attribute] };
+}
+
+export function setTraitAttribute(
+  r: Ruleset,
+  traitId: Id,
+  key: string,
+  value: string
+): Ruleset {
+  const trait = r.traits.find((t) => t.id === traitId);
+  if (!trait) return r;
+  return updateTrait(r, traitId, {
+    attributes: { ...(trait.attributes ?? {}), [key]: value },
+  });
+}
+
+export function setTierAttribute(
+  r: Ruleset,
+  traitId: Id,
+  level: number,
+  key: string,
+  value: string
+): Ruleset {
+  const tier = r.traits.find((t) => t.id === traitId)?.tiers.find((x) => x.level === level);
+  if (!tier) return r;
+  return updateTier(r, traitId, level, {
+    attributes: { ...(tier.attributes ?? {}), [key]: value },
+  });
 }
 
 /** Declares a display-only field every package may fill in. */
@@ -296,4 +333,92 @@ export function setNodePosition(
   position: { x: number; y: number }
 ): Ruleset {
   return { ...r, layout: { ...(r.layout ?? {}), [nodeId]: position } };
+}
+
+/* ------------------------------------------------------------------ *
+ * Prerequisites
+ *
+ * On the canvas a prerequisite is an edge, but in the schema it is a clause
+ * inside a boolean expression that may already hold several others. These
+ * translate between the two: drawing an edge conjoins a clause, deleting one
+ * removes it, and the surrounding structure is preserved either way.
+ * ------------------------------------------------------------------ */
+
+/** The trait clauses directly conjoined at the top level of a condition. */
+export function prerequisiteEdges(
+  condition: Condition
+): { traitId: Id; minLevel: number }[] {
+  if (condition.kind === 'trait') {
+    return [{ traitId: condition.traitId, minLevel: condition.minLevel }];
+  }
+  if (condition.kind === 'all') {
+    return condition.of.flatMap(prerequisiteEdges);
+  }
+  // Clauses under `any` or `not` are not simple edges -- an edge implies a
+  // hard requirement, and these do not. They stay editable as raw conditions.
+  return [];
+}
+
+function conjoin(condition: Condition, clause: Condition): Condition {
+  if (condition.kind === 'always') return clause;
+  if (condition.kind === 'all') return { kind: 'all', of: [...condition.of, clause] };
+  return { kind: 'all', of: [condition, clause] };
+}
+
+/** Drops every top-level trait clause naming `traitId`, keeping structure. */
+function withoutTrait(condition: Condition, traitId: Id): Condition {
+  if (condition.kind === 'trait') {
+    return condition.traitId === traitId ? { kind: 'always' } : condition;
+  }
+  if (condition.kind === 'all') {
+    const kept = condition.of
+      .map((c) => withoutTrait(c, traitId))
+      .filter((c) => c.kind !== 'always');
+    if (kept.length === 0) return { kind: 'always' };
+    if (kept.length === 1) return kept[0];
+    return { kind: 'all', of: kept };
+  }
+  return condition;
+}
+
+/**
+ * Adds "requires `requiredTraitId` at `minLevel`" to one tier.
+ *
+ * Re-adding an existing prerequisite updates its level rather than stacking a
+ * second clause for the same skill, so dragging an edge twice cannot produce
+ * a condition that contradicts itself.
+ */
+export function addPrerequisite(
+  r: Ruleset,
+  traitId: Id,
+  level: number,
+  requiredTraitId: Id,
+  minLevel = 1
+): Ruleset {
+  const tier = r.traits.find((t) => t.id === traitId)?.tiers.find((x) => x.level === level);
+  if (!tier) return r;
+
+  const clause: Condition = { kind: 'trait', traitId: requiredTraitId, minLevel };
+  const existing = prerequisiteEdges(tier.requires).some(
+    (e) => e.traitId === requiredTraitId
+  );
+
+  const requires = existing
+    ? conjoin(withoutTrait(tier.requires, requiredTraitId), clause)
+    : conjoin(tier.requires, clause);
+
+  return updateTier(r, traitId, level, { requires });
+}
+
+export function removePrerequisite(
+  r: Ruleset,
+  traitId: Id,
+  level: number,
+  requiredTraitId: Id
+): Ruleset {
+  const tier = r.traits.find((t) => t.id === traitId)?.tiers.find((x) => x.level === level);
+  if (!tier) return r;
+  return updateTier(r, traitId, level, {
+    requires: withoutTrait(tier.requires, requiredTraitId),
+  });
 }

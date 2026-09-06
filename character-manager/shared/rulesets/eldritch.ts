@@ -60,6 +60,12 @@ export const eldritch: Ruleset = {
     { id: 'advanced', name: 'Advanced Archetype', maxHeld: 1 },
   ],
 
+  // Mirrors the columns Eldritch's community character planner carries, so
+  // the things players actually look up at an event have somewhere to live.
+  traitAttributes: [
+    { key: 'calls', label: 'Calls', scope: 'tier' },
+  ],
+
   packageAttributes: [
     { key: 'startingEquipment', label: 'Starting Equipment' },
     { key: 'retainerBenefit', label: 'Retainer Benefit' },
@@ -282,6 +288,9 @@ export const eldritch: Ruleset = {
       id: 'shield-wall',
       name: 'Shield Wall',
       groupId: 'knight-tree',
+      summary:
+        'Two shields braced together hold a corridor no single knight could. ' +
+        'Taught in the outer wards, where the walls are thin and the retreat is long.',
       tags: [],
       tiers: [
         {
@@ -290,6 +299,7 @@ export const eldritch: Ruleset = {
           cost: { currencyId: 'cp', amount: 2 },
           requires: { kind: 'always' },
           grants: [],
+          attributes: { calls: 'Resist' },
         },
       ],
     },
