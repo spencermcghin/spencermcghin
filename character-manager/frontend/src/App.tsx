@@ -8,6 +8,7 @@ import JoinProject from './pages/JoinProject';
 import AdminUsers from './pages/AdminUsers';
 import RulesetEditor from './pages/RulesetEditor';
 import StoryMap from './pages/StoryMap';
+import StoryOptions from './pages/StoryOptions';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { AuthProvider } from './auth/AuthProvider';
 import { RequireAuth } from './auth/RequireAuth';
@@ -98,6 +99,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <StoryMap />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/projects/:id/options"
+            element={
+              <RequireAuth>
+                <StoryOptions />
               </RequireAuth>
             }
           />

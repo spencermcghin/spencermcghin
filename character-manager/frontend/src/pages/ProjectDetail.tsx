@@ -169,6 +169,11 @@ export default function ProjectDetail() {
             Story
           </Link>
           {isStaff && (
+            <Link to={`/projects/${id}/options`} className="button">
+              Layout options
+            </Link>
+          )}
+          {isStaff && (
             <Link to={`/projects/${id}/edit`} className="button button-primary">
               Edit rules
             </Link>
