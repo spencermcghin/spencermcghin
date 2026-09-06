@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   characterApi,
@@ -10,7 +10,9 @@ import {
   type RosterEntry,
 } from '../services/api';
 import type { Ruleset } from '../../../shared/rules-schema';
+import { balances, indexRuleset } from '../../../shared/engine';
 import { useAuth } from '../auth/useAuth';
+import Hint from '../components/Hint';
 
 export default function ProjectDetail() {
   const { id = '' } = useParams();
@@ -23,6 +25,13 @@ export default function ProjectDetail() {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Bulk award state.
+  const [selected, setSelected] = useState<string[]>([]);
+  const [awardAmount, setAwardAmount] = useState('1');
+  const [awardCurrency, setAwardCurrency] = useState('');
+  const [awarding, setAwarding] = useState(false);
+  const [awardNote, setAwardNote] = useState<string | null>(null);
 
   const myRole: ProjectRole | null =
     members.find((m) => m.userId === user?.id)?.role ?? null;
@@ -68,6 +77,55 @@ export default function ProjectDetail() {
     const { token } = await memberApi.createInvite(id);
     setNewLink(`${window.location.origin}/join/${token}`);
     setInvites(await memberApi.listInvites(id));
+  };
+
+  const idx = useMemo(() => (ruleset ? indexRuleset(ruleset) : null), [ruleset]);
+
+  // Default to the first progression currency: awards are almost always
+  // advancement points rather than in-game money.
+  useEffect(() => {
+    if (!ruleset || awardCurrency) return;
+    const first =
+      ruleset.currencies.find((c) => c.kind === 'progression') ?? ruleset.currencies[0];
+    if (first) setAwardCurrency(first.id);
+  }, [ruleset, awardCurrency]);
+
+  // A character removed from the roster must not stay silently selected.
+  useEffect(() => {
+    const present = new Set(roster.map((c) => c.id));
+    setSelected((s) => (s.every((x) => present.has(x)) ? s : s.filter((x) => present.has(x))));
+  }, [roster]);
+
+  const toggleSelected = (characterId: string) =>
+    setSelected((s) =>
+      s.includes(characterId) ? s.filter((x) => x !== characterId) : [...s, characterId]
+    );
+
+  const award = async () => {
+    const amount = Number(awardAmount);
+    if (!Number.isInteger(amount) || amount === 0 || selected.length === 0) return;
+    setAwarding(true);
+    setAwardNote(null);
+    try {
+      const result = await characterApi.award(id, {
+        characterIds: selected,
+        currencyId: awardCurrency,
+        amount,
+      });
+      await load();
+      setSelected([]);
+      setAwardNote(result.message);
+      setError(null);
+    } catch (e) {
+      // The server explains why it refused; repeating that logic here would
+      // give two answers that can disagree.
+      const message =
+        (e as { response?: { data?: { message?: string } } }).response?.data?.message ??
+        'Could not award points.';
+      setError(message);
+    } finally {
+      setAwarding(false);
+    }
   };
 
   const exportJson = () => {
@@ -263,36 +321,139 @@ export default function ProjectDetail() {
         </button>
       </form>
 
+      {isStaff && roster.length > 0 && (
+        <div className="award-bar">
+          <div className="award-select">
+            <label className="award-check">
+              <input
+                type="checkbox"
+                checked={selected.length === roster.length}
+                // Indeterminate is the honest state for a partial selection;
+                // a bare unchecked box invites a click that clears the lot.
+                ref={(el) => {
+                  if (el) el.indeterminate = selected.length > 0 && selected.length < roster.length;
+                }}
+                onChange={(e) =>
+                  setSelected(e.target.checked ? roster.map((c) => c.id) : [])
+                }
+              />
+              <span>
+                {selected.length === 0
+                  ? 'Select all'
+                  : `${selected.length} of ${roster.length} selected`}
+              </span>
+            </label>
+          </div>
+
+          <div className="award-controls">
+            <label className="award-field">
+              <span>Award</span>
+              <input
+                type="number"
+                step={1}
+                value={awardAmount}
+                aria-label="Amount to award"
+                onChange={(e) => setAwardAmount(e.target.value)}
+              />
+            </label>
+            <select
+              value={awardCurrency}
+              aria-label="Currency to award"
+              onChange={(e) => setAwardCurrency(e.target.value)}
+            >
+              {ruleset.currencies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.abbreviation ?? c.name}
+                </option>
+              ))}
+            </select>
+            <button
+              className="button button-small button-primary"
+              disabled={awarding || selected.length === 0 || Number(awardAmount) === 0}
+              onClick={award}
+            >
+              {awarding
+                ? 'Awarding…'
+                : selected.length === 0
+                  ? 'Apply'
+                  : `Apply to ${selected.length}`}
+            </button>
+            <Hint align="right">
+              Adds the amount to every selected character's total for that
+              currency. Use a negative number to take points back — correcting
+              an award that went out wrong is the same operation in reverse.
+              What a character has already spent is untouched, so a deduction
+              that leaves them short shows up as overspent on their sheet
+              rather than silently unpicking their build.
+            </Hint>
+          </div>
+        </div>
+      )}
+
+      {awardNote && <p className="award-note">{awardNote}</p>}
+
       {roster.length === 0 ? (
         <div className="empty-state">
           <p>No characters in this project yet.</p>
         </div>
       ) : (
         <div className="character-grid">
-          {roster.map((c) => (
-            <div key={c.id} className="character-card">
-              <h2>{c.name}</h2>
-              <p className="character-info">
-                {c.packageIds.length > 0
-                  ? c.packageIds
-                      .map((pid) => ruleset.packages.find((p) => p.id === pid)?.name ?? pid)
-                      .join(' · ')
-                  : 'No archetype'}
-              </p>
-              <p className="character-background">
-                Played by {c.isMine ? 'you' : c.ownerName}
-              </p>
-              <div className="card-actions">
-                {c.character ? (
-                  <Link to={`/characters/${c.id}`} className="button button-small">
-                    Open Sheet
-                  </Link>
-                ) : (
-                  <span className="muted">Sheet is private</span>
+          {roster.map((c) => {
+            const left =
+              c.character && idx ? balances(c.character, idx) : null;
+            return (
+              <div
+                key={c.id}
+                className={`character-card ${selected.includes(c.id) ? 'is-selected' : ''}`}
+              >
+                {isStaff && (
+                  <label className="card-check">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(c.id)}
+                      aria-label={`Select ${c.name}`}
+                      onChange={() => toggleSelected(c.id)}
+                    />
+                  </label>
                 )}
+                <h2>{c.name}</h2>
+                <p className="character-info">
+                  {c.packageIds.length > 0
+                    ? c.packageIds
+                        .map((pid) => ruleset.packages.find((p) => p.id === pid)?.name ?? pid)
+                        .join(' · ')
+                    : 'No archetype'}
+                </p>
+                <p className="character-background">
+                  Played by {c.isMine ? 'you' : c.ownerName}
+                </p>
+                {left && (
+                  <p className="card-balances">
+                    {ruleset.currencies
+                      .filter((cur) => cur.kind === 'progression')
+                      .map((cur) => (
+                        <span
+                          key={cur.id}
+                          className={(left[cur.id] ?? 0) < 0 ? 'is-negative' : ''}
+                        >
+                          {left[cur.id] ?? 0} {cur.abbreviation ?? cur.name}
+                        </span>
+                      ))}
+                    <span className="muted">unspent</span>
+                  </p>
+                )}
+                <div className="card-actions">
+                  {c.character ? (
+                    <Link to={`/characters/${c.id}`} className="button button-small">
+                      Open Sheet
+                    </Link>
+                  ) : (
+                    <span className="muted">Sheet is private</span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

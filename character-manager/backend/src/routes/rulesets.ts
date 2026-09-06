@@ -8,7 +8,11 @@ import {
   listRulesets,
   replaceRuleset,
 } from '../controllers/rulesetController';
-import { createCharacter, listCharacters } from '../controllers/characterController';
+import {
+  awardCurrency,
+  createCharacter,
+  listCharacters,
+} from '../controllers/characterController';
 import {
   createInvite,
   listInvites,
@@ -43,5 +47,8 @@ router.delete('/:id/invites/:inviteId', revokeInvite);
 // Characters are always created within a project.
 router.get('/:rulesetId/characters', listCharacters);
 router.post('/:rulesetId/characters', createCharacter);
+// Declared before the bare collection route would ever see it; "award" is a
+// verb on the collection, not a character id.
+router.post('/:rulesetId/characters/award', awardCurrency);
 
 export default router;

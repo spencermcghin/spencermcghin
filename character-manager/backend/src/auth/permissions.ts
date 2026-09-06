@@ -66,6 +66,15 @@ export function canGrantStaffQualities(v: Viewer): boolean {
   return isAdmin(v);
 }
 
+/**
+ * Handing out points changes what every character in the game can afford, so
+ * it is staff work. A player can spend their own points; only staff decide
+ * how many they have.
+ */
+export function canAwardCurrency(v: Viewer): boolean {
+  return isAdmin(v);
+}
+
 /** Only app admins manage accounts. */
 export function canAdministerApp(v: Viewer): boolean {
   return v.appRole === 'admin';

@@ -114,4 +114,22 @@ export interface Store {
   getCharacter(id: string): Promise<CharacterRow | null>;
   putCharacter(character: Character, ownerId: string): Promise<Character>;
   deleteCharacter(id: string): Promise<boolean>;
+  /**
+   * Adds `amount` to each named character's awarded total for one currency.
+   *
+   * A store-level operation rather than a read-modify-write in the
+   * controller, so the increment happens inside the database. Two organisers
+   * handing out points at the same time would otherwise be able to overwrite
+   * each other, and a lost award is a player complaint.
+   *
+   * Scoped by ruleset: an id from another project matches nothing.
+   * Returns how many rows were changed.
+   */
+  awardCurrency(input: {
+    rulesetId: string;
+    characterIds: string[];
+    currencyId: string;
+    amount: number;
+    at: string;
+  }): Promise<number>;
 }

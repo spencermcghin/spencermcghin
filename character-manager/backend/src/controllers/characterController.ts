@@ -10,6 +10,7 @@ import {
   type Phase,
 } from '../../../shared/engine';
 import {
+  canAwardCurrency,
   canCreateCharacter,
   canEditCharacter,
   canGrantStaffQualities,
@@ -135,6 +136,84 @@ export async function createCharacter(req: Request, res: Response) {
 
   await getStore().putCharacter(character, req.user!.id);
   res.status(201).json(character);
+}
+
+/**
+ * Adds points to several characters at once.
+ *
+ * The operation organisers actually perform: after an event, everyone who
+ * turned up gets the same award. Doing that one sheet at a time is where
+ * mistakes come from, so it is one request with one amount.
+ *
+ * Nothing is applied until the whole selection is known to be valid. A
+ * partial award is worse than a rejected one -- the organiser has no way to
+ * tell which characters were missed, and running it again double-awards the
+ * ones that succeeded.
+ */
+export async function awardCurrency(req: Request, res: Response) {
+  const project = await loadProject(req, res);
+  if (!project) return;
+
+  if (!canAwardCurrency(project.viewer)) {
+    return res
+      .status(403)
+      .json({ message: 'Only project staff can award points.' });
+  }
+
+  const { characterIds, currencyId, amount } = req.body ?? {};
+
+  if (!Array.isArray(characterIds) || characterIds.length === 0) {
+    return res.status(400).json({ message: 'Select at least one character.' });
+  }
+  if (!project.ruleset.currencies.some((c) => c.id === currencyId)) {
+    return res
+      .status(400)
+      .json({ message: 'That currency is not part of this ruleset.' });
+  }
+  if (!Number.isFinite(amount) || !Number.isInteger(amount)) {
+    return res.status(400).json({ message: 'The amount must be a whole number.' });
+  }
+  // Negative is allowed -- correcting an award that went out wrong is the
+  // same operation in reverse -- but zero is a request that does nothing,
+  // and reporting success for it would be a lie.
+  if (amount === 0) {
+    return res.status(400).json({ message: 'The amount cannot be zero.' });
+  }
+
+  const roster = await getStore().listCharacters(project.ruleset.id);
+  const known = new Set(roster.map((r) => r.character.id));
+  const strangers = (characterIds as unknown[]).filter(
+    (id) => typeof id !== 'string' || !known.has(id)
+  );
+  if (strangers.length > 0) {
+    return res.status(400).json({
+      message:
+        strangers.length === 1
+          ? 'One of the selected characters is not in this project. Nothing was awarded.'
+          : `${strangers.length} of the selected characters are not in this ` +
+            'project. Nothing was awarded.',
+    });
+  }
+
+  const updated = await getStore().awardCurrency({
+    rulesetId: project.ruleset.id,
+    characterIds: characterIds as string[],
+    currencyId,
+    amount,
+    at: new Date().toISOString(),
+  });
+
+  const currency = project.ruleset.currencies.find((c) => c.id === currencyId)!;
+  res.json({
+    updated,
+    currencyId,
+    amount,
+    message:
+      `${amount > 0 ? 'Awarded' : 'Deducted'} ${Math.abs(amount)} ` +
+      `${currency.abbreviation ?? currency.name} ` +
+      `${amount > 0 ? 'to' : 'from'} ${updated} ` +
+      `${updated === 1 ? 'character' : 'characters'}.`,
+  });
 }
 
 export async function getCharacter(req: Request, res: Response) {

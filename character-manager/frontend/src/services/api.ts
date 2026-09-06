@@ -177,7 +177,22 @@ export const characterApi = {
   remove: async (id: string): Promise<void> => {
     await api.delete(`/characters/${id}`);
   },
+
+  /** Staff only. A negative amount takes points back. */
+  award: async (
+    rulesetId: string,
+    input: { characterIds: string[]; currencyId: string; amount: number }
+  ): Promise<AwardResult> =>
+    (await api.post(`/rulesets/${rulesetId}/characters/award`, input)).data,
 };
+
+export interface AwardResult {
+  updated: number;
+  currencyId: string;
+  amount: number;
+  /** Server-worded confirmation, so the client does not restate the rules. */
+  message: string;
+}
 
 export default api;
 

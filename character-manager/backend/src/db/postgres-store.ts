@@ -446,6 +446,43 @@ export class PostgresStore implements Store {
     const { rowCount } = await this.pool.query(`DELETE FROM characters WHERE id = $1;`, [id]);
     return (rowCount ?? 0) > 0;
   }
+
+  async awardCurrency({
+    rulesetId,
+    characterIds,
+    currencyId,
+    amount,
+    at,
+  }: {
+    rulesetId: string;
+    characterIds: string[];
+    currencyId: string;
+    amount: number;
+    at: string;
+  }): Promise<number> {
+    if (characterIds.length === 0) return 0;
+
+    // One statement, so the read and the write cannot be separated by
+    // another organiser's award. `awarded` is rebuilt by merging rather than
+    // with jsonb_set, because jsonb_set cannot create a missing parent and a
+    // character saved without the key would otherwise be skipped silently.
+    const { rowCount } = await this.pool.query(
+      `UPDATE characters
+          SET data = data
+                || jsonb_build_object(
+                     'awarded',
+                     COALESCE(data->'awarded', '{}'::jsonb)
+                       || jsonb_build_object(
+                            $3::text,
+                            COALESCE((data->'awarded'->>$3::text)::numeric, 0) + $4::numeric))
+                || jsonb_build_object('updatedAt', $5::text),
+              updated_at = now()
+        WHERE ruleset_id = $1
+          AND id = ANY($2::text[]);`,
+      [rulesetId, characterIds, currencyId, amount, at]
+    );
+    return rowCount ?? 0;
+  }
 }
 
 function toUser(row: {
