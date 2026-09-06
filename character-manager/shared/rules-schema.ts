@@ -233,6 +233,16 @@ export interface SheetSection {
  * Ruleset
  * ------------------------------------------------------------------ */
 
+/**
+ * Node positions for the visual designer.
+ *
+ * Presentation rather than rules: the engine never reads it, and a ruleset
+ * with no layout is complete and valid -- the designer falls back to an
+ * automatic arrangement. It lives on the Ruleset because a position is a
+ * property of this ruleset's diagram, not of the trait itself.
+ */
+export type Layout = Record<Id, { x: number; y: number }>;
+
 export interface Ruleset {
   id: Id;
   name: string;
@@ -249,6 +259,7 @@ export interface Ruleset {
   tracks: ProgressionTrack[];
   purchaseRules: PurchaseRule[];
   sheet: SheetSection[];
+  layout?: Layout;
 }
 
 /* ------------------------------------------------------------------ *
