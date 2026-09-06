@@ -9,6 +9,7 @@ import { connectionsOf, indexMap, orphans, validateMap } from '../../../shared/n
 import * as edit from '../../../shared/narrative-editor';
 import Hint from '../components/Hint';
 import TagInput from '../components/TagInput';
+import StoryGraph from '../components/StoryGraph';
 import './StoryMap.css';
 
 /**
@@ -36,6 +37,13 @@ export default function StoryMap() {
   const [kind, setKind] = useState('all');
   const [query, setQuery] = useState('');
   const [showKinds, setShowKinds] = useState(false);
+  const [view, setView] = useState<'list' | 'graph'>('list');
+  /**
+   * Where you have walked, so you can get back. Exploring a graph without a
+   * way back is a maze: every click is a commitment and the way you came is
+   * gone.
+   */
+  const [trail, setTrail] = useState<string[]>([]);
   const history = useRef<NarrativeMap[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -102,7 +110,26 @@ export default function StoryMap() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [map, kind, query]);
 
-  const open = useCallback((entityId: string) => setSelected(entityId), []);
+  const open = useCallback((entityId: string) => {
+    setSelected((current) => {
+      if (current && current !== entityId) {
+        // Revisiting somewhere already on the trail winds back to it rather
+        // than looping, so the trail stays a path and not a history log.
+        setTrail((t) =>
+          t.includes(entityId) ? t.slice(0, t.indexOf(entityId)) : [...t, current]
+        );
+      }
+      return entityId;
+    });
+  }, []);
+
+  const back = useCallback(() => {
+    setTrail((t) => {
+      if (t.length === 0) return t;
+      setSelected(t[t.length - 1]);
+      return t.slice(0, -1);
+    });
+  }, []);
 
   /* ---------------- import and export ---------------- */
 
@@ -271,6 +298,17 @@ export default function StoryMap() {
                 </button>
               ))}
             </div>
+            <div className="ed-seg">
+              {(['list', 'graph'] as const).map((v) => (
+                <button
+                  key={v}
+                  className={view === v ? 'is-on' : ''}
+                  onClick={() => setView(v)}
+                >
+                  {v === 'list' ? 'List' : 'Graph'}
+                </button>
+              ))}
+            </div>
             {canEdit && (
               <>
                 <button
@@ -295,7 +333,45 @@ export default function StoryMap() {
 
           {showKinds && <KindsPanel map={map} canEdit={canEdit} apply={apply} />}
 
-          <div className="story-body">
+          <div className={`story-body ${view === 'graph' ? 'is-graph' : ''}`}>
+            {view === 'graph' ? (
+              selected ? (
+                <div className="graph-frame">
+                  {trail.length > 0 && (
+                    <nav className="graph-trail" aria-label="Where you have been">
+                      <button className="ed-add" onClick={back}>← Back</button>
+                      {trail.slice(-4).map((tid) => (
+                        <button key={tid} className="graph-crumb" onClick={() => open(tid)}>
+                          {idx.entities.get(tid)?.name ?? tid}
+                        </button>
+                      ))}
+                      <span className="graph-crumb is-here">
+                        {idx.entities.get(selected)?.name}
+                      </span>
+                    </nav>
+                  )}
+                  <StoryGraph centreId={selected} idx={idx} onSelect={open} />
+                </div>
+              ) : (
+                <div className="graph-hint">
+                  <p className="muted">
+                    Pick something to stand in the middle. Its connections fan
+                    out around it, and clicking any of them moves you there.
+                  </p>
+                  <div className="chip-row">
+                    {map.entities
+                      .map((e) => ({ e, d: (idx.byEntity.get(e.id) ?? []).length }))
+                      .sort((a, b) => b.d - a.d)
+                      .slice(0, 6)
+                      .map(({ e }) => (
+                        <button key={e.id} className="button button-small" onClick={() => open(e.id)}>
+                          {e.name}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )
+            ) : (
             <div className="story-list">
               {shown.length === 0 && <p className="ed-empty">Nothing here yet.</p>}
               {shown.map((e) => {
@@ -320,6 +396,7 @@ export default function StoryMap() {
                 );
               })}
             </div>
+            )}
 
             <aside className="story-panel">
               {!entity ? (
@@ -581,7 +658,25 @@ function EntityPanel({
       )}
 
       <section>
-        <h2>Connections</h2>
+        <h2>
+          Connections
+          <Hint align="right">
+            How connected something is, and to what kinds of thing, is the
+            quickest read on how load-bearing it is. Something with one
+            connection can be changed freely; something with fifteen cannot.
+          </Hint>
+        </h2>
+        {links.length > 0 && (
+          <p className="story-degree">
+            {links.length} in total
+            {(() => {
+              const byKind = new Map<string, number>();
+              for (const c of links) byKind.set(c.label, (byKind.get(c.label) ?? 0) + 1);
+              const top = [...byKind.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
+              return top.length > 0 ? ` · ${top.map(([l, n]) => `${l} ${n}`).join(' · ')}` : '';
+            })()}
+          </p>
+        )}
         {links.length === 0 ? (
           <p className="muted">Nothing connects to this yet.</p>
         ) : (

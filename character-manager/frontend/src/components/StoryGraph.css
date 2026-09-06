@@ -1,0 +1,246 @@
+/* The neighbourhood graph. Plain SVG: a radial layout of a few dozen nodes
+   is arithmetic, not a reason to carry a graph library. */
+
+.graph {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.5rem;
+}
+
+.graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.graph-edge {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.graph-edge.is-far {
+  stroke: var(--border);
+  stroke-dasharray: 3 4;
+}
+
+.graph-edge-label {
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--text-mute);
+  pointer-events: none;
+}
+
+.graph-node { cursor: pointer; }
+.graph-node.is-centre { cursor: default; }
+
+.graph-dot {
+  fill: var(--surface-solid);
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  transition: stroke 0.15s var(--ease), fill 0.15s var(--ease);
+}
+
+.graph-node:hover .graph-dot,
+.graph-node:focus-visible .graph-dot {
+  stroke: var(--accent);
+  fill: var(--accent-wash);
+}
+
+.graph-node:focus { outline: none; }
+.graph-node:focus-visible .graph-dot { stroke-width: 2.5; }
+
+.is-centre .graph-dot {
+  stroke: var(--accent);
+  stroke-width: 2;
+  fill: var(--accent-wash);
+}
+
+/* Kind is carried by the outline, not by a colour wheel: a LARP declares its
+   own kinds and there is no palette that can mean anything across them. */
+.graph-dot.is-person { stroke-dasharray: none; }
+.graph-dot.is-place { stroke-dasharray: 6 3; }
+.graph-dot.is-event { stroke-dasharray: 2 2; }
+.graph-dot.is-group { stroke-dasharray: 10 2 2 2; }
+.graph-dot.is-idea { stroke-dasharray: 1 3; }
+
+.graph-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  fill: var(--text-soft);
+  pointer-events: none;
+}
+
+.is-hop2 .graph-label { font-size: 9px; fill: var(--text-mute); }
+.is-centre .graph-label { font-size: 13px; fill: var(--text); }
+
+.graph-peek-holder { pointer-events: none; overflow: visible; }
+
+.graph-peek {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.6rem 0.7rem;
+  font-family: var(--font-body);
+  background: var(--surface-solid);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 45%);
+}
+
+.graph-peek strong { font-size: 0.85rem; color: var(--text); }
+
+.graph-peek-kind {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.graph-peek-summary {
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.graph-peek-kinds {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.graph-legend {
+  margin: 0.4rem 0 0;
+  padding: 0 0.4rem 0.2rem;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+}
+
+/* Focus: hovering one node quiets everything else, so a busy ring can still
+   be read one relationship at a time. */
+.graph svg.is-focused .graph-node:not(.is-lit):not(.is-centre) { opacity: 0.32; }
+.graph svg.is-focused .graph-spoke:not(.is-lit) { opacity: 0.18; }
+.graph svg.is-focused .graph-edge.is-far { opacity: 0.12; }
+
+.graph-node,
+.graph-spoke,
+.graph-edge.is-far {
+  transition: opacity 0.15s var(--ease);
+}
+
+.graph-spoke.is-lit .graph-edge { stroke: var(--accent); }
+.graph-spoke.is-lit .graph-edge-label { fill: var(--accent); }
+
+.graph-halo {
+  fill: none;
+  stroke: var(--accent);
+  stroke-opacity: 0.28;
+  stroke-width: 1;
+}
+
+.graph-centre-label {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--text);
+  pointer-events: none;
+}
+
+.graph-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ---------------- toolbar ---------------- */
+
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+}
+
+.graph-title { display: flex; align-items: baseline; gap: 0.7rem; }
+
+.graph-title strong {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.graph-title span { font-size: 0.72rem; color: var(--text-mute); }
+
+.graph-tools { display: flex; align-items: center; gap: 0.6rem; }
+
+.graph-zoom {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.graph-zoom button {
+  padding: 0.32rem 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.graph-zoom button + button { border-left: 1px solid var(--border); }
+.graph-zoom button:hover:not(:disabled) { color: var(--accent); background: var(--accent-wash); }
+.graph-zoom button:disabled { opacity: 0.35; cursor: default; }
+
+/* ---------------- canvas ---------------- */
+
+.graph svg { cursor: grab; touch-action: none; }
+.graph svg.is-panning { cursor: grabbing; }
+
+/* A re-centre fades the new neighbourhood in, so walking reads as movement
+   rather than as the picture being swapped out underneath you. */
+.graph-scene { animation: graph-in 0.28s var(--ease) both; }
+
+@keyframes graph-in {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graph-scene { animation: none; }
+}
+
+.graph-edge { fill: none; }
+
+/* ---------------- legend ---------------- */
+
+.graph-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-mute);
+}
+
+.graph-key-dot {
+  display: inline-block;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+}
+
+.graph-key-dot.is-small { width: 7px; height: 7px; }
+.graph-key-dot.is-big { width: 13px; height: 13px; margin-right: 0.2rem; }

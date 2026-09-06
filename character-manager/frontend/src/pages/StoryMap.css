@@ -331,3 +331,55 @@
   outline: none;
   border-color: var(--accent);
 }
+
+.graph-hint {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.graph-hint .chip-row { justify-content: center; margin-top: 1rem; }
+
+.story-degree {
+  margin: -0.4rem 0 0.7rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+/* In graph mode the graph is the subject, so it takes the full width and the
+   panel sits under it. Side by side, a neighbourhood of twenty-five nodes was
+   squeezed into half the page and its labels collided. */
+.story-body.is-graph {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.story-body.is-graph .story-panel {
+  position: static;
+  max-width: 60rem;
+}
+
+.graph-trail {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+
+.graph-crumb {
+  padding: 0.15rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.graph-crumb:hover { color: var(--accent); }
+.graph-crumb::after { content: '›'; margin-left: 0.5rem; opacity: 0.5; }
+.graph-crumb.is-here { color: var(--text); cursor: default; }
+.graph-crumb.is-here::after { content: ''; }
