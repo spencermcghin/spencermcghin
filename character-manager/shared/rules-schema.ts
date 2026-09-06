@@ -45,11 +45,41 @@ export interface Cost {
  * Evaluated against a character. Composable.
  * ------------------------------------------------------------------ */
 
+/**
+ * Picks out a set of traits by what they are rather than by name.
+ *
+ * The same shape PurchaseRule.appliesTo uses, because "which skills does this
+ * apply to" is one question however it is asked. Selectors combine with AND:
+ * an empty selector matches every trait.
+ */
+export interface TraitSelector {
+  tag?: string;
+  groupId?: Id;
+  /** Excludes traits carrying this tag: "any non-crafting general skill". */
+  notTag?: string;
+}
+
 export type Condition =
   | { kind: 'always' }
   | { kind: 'never' }
   /** Character has `traitId` at `minLevel` or higher. */
   | { kind: 'trait'; traitId: Id; minLevel: number }
+  /**
+   * Character has `count` or more traits matching a selector, each at
+   * `minLevel` or higher. The "any weapon skill" case.
+   *
+   * Distinct from listing the qualifying skills in an `any`: that list has to
+   * be revised every time a skill is added or retagged, and a rule written
+   * before a skill existed silently fails to cover it. Naming the selector
+   * instead means the rule keeps meaning what it said.
+   */
+  | {
+      kind: 'anyTrait';
+      matching: TraitSelector;
+      minLevel: number;
+      /** Defaults to 1 where omitted. */
+      count?: number;
+    }
   /** Character holds a specific package. */
   | { kind: 'package'; packageId: Id }
   /** Character holds any package of a given tier. */
@@ -113,8 +143,15 @@ export type Grant =
   | { kind: 'trait'; traitId: Id; level: number }
   /** Player picks `pick` of `from`. Models "Hunting 1 or Farming 1". */
   | { kind: 'choice'; pick: number; from: Grant[] }
-  /** Open-ended pick, e.g. "any level 1 general skill". */
-  | { kind: 'traitChoice'; count: number; level: number; matching: Condition }
+  /**
+   * Open-ended pick, e.g. "any level 1 general skill".
+   *
+   * Selected by TraitSelector rather than by Condition: a Condition is
+   * evaluated against a character and so cannot say which traits qualify,
+   * which left every real use of this grant writing `always` and losing the
+   * restriction it was trying to express.
+   */
+  | { kind: 'traitChoice'; count: number; level: number; matching: TraitSelector }
   | { kind: 'modifier'; modifier: Modifier }
   /** Text the engine cannot evaluate; surfaced to staff and on the sheet. */
   | { kind: 'note'; text: string };
@@ -131,7 +168,17 @@ export interface Modifier {
   label: string;
   target:
     | { kind: 'trackStepCost'; trackId: Id }
-    | { kind: 'traitCost'; tag?: string; traitId?: Id }
+    | {
+        kind: 'traitCost';
+        tag?: string;
+        traitId?: Id;
+        /**
+         * Only levels at or above this one. Eldritch's Chemist pays "1 less
+         * CP when purchasing Alchemy at levels 2 and 3", so a discount that
+         * ignored the level would also cheapen level 1.
+         */
+        minLevel?: number;
+      }
     | { kind: 'packageCost'; packageId?: Id };
   operation: 'percentReduction' | 'percentIncrease' | 'flatReduction';
   value: number;
@@ -267,10 +314,21 @@ export interface PurchaseRule {
   message: string;
   phase: 'creation' | 'advancement' | 'both';
   /** Which traits this constrains. Omit all selectors to mean every trait. */
-  appliesTo: { tag?: string; groupId?: string };
+  appliesTo: TraitSelector;
   maxLevel: number;
   /** Only constrain traits the character's packages did not grant. */
   onlyIfNotGranted?: boolean;
+  /**
+   * Only apply to characters this holds for. Omit for a cap that always
+   * applies.
+   *
+   * Eldritch's creation caps depend on which event the character was made
+   * for: three levels before Event 5, two through Event 6, none after. A
+   * phase of `creation` says when a cap is checked, not who it binds, so
+   * without this the three regimes collapse into one and two of them are
+   * lost.
+   */
+  when?: Condition;
 }
 
 /* ------------------------------------------------------------------ *

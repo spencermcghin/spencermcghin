@@ -649,6 +649,7 @@ function ClauseEditor({
 }) {
   const clauses = edit.clausesOf(condition);
   const operator = edit.operatorOf(condition);
+  const allTags = [...new Set(ruleset.traits.flatMap((t) => t.tags))].sort();
 
   const write = (next: Condition[]) => onChange(edit.conditionFrom(operator, next));
   const replace = (i: number, clause: Condition) =>
@@ -710,6 +711,7 @@ function ClauseEditor({
               : clause.kind === 'packageTier' ? 'Any of tier'
               : clause.kind === 'quality' ? 'Has'
               : clause.kind === 'manual' ? 'A person checks'
+              : clause.kind === 'anyTrait' ? 'Any skill'
               : 'Nested'}
           </span>
 
@@ -779,6 +781,53 @@ function ClauseEditor({
                 </option>
               ))}
             </select>
+          )}
+
+          {clause.kind === 'anyTrait' && (
+            <>
+              {/* Tag and tree in one control: they are alternative ways of
+                  saying which skills count, and offering two selects invites
+                  setting both by accident. */}
+              <select
+                value={
+                  clause.matching.groupId
+                    ? `group:${clause.matching.groupId}`
+                    : `tag:${clause.matching.tag ?? ''}`
+                }
+                disabled={!canEdit}
+                onChange={(e) => {
+                  const [kind, value] = [
+                    e.target.value.slice(0, e.target.value.indexOf(':')),
+                    e.target.value.slice(e.target.value.indexOf(':') + 1),
+                  ];
+                  replace(i, {
+                    ...clause,
+                    matching: kind === 'group' ? { groupId: value } : { tag: value },
+                  });
+                }}
+              >
+                {allTags.map((t) => (
+                  <option key={`tag:${t}`} value={`tag:${t}`}>
+                    tagged {t}
+                  </option>
+                ))}
+                {ruleset.traitGroups.map((g) => (
+                  <option key={`group:${g.id}`} value={`group:${g.id}`}>
+                    in {g.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                min={1}
+                value={clause.minLevel}
+                aria-label="Minimum level"
+                disabled={!canEdit}
+                onChange={(e) =>
+                  replace(i, { ...clause, minLevel: Number(e.target.value) })
+                }
+              />
+            </>
           )}
 
           {clause.kind === 'manual' && (
@@ -861,6 +910,22 @@ function ClauseEditor({
               }
             >
               + Quality
+            </button>
+          )}
+          {(allTags.length > 0 || ruleset.traitGroups.length > 0) && (
+            <button
+              title="Requires any skill of a kind, rather than one skill by name"
+              onClick={() =>
+                write([...clauses, {
+                  kind: 'anyTrait',
+                  matching: allTags.length > 0
+                    ? { tag: allTags[0] }
+                    : { groupId: ruleset.traitGroups[0].id },
+                  minLevel: 1,
+                }])
+              }
+            >
+              + Any skill
             </button>
           )}
           <button

@@ -1,0 +1,3438 @@
+{
+ "provenance": {
+  "rules": "Eldritch Player's Guide - 2026 (Google Doc 1dN2_tHo6uIX9yga7ffsZbmFrEix00AU5), modified 2026-07-16 -- authoritative for every skill, cost and prerequisite",
+  "classification": "Unofficial Eldritch Character Planner (Google Sheet 1wnFlUNb0T0M6v81Eu1_VcuTaxIzLKIE6X9i3H3V6mQE) -- used only for the Crafting/Gathering/Attack/Defend classification and the lore table, which the guide gives in prose",
+  "extracted": "2026-09-06"
+ },
+ "skillColumns": [
+  "Name",
+  "Description",
+  "Prerequisite",
+  "CP Cost"
+ ],
+ "advColumns": [
+  "Name",
+  "Description",
+  "Prerequisite",
+  "CP Cost",
+  "Archetype",
+  "Tree"
+ ],
+ "basicColumns": [
+  "Name",
+  "CP Cost",
+  "Starting Equipment",
+  "Starting Coin",
+  "Retainer Benefit",
+  "Salary",
+  "Starting Skills",
+  "Notes"
+ ],
+ "advArchColumns": [
+  "Name",
+  "CP Cost",
+  "Retainer Benefit",
+  "Salary",
+  "Basic Archetype Prerequisite",
+  "Starting Skills",
+  "Notes"
+ ],
+ "loreColumns": [
+  "Name",
+  "Type",
+  "Subtype",
+  "Description",
+  "Prerequisite",
+  "Cost",
+  "CPUsed",
+  "Calls",
+  "Notes"
+ ],
+ "general": [
+  [
+   "Academics - 1",
+   "Academics 1 - Academics represents your ability to pour through tomes and elicit information from texts. Can read and write. Access lore noted as level 1 as long as you have signed a syllabus in the relevant subject(s) and meet any other requirements on the lore prop. See additional details on Academics and Lore.",
+   "None",
+   "1"
+  ],
+  [
+   "Academics - 2",
+   "Academics 2 - Access lore noted as level 2, as long as you have leveled the relevant lore skill(s) to 2 and meet any other requirements on the lore prop. See additional details on leveling lore skills.",
+   "Academics - 1",
+   "2"
+  ],
+  [
+   "Academics - 3",
+   "Academics 3 - Access lore noted as level 3, as long as you have leveled relevant lore skill(s) to 3 and meet any other requirements on the lore prop. See additional details on leveling lore skills.",
+   "Academics - 2",
+   "2"
+  ],
+  [
+   "Alchemy - 1",
+   "(Crafting) Can use level 1 schematics to create alchemy substances. See additional details about crafting.",
+   "None",
+   "3"
+  ],
+  [
+   "Alchemy - 2",
+   "Can use level 2 schematics to create alchemy substances. Gain one level 2 schematic of your choice at the next Check In after purchasing this skill.",
+   "Alchemy - 1",
+   "3"
+  ],
+  [
+   "Alchemy - 3",
+   "Can use level 3 schematics to create alchemy substances. Gain one level 3 schematic of your choice at the next Check In after purchasing this skill.",
+   "Alchemy - 2",
+   "3"
+  ],
+  [
+   "Artificer - 1",
+   "(Crafting) Can use level 1 schematics to create artificer goods. See additional details about crafting.",
+   "None",
+   "3"
+  ],
+  [
+   "Artificer - 2",
+   "Can use level 2 schematics to create artificer goods. Gain one level 2 schematic of your choice at the next Check In after purchasing this skill.",
+   "Artificer - 1",
+   "3"
+  ],
+  [
+   "Artificer - 3",
+   "Can use level 3 schematics to create artificer goods. Gain one level 3 schematic of your choice at the next Check In after purchasing this skill.",
+   "Artificer - 2",
+   "3"
+  ],
+  [
+   "Blacksmith - 1",
+   "(Crafting) Can repair all weapons and armor. Can use level 1 schematics to create Blacksmith goods. See additional details about crafting.",
+   "None",
+   "3"
+  ],
+  [
+   "Blacksmith - 2",
+   "Can use level 2 schematics to create Blacksmith goods. Gain one level 2 schematic of your choice at the next Check In after purchasing this skill.",
+   "Blacksmith - 1",
+   "3"
+  ],
+  [
+   "Blacksmith - 3",
+   "Can use level 3 schematics to create Blacksmith goods. Gain one level 3 schematic of your choice at the next Check In after purchasing this skill.",
+   "Blacksmith - 2",
+   "3"
+  ],
+  [
+   "Bowyer - 1",
+   "(Crafting) Can make bows and arrows, and repair bows. May acquire the Arrows schematic or the Bow schematic. See additional details about crafting.",
+   "Artificer - 1",
+   "1"
+  ],
+  [
+   "Bowyer - 2",
+   "Can make improved bows. The schematic for improved bows will be provided upon purchasing this skill.",
+   "Artificer - 2 and Bowyer - 1",
+   "1"
+  ],
+  [
+   "Bowyer - 3",
+   "Can make masterwork bows. The schematic for masterwork bows will be provided upon purchasing this skill.",
+   "Bowyer - 2",
+   "1"
+  ],
+  [
+   "Diagnose - 1",
+   "Determine whether another character is poisoned or diseased and access the information on a corresponding poison or disease card. Allows you to diagnose level one diseases and poisons. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Diagnose - 2",
+   "Diagnose level 2 diseases and poisons.",
+   "Diagnose - 1",
+   "1"
+  ],
+  [
+   "Diagnose - 3",
+   "Diagnose level 3 diseases and poisons.",
+   "Diagnose - 2",
+   "1"
+  ],
+  [
+   "Disable Device - 1",
+   "Allows the character to pick locks by using a lock-picking set. When drawing from a lock-picking deck, the character can use any letter in the Level 1 row. See additional details.",
+   "Lockpicking kit",
+   "1"
+  ],
+  [
+   "Disable Device - 2",
+   "When drawing from a lockpicking deck, the character can use any letters in the Level 1 and 2 rows.",
+   "Disable Device - 1",
+   "2"
+  ],
+  [
+   "Disable Device - 3",
+   "When drawing from a lockpicking deck, the character can use any letters in the Level 1, 2, and 3 rows.",
+   "Disable Device - 2",
+   "2"
+  ],
+  [
+   "Espionage - 1",
+   "Gain 2 Espionage points per event at check in. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Espionage - 2",
+   "Gain 4 Espionage points per event at check in.",
+   "Espionage - 1",
+   "1"
+  ],
+  [
+   "Espionage - 3",
+   "Gain 6 Espionage points per event at check in.",
+   "Espionage - 2",
+   "1"
+  ],
+  [
+   "Farming - 1",
+   "Gain 4 Cloth per event at check in. Access Farming nodes at events. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Farming - 2",
+   "Gain 12 Cloth per event at check in. Access more resources from Farming nodes at events",
+   "Farming - 1",
+   "2"
+  ],
+  [
+   "Farming - 3",
+   "Gain 20 Cloth per event at check in. Access more resources from Farming nodes at events",
+   "Farming - 2",
+   "2"
+  ],
+  [
+   "Gathering - 1",
+   "Gain 4 random resources per event at check in. Access Gathering nodes at events. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Gathering - 2",
+   "Gain 12 random resources per event. Access more resources from Gathering nodes at events.",
+   "Gathering - 1",
+   "2"
+  ],
+  [
+   "Gathering - 3",
+   "Gain 20 random resources per event at check in. Access more resources from Gathering nodes at events.",
+   "Gathering - 2",
+   "2"
+  ],
+  [
+   "Gunsmith - 1",
+   "(Crafting) Can make ammunition and repair firearms. The schematic for bullets will be provided upon purchasing this skill. See additional details about crafting. Your background should indicate a connection to House Richter, because they control knowledge of gunsmithing.",
+   "Artificer - 1 and Dusklander background",
+   "1"
+  ],
+  [
+   "Gunsmith - 2",
+   "Can make pistols. The schematic for pistols will be provided upon purchasing this skill.",
+   "Blacksmith - 1 and Gunsmith - 1",
+   "1"
+  ],
+  [
+   "Gunsmith - 3",
+   "Can make masterwork pistols and rifles. The schematic for both will be provided upon purchasing this skill.",
+   "Gunsmith - 2",
+   "1"
+  ],
+  [
+   "Herbalism - 1",
+   "Gain 4 random apothecary reagents per event at check in. Access Herbalism nodes at events. See additional details. You can pull reagents from the level 1 reagents box.",
+   "None",
+   "1"
+  ],
+  [
+   "Herbalism - 2",
+   "Gain 12 random apothecary reagents per event at check in. You may now pull reagents from the level 1 and level 2 reagents boxes. You can choose which box to pull from for each of your 12 reagents. Access more resources from Herbalism nodes at events.",
+   "Herbalism - 1",
+   "2"
+  ],
+  [
+   "Herbalism - 3",
+   "Gain 20 random apothecary reagents per event at check in. You may now pull reagents from the level 1, level 2, and level 3 reagents boxes. You can choose which box to pull from for each of your 20 reagents. Access more resources from Herbalism nodes at events.",
+   "Herbalism - 2",
+   "2"
+  ],
+  [
+   "Hunting - 1",
+   "Gain 4 leather per event at check in. Access Hunting nodes at events. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Hunting - 2",
+   "Gain 12 leather per event at check in. Access more resources from Hunting nodes at events.",
+   "Hunting - 1",
+   "2"
+  ],
+  [
+   "Hunting - 3",
+   "Gain 20 leather per event at check in. Access more resources from Hunting nodes at events.",
+   "Hunting - 2",
+   "2"
+  ],
+  [
+   "Income - 1",
+   "Gain 4 silver dragons per event at check in.",
+   "None",
+   "1"
+  ],
+  [
+   "Income - 2",
+   "Gain 12 silver dragons per event at check in.",
+   "Income - 1",
+   "2"
+  ],
+  [
+   "Income - 3",
+   "Gain 20 silver dragons per event at check in.",
+   "Income - 2",
+   "2"
+  ],
+  [
+   "Influential - 1",
+   "Gain 1 Influence per event at check in. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Influential - 2",
+   "Gain 3 Influence per event at check in.",
+   "Influential - 1",
+   "2"
+  ],
+  [
+   "Influential - 3",
+   "Gain 5 Influence per event at check in.",
+   "Influential - 2",
+   "2"
+  ],
+  [
+   "Medicine - 1",
+   "Halt a player's bleeding count and after 10 minutes of roleplay, restore a player from the Bleeding condition to the Wounded condition. This count must go uninterrupted or the bleeding count will start again. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Medicine - 2",
+   "Halt a player's bleeding count and after 8 minutes of uninterrupted roleplay, restore a player from the Bleeding condition to the Wounded condition.",
+   "Medicine - 1",
+   "2"
+  ],
+  [
+   "Medicine - 3",
+   "Halt a player's bleeding count and after 6 minutes of uninterrupted roleplay, restore a player from the Bleeding condition to the Wounded condition.",
+   "Medicine - 2",
+   "2"
+  ],
+  [
+   "Mining - 1",
+   "Gain 4 iron ingots per event at check in. Access Mining nodes at events. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Mining - 2",
+   "Gain 12 iron ingots per event at check in. Access more resources from Mining nodes at events.",
+   "Mining - 1",
+   "2"
+  ],
+  [
+   "Mining - 3",
+   "Gain 20 iron ingots per event at check in. Access more resources from mining nodes at events.",
+   "Mining - 2",
+   "2"
+  ],
+  [
+   "Perception - 1",
+   "Gain specific information on an in-game space labeled with Perception 1. Information will be represented as business card sized tags or letter sized documents. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Perception - 2",
+   "Gain access to information gated by Perception 2.",
+   "Perception - 1",
+   "2"
+  ],
+  [
+   "Perception - 3",
+   "Gain access to information gated by Perception 3.",
+   "Perception - 2",
+   "2"
+  ],
+  [
+   "Tracking - 1",
+   "Determine the direction a being or object was moving overland labeled with Tracking 1. Information will be represented by stakes with colored tape or business card sized tags. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Tracking - 2",
+   "Track trails labeled with Tracking 2.",
+   "Tracking - 1",
+   "2"
+  ],
+  [
+   "Tracking - 3",
+   "Track trails labeled with Tracking 3.",
+   "Tracking - 2",
+   "2"
+  ],
+  [
+   "Woodcutting - 1",
+   "Gain 4 refined wood per event at check in. Access Woodcutting nodes at events. See additional details.",
+   "None",
+   "1"
+  ],
+  [
+   "Woodcutting - 2",
+   "Gain 12 refined wood per event at check in. Access additional resources from Woodcutting nodes at events.",
+   "Woodcutting - 1",
+   "2"
+  ],
+  [
+   "Woodcutting - 3",
+   "Gain 20 refined wood per event at check in. Access even more additional resources from Woodcutting nodes at events.",
+   "Woodcutting - 2",
+   "2"
+  ]
+ ],
+ "martial": [
+  [
+   "Archer",
+   "Can use a bow. Gain access to the Stun active martial skill with the bow. May use one Stun call with a bow per Refresh. Arrows ignore Armor Value (AV) and Tough on their targets.",
+   "None",
+   "1"
+  ],
+  [
+   "Armor Proficiency - 1",
+   "Can wear armor of any type. While wearing light armor (chain shirt or leather), gain the armor\u2019s full Listed Armor Value. While wearing medium (coat of plates), your effective AV is the listed AV of light armor of that same tier, or 3 AV if medium, and 4 AV if heavy.",
+   "None",
+   "1"
+  ],
+  [
+   "Armor Proficiency - 2",
+   "Get maximum AV from any light or medium armor worn. While wearing heavy armor, your effective AV is the listed AV of medium armor of that same tier, or 4 AV, whichever is higher.",
+   "Armor Proficiency - 1",
+   "2"
+  ],
+  [
+   "Armor Proficiency - 3",
+   "Get maximum AV out of any armor worn, light, medium, or heavy.",
+   "Armor Proficiency - 2",
+   "2"
+  ],
+  [
+   "Combat Agility - 1",
+   "Gain +1 Armor Value (AV) on light and medium armor.",
+   "Armor Proficiency - 1",
+   "1"
+  ],
+  [
+   "Combat Agility - 2",
+   "Gain +1 AV on light and medium armor.",
+   "Combat Agility - 1",
+   "1"
+  ],
+  [
+   "Combat Agility - 3",
+   "Gain +1 AV on light and medium armor.",
+   "Combat Agility - 2",
+   "1"
+  ],
+  [
+   "Gunner",
+   "May use an approved prop firearm in combat. Bullets send targets directly into their Dying Count regardless of hit location, Tough, or Armor. Bullets apply one Sunder to shields that are hit.",
+   "None",
+   "1"
+  ],
+  [
+   "Master of Arms - 1",
+   "Gain +1 use of any ONE active martial skill that you have access to, per Refresh. Can wield a one-handed weapon in both hands, except for a bow.",
+   "At least ONE of the following: Archer, Gunner, One-Handed Weapons - 1, Two-Handed Weapons - 1, Shields - 1",
+   "1"
+  ],
+  [
+   "Master of Arms - 2",
+   "Gain +1 use of any ONE active martial skill that you have access to, per Refresh. You may choose the same or different active martial skills for each level of Master of Arms each Refresh.",
+   "Master of Arms - 1",
+   "2"
+  ],
+  [
+   "Master of Arms - 3",
+   "Gain +1 use of any ONE active martial skill that you have access to, per Refresh. You may choose the same or different active martial skills for each level of Master of Arms each Refresh.",
+   "Master of Arms - 2",
+   "2"
+  ],
+  [
+   "One-Handed Weapons - 1",
+   "May use a small or medium weapon. Gain access to the Stun active martial skill with a small or medium weapon. May use one Stun call with a small or medium weapon per Refresh.",
+   "None",
+   "1"
+  ],
+  [
+   "One-Handed Weapons - 2",
+   "Gain access to the Stagger active martial skill. May use one Stagger call with a small or medium weapon per refresh.",
+   "One Handed Weapons - 1",
+   "2"
+  ],
+  [
+   "One-Handed Weapons - 3",
+   "Gain access to the Disarm active martial skill. May use one Disarm call with a small or medium weapon per refresh.",
+   "One Handed Weapons - 2",
+   "2"
+  ],
+  [
+   "Resilience - 1",
+   "Add 1 minute to the duration of your Bleeding count.",
+   "None",
+   "1"
+  ],
+  [
+   "Resilience - 2",
+   "Add 3 minutes to the duration of your Bleeding count.",
+   "Resilience - 1",
+   "2"
+  ],
+  [
+   "Resilience - 3",
+   "Add 5 minutes to the duration of your Bleeding count.",
+   "Resilience - 2",
+   "2"
+  ],
+  [
+   "Shields - 1",
+   "May use shields. Shields cannot be disarmed. Shields can block bullets but receive a Sunder when they do. Shields can block all weapon strikes and arrows.",
+   "None",
+   "1"
+  ],
+  [
+   "Shields - 2",
+   "Gain access to the Stun active martial skill. May use one Stun call with your melee weapon, per Refresh. Please do not shield bash other people; you may instead mime the Stun with your shield while delivering it with your weapon, if you wish. You may call the Stun from the front or back of your opponent.",
+   "Shields - 1",
+   "2"
+  ],
+  [
+   "Shields - 3",
+   "Gain access to the Resist active martial skill. May use one Resist call with a shield per refresh.",
+   "Shields - 2",
+   "2"
+  ],
+  [
+   "Tough - 1",
+   "Gain +1 point to your Armor Value (AV) total. This is your character\u2019s natural toughness and does not require armor to be worn. Tough points refresh at the same time as all other active martial skills.",
+   "None",
+   "1"
+  ],
+  [
+   "Tough - 2",
+   "Gain +1 point to your AV total.",
+   "Tough - 1",
+   "1"
+  ],
+  [
+   "Tough - 3",
+   "Gain +1 point to your AV total.",
+   "Tough - 2",
+   "1"
+  ],
+  [
+   "Two-Handed Weapons - 1",
+   "May use large weapons. Two-handed weapons cannot be disarmed.",
+   "None",
+   "1"
+  ],
+  [
+   "Two-Handed Weapons - 2",
+   "Gain access to the Sunder active martial skill. May use one Sunder call with a large weapon per Refresh.",
+   "Two-Handed Weapons - 1",
+   "2"
+  ],
+  [
+   "Two-Handed Weapons - 3",
+   "Gain access to the Cleave active martial skill. May use one Cleave call with a large weapon per refresh.",
+   "Two-Handed Weapons - 2",
+   "2"
+  ]
+ ],
+ "adv": [
+  [
+   "Acolytes (Signature)",
+   "Gain +2 Retainer slots.",
+   "Faithful - 1 and Rank 2",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Bless - 1",
+   "May use the Bless skill 1 time per event. After an Auron appropriate blessing, the target may receive one temporary active martial skill use. This should be one the target player already has access to through their martial skills.",
+   "Rank 0",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "Bless - 2",
+   "May use the Bless skill 2 times per event.",
+   "Bless - 1 and Rank 2",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Bless - 3",
+   "May use the Bless skill 3 times per event.",
+   "Bless - 2 and Rank 3",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Bulwark of Faith - 1",
+   "May use the Bulwark of Faith skill 1 time per Refresh. See additional details below this table.",
+   "Rank 0",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "Bulwark of Faith - 2",
+   "May use the Bulwark of Faith skill 2 times per Refresh.",
+   "Bulwark of Faith - 1 and Rank 2",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Bulwark of Faith - 3",
+   "May use the Bulwark of Faith skill 3 times per Refresh.",
+   "Bulwark of Faith - 2 and Rank 3",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Dawn Ceremony",
+   "May perform a Dawn Ceremony once per event as outlined in the Auron packet. After doing so, all in attendance of the ceremony receive one temporary point of Tough and may negate the Fear effect once anytime throughout the rest of the event. The Tough and negate Fear granted in this way do not stack with Bulwark of Faith and Embolden, respectively.",
+   "Rank 0",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "Donations - 1",
+   "Gain 8 silver dragons per event at check in.",
+   "Rank 0",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "Donations - 2",
+   "Gain 24 silver dragons per event at check in.",
+   "Donations - 1 and Rank 2",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Donations - 3",
+   "Gain 4 gold dragons per event at check in.",
+   "Donations - 2 and Rank 2",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Embolden - 1",
+   "May use the Embolden skill 1 time per Refresh. See additional details below this table.",
+   "Rank 0",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "Embolden - 2",
+   "May use the Embolden skill 2 times per Refresh.",
+   "Embolden - 1 and Rank 2",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Embolden - 3",
+   "May use the Embolden skill 3 times per Refresh.",
+   "Embolden - 2 and Rank 3",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Faithful - 1",
+   "Gain +1 Retainer slot.",
+   "Rank 0",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "Faithful - 2",
+   "Gain +1 Retainer slot.",
+   "Faithful - 1 and Rank 2",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "Faithful - 3",
+   "Gain +1 Retainer slot.",
+   "Faithful - 2 and Rank 2",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "The First Estate (Signature)",
+   "Gain 2 Influence per Retainer at check in.",
+   "Influential - 1 and Rank 2",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Tithes - 1",
+   "150% Retainer Benefit from retainers with the Commonfolk, Urchin, Farmer, Feller, Miner, and Hunter archetypes at check in. If the retainer has the Veteran or no advanced archetype, you gain 175% instead.",
+   "Rank 0",
+   "1",
+   "Auron",
+   "General"
+  ],
+  [
+   "Tithes - 2",
+   "Gain 200% more Retainer Benefit from retainers with the Commonfolk, Urchin, Farmer, Feller, Miner, and Hunter archetypes at check in. If the retainer has the Veteran or no advanced archetype, you gain 250% instead.",
+   "Tithes - 1 and Rank 2",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Tithes - 3",
+   "Gain 250% more Retainer Benefit from retainers with the Commonfolk, Urchin, Farmer, Feller, Miner, and Hunter archetypes at check in. If the retainer has the Veteran or no advanced archetype, you gain 300% instead.",
+   "Tithes - 2 and Rank 3",
+   "2",
+   "Auron",
+   "General"
+  ],
+  [
+   "Bribery",
+   "May convert 5 silver dragons to 1 Influence per event at check in. Up to 3 Influence may be created in this way.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Gossip - 1",
+   "Gain +2 Espionage points at check in.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Gossip - 2",
+   "Gain +4 Espionage points at check in.",
+   "Gossip - 1 and Rank 2",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Gossip - 3",
+   "Gain +6 Espionage points at check in.",
+   "Gossip - 2 and Rank 3",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Guildmaster - 1",
+   "Gain +1 Retainer slot.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Guildmaster - 2",
+   "Gain +1 Retainer slot.",
+   "Guildmaster - 1 and Rank 2",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Guildmaster - 3",
+   "Gain +1 Retainer slot.",
+   "Guildmaster - 2 and Rank 3",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Prestige - 1",
+   "Gain 3 silver dragons for each Retainer at check in. You may take this payout in any mix of resources and coin, using market prices.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Prestige - 2",
+   "Gain 7 silver dragons for each Retainer at check in. You may take this payout in any mix of resources and coin, using market prices.",
+   "Prestige - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Prestige - 3",
+   "Gain 10 silver dragons for each Retainer at check in. You may take this payout in any mix of resources and coin, using market prices.",
+   "Prestige - 2 and Rank 3",
+   "2",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Profiteer - 1",
+   "Gain 8 silver dragons per event at check in.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Profiteer - 2",
+   "Gain 24 silver dragons per event at check in.",
+   "Profiteer - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Profiteer - 3",
+   "Gain 4 gold dragons per event at check in.",
+   "Profiteer - 2 and Rank 3",
+   "2",
+   "Cirque",
+   "General"
+  ],
+  [
+   "The Boss (Signature)",
+   "Gain +2 Retainer slots.",
+   "Guildmaster - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "General"
+  ],
+  [
+   "Artisan",
+   "When purchasing Blacksmithing or Artificer crafting skill at levels 2 or 3, it costs one less CP. You may also gain an additional Schematic of the same level at random.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Devotion to Practice - 1",
+   "Once per event, you may copy one Schematic that you own OR acquire one Schematic of your choice of a craft you own. The maximum level of any acquired Schematic from this skill is Level 1.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Devotion to Practice - 2",
+   "Once per event, you may copy one Schematic that you own OR acquire one Schematic of your choice of a craft you own. The maximum level of any acquired Schematic from this skill is Level 2.",
+   "Devotion to Practice - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Devotion to Practice - 3",
+   "Once per event, you may copy one Schematic that you own OR acquire one Schematic of your choice of a craft you own. The maximum level of any acquired Schematic from this skill is Level 3.",
+   "Devotion to Practice - 2 and Rank 3",
+   "2",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Efficient Craftsman (Signature)",
+   "Get a 25% reduction on crafting costs (use true rounding: =\\1.4 round down; \\=1.5 round up). You may choose which resources to save as a result.",
+   "Rank 2",
+   "2",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Efficient Gatherer - 1",
+   "Gain 6 additional resources of your choosing at check in.",
+   "Gathering - 1 and Rank 0",
+   "1",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Efficient Gatherer - 2",
+   "Gain 16 additional resources of your choosing at check in.",
+   "Efficient Gatherer - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Efficient Gatherer - 3",
+   "Gain 26 additional resources of your choosing at check in.",
+   "Efficient Gatherer - 2 and Rank 3",
+   "2",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Master Artisan (Signature)",
+   "Unlock special Schematics either found or purchased at events that are available only to those with this skill. Gain 1 free non-Alchemy master artisan schematic that matches a level 3 crafting skill you have.",
+   "Blacksmith or Artificer skill at level 3 and Rank 2",
+   "2",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Trade Caravans - 1",
+   "Purchase up to 30 resources of your choice at the market price, as listed in the Cirque Market Price Guide at check in.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Trade Caravans - 2",
+   "Purchase up to 60 resources of your choice at the market price, as listed in the Cirque Market Price Guide at check in.",
+   "Trade Caravans - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Trade Caravans - 3",
+   "Purchase up to 100 resources of your choice at the market price, as listed in the Cirque Market Price Guide at check in.",
+   "Trade Caravans - 2 and Rank 3",
+   "2",
+   "Cirque",
+   "Troupe"
+  ],
+  [
+   "Blackmail",
+   "May convert 3 Espionage points to 4 silver dragons OR 4 silver dragons to 2 Espionage points at check in. May convert up to 2 gold dragons or 10 Espionage in this way.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Heist - 1",
+   "Purchase up to 6 resources per Retainer, as listed in the Cirque Market Price Guide at check in. Final amounts are determined based on a random roll in the range of +/- 10% more resources.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Heist - 2",
+   "Purchase up to 14 resources per Retainer at check in; modifier range is +/- 20% resources.",
+   "Heist - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Heist - 3",
+   "Purchase up to 20 resources per Retainer at check in; modifier range is +/- 30% resources.",
+   "Heist - 2 and Rank 3",
+   "2",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Henchman (Signature)",
+   "Gain the Henchman skill. See additional details below this table.",
+   "Shadow Merchant - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Master Thief (Signature)",
+   "Choose 3 letters from the range of lockpicking letters, A - X. When picking a lock, you now always have access to these letters. Gain the permanent letters Y and Z. May now automatically defeat any Level 1 - 3 Basic Lock once per Refresh.",
+   "Disable Device - 3 and Rank 2",
+   "2",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Rumormonger - 1",
+   "Generate one negative Rumor about a character at the event. Send your rumor(s) to staff at least one week before each event via contact@eldritchlarp.com or our Contact form.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Rumormonger - 2",
+   "Generate two negative Rumors about up to 2 characters at the event.",
+   "Rumormonger - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Rumormonger - 3",
+   "Generate three negative Rumors about up to 3 characters at the event.",
+   "Rumormonger - 2 and Rank 3",
+   "2",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Scandalous Rumors (Signature)",
+   "Steal X Influence from each player targeted by your Rumormonger skill at check in. X equals your level of skill in Rumormonger. This skill may only be used every other event on a given player.",
+   "Rumormonger - 1 and Rank 2",
+   "2",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Shadow Merchant",
+   "Gain access to the Black Market item sheet. You may purchase any number of items from this list at check in, or as staff is available at events.",
+   "Rank 0",
+   "1",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Stun Mastery",
+   "May now use the Stun active martial skill from any direction when attacking, and gain one extra use of Stun per Refresh. You must have access to Stun already, through a weapons skill that grants it.",
+   "A Weapons Skill and Rank 0",
+   "1",
+   "Cirque",
+   "Menagerie"
+  ],
+  [
+   "Armor Mastery - 1",
+   "Gain +1 Armor Value (AV) when wearing any armor type.",
+   "Armor Proficiency - 1 and Rank 0",
+   "1",
+   "Knight",
+   "General"
+  ],
+  [
+   "Armor Mastery - 2",
+   "Gain +1 AV when wearing any armor type.",
+   "Armor Mastery - 1 and Rank 2",
+   "1",
+   "Knight",
+   "General"
+  ],
+  [
+   "Armor Mastery - 3",
+   "Gain +1 AV when wearing any armor type.",
+   "Armor Mastery - 2 and Rank 3",
+   "1",
+   "Knight",
+   "General"
+  ],
+  [
+   "Banneret - 1",
+   "Gain +1 Retainer slot. Any retainers you employ must be Soldier Basic Archetype only. They may have the Veteran Advanced Archetype.",
+   "Rank 0",
+   "1",
+   "Knight",
+   "General"
+  ],
+  [
+   "Banneret - 2",
+   "Gain +1 retainer slot.",
+   "Banneret - 1 and Rank 2",
+   "1",
+   "Knight",
+   "General"
+  ],
+  [
+   "Banneret - 3",
+   "Gain +1 retainer slot.",
+   "Banneret - 2 and Rank 3",
+   "1",
+   "Knight",
+   "General"
+  ],
+  [
+   "Lionheart",
+   "May negate the Fear effect once per Refresh.",
+   "Rank 0",
+   "1",
+   "Knight",
+   "General"
+  ],
+  [
+   "Martial Training",
+   "Choose any two of the following martial skills: One-Handed Weapons - 1, Two-Handed Weapons - 1, Tough - 1, Armor Proficiency - 1, Shields - 1",
+   "Rank 0",
+   "1",
+   "Knight",
+   "General"
+  ],
+  [
+   "Battle Hardened",
+   "You may negate the Fear effect once per Refresh and gain +1 Tough. This effect can stack with any other ability, item, or consumable that grants the same benefit(s).",
+   "Tough - 1 and Rank 0",
+   "1",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Defensive Mastery (Signature)",
+   "Choose any active martial skill that you have access to. You are now immune to the effects of that skill, including any damage taken to your Armor Value or body hit locations as a result.",
+   "A Weapons Skill and Rank 2",
+   "2",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Juggernaut - 1",
+   "May use the Juggernaut ability 1 time per event. See additional details below this table.",
+   "Rank 0",
+   "1",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Juggernaut - 2",
+   "May use the Juggernaut ability 2 times per event.",
+   "Juggernaut - 1 and Rank 2",
+   "2",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Juggernaut - 3",
+   "May use the Juggernaut ability 3 times per event.",
+   "Juggernaut - 2 and Rank 3",
+   "2",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Martial Expertise - 1",
+   "Gain +1 level of Master of Arms. Master of Arms levels above 3 give the same benefit as Master of Arms 3",
+   "Rank 0",
+   "1",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Martial Expertise - 2",
+   "Gain +1 level of Master of Arms.",
+   "Martial Expertise - 1 and Rank 2",
+   "2",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Martial Expertise - 3",
+   "Gain +1 level of Master of Arms.",
+   "Martial Expertise - 2 and Rank 3",
+   "2",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Second Wind - 1",
+   "May take a knee and rest for 5 minutes to refresh your entire Tough pool 1 time per event.",
+   "Tough - 1 and Rank 0",
+   "1",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Second Wind - 2",
+   "Gain +1 use of Second Wind.",
+   "Second Wind - 1 and Rank 2",
+   "2",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Second Wind - 3",
+   "Gain +1 use of Second Wind.",
+   "Second Wind - 2 and Rank 3",
+   "2",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Shield Wall (Signature)",
+   "Any shield you use may not be sundered. Additionally, you gain +1 Resist call per Refresh. This resist is not tied to the use of a shield",
+   "Shields - 3 and Rank 2",
+   "2",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Weapon Mastery",
+   "May apply all known active martial skills to any weapons you are capable of using.",
+   "Rank 0 and A Weapons Skill",
+   "1",
+   "Knight",
+   "Martial"
+  ],
+  [
+   "Banner of Mercy (Signature)",
+   "Gain the Banner of Mercy skill. Requires a banner prop. See additional details below this table.",
+   "Rank 2",
+   "2",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Battlefield Medicine - 1",
+   "Gain the Battlefield Medicine skill. The uninterrupted roleplay duration is 5 minutes. Requires one use of a Chirurgeon's Kit. See additional details below this table.",
+   "Rank 0",
+   "1",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Battlefield Medicine - 2",
+   "Uninterrupted roleplay duration is 3 minutes. Requires one use of a Chirurgeon's Kit.",
+   "Battlefield Medicine - 1 and Rank 2",
+   "2",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Battlefield Medicine - 3",
+   "Uninterrupted roleplay duration is 1 minute. Requires one use of a Chirurgeon's Kit.",
+   "Battlefield Medicine - 2 and Rank 3",
+   "2",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Field Medic (Signature)",
+   "Battlefield Medicine skill no longer requires the use of a Chirurgeon's Kit.",
+   "Battlefield Medicine - 1 and Rank 2",
+   "2",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Trained Medic - 1",
+   "Your Medicine Skill may now halt another character's Dying count. Reduce your Medicine Skill healing time by one minute.",
+   "Medicine - 1 and Rank 0",
+   "1",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Trained Medic - 2",
+   "Reduce your Medicine Skill healing time by three minutes.",
+   "Trained Medic - 1 and Rank 2",
+   "2",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Trained Medic - 3",
+   "Reduce your Medicine Skill healing time by five minutes.",
+   "Trained Medic - 2 and Rank 3",
+   "2",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Triage - 1",
+   "May use the Triage ability 1 time per event. See additional details below this table.",
+   "Rank 0",
+   "1",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Triage - 2",
+   "May use the Triage ability 2 times per event.",
+   "Triage - 1 and Rank 2",
+   "2",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Triage - 3",
+   "May use the Triage ability 3 times per event.",
+   "Triage - 2 and Rank 3",
+   "2",
+   "Knight",
+   "Mercy"
+  ],
+  [
+   "Logistician - 1",
+   "Logistician reduces the resource requirement of Interactive Events by 6 resources. This benefit may only be applied to a reduction in iron ingots, refined wood, leather, or cloth. May be used 1 time per event.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "General"
+  ],
+  [
+   "Logistician - 2",
+   "Reduce the resource requirement of an Interactive Event by 18 total resources. May be used 1 time per event.",
+   "Logistician - 1 and Rank 2",
+   "2",
+   "Magister",
+   "General"
+  ],
+  [
+   "Logistician - 3",
+   "Reduce the resource requirement of an Interactive Event by 30 total resources. May be used 1 time per event.",
+   "Logistician - 2 and Rank 3",
+   "2",
+   "Magister",
+   "General"
+  ],
+  [
+   "Ravens - 1",
+   "Receive 3 Espionage to spend on Rumors of any level at check in every event. Chance to receive letters from NPCs.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "General"
+  ],
+  [
+   "Ravens - 2",
+   "Receive 6 Espionage to spend on Rumors of any level at check in every event. Chance to receive letters from NPCs.",
+   "Ravens - 1 and Rank 2",
+   "1",
+   "Magister",
+   "General"
+  ],
+  [
+   "Ravens - 3",
+   "Receive 9 Espionage to spend on Rumors of any level at check in every event. Chance to receive letters from NPCs.",
+   "Ravens - 2 and Rank 3",
+   "1",
+   "Magister",
+   "General"
+  ],
+  [
+   "Anamnesis - 1",
+   "Allows you to ask one question based on a known lore per Refresh. Requires an Anamnesis Decoction, 5 minutes of uninterrupted meditation, and the requisite lore skill. This is a staff adjudicated skill.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Anamnesis - 2",
+   "May ask 2 questions per refresh. Each question requires the use of an Anamnesis decoction.",
+   "Anamnesis - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Anamnesis - 3",
+   "May ask 3 questions per refresh. Each question requires the use of an Anamnesis decoction.",
+   "Anamnesis - 2 and Rank 3",
+   "2",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Esoteric Studies",
+   "Reduce the number of lore props required to get additional levels in lore skills by 1.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Forbidden Lore (Signature)",
+   "Forbidden Lore grants you access to special lore props at Eldritch events. Lores gained from this skill cannot be copied.",
+   "Academics - 2 and Rank 2",
+   "2",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Library - 1",
+   "Library grants you additional lore props. At check in, you gain a random lore prop, meeting the following requirements: It is not a Syllabus. It is of the same lore type as an opened lore prop you currently own. It is of the same level as an opened lore prop you currently own.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Library - 2",
+   "Gain two random lores at check in up to your maximum level in a lore type you know.",
+   "Library - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Library - 3",
+   "Gain three random lores at check in up to your maximum level in a lore type you know.",
+   "Library - 2 and Rank 3",
+   "2",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Rigorous Study",
+   "Upon buying this skill, gain 3 Level 1 Lore syllabi of your choice at check in. These lore syllabi are only granted once upon purchase of the skill.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Scribe - 1",
+   "May copy one lore prop that you have opened per event. Cannot copy Syllabi.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Scribe - 2",
+   "May copy two lore props that you have opened per event. Cannot copy Syllabi.",
+   "Scribe - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Scribe - 3",
+   "May copy three lore props that you have opened per event. Cannot copy Syllabi.",
+   "Scribe - 2 and Rank 3",
+   "2",
+   "Magister",
+   "Scholar"
+  ],
+  [
+   "Botanist - 1",
+   "Gain 6 additional herbs each event at check in. You may choose which reagents you gather with this skill. You may only pull herbs of levels that you have access to with your Herbalism skill.",
+   "Herbalism - 1 and Rank 0",
+   "1",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Botanist - 2",
+   "Gain 16 additional herbs at check in. You may only pull herbs of levels that you have access to with your Herbalism skill.",
+   "Botanist - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Botanist - 3",
+   "Gain 26 additional herbs at check in. You may only pull herbs of levels that you have access to with your Herbalism skill.",
+   "Botanist - 2 and Rank 3",
+   "2",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Chemist",
+   "Pay 1 less CP when purchasing Alchemy at levels 2 and 3. You may also choose an additional alchemy schematic of the same level at random after purchasing the skill levels.",
+   "Alchemy - 1 and Rank 0",
+   "1",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Master Alchemist (Signature)",
+   "Alchemy crafting no longer requires the use of an apothecary kit. Additionally, when accompanied by a physical representation of a portable Alchemy station, a person with this skill may do alchemy crafting in the field. For each potion crafted in this way, please roleplay using your Alchemy station. See additional details below.",
+   "Alchemy - 3 and Rank 2",
+   "2",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Mithridatism",
+   "Gain immunity to level 1 poisons. If you are subjected to a level 1 poison you know that you have been poisoned but not what the poison is.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Potent Brews - 1",
+   "Create one additional decoction of the same type when crafting a level 1 decoction.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Potent Brews - 2",
+   "Create one additional decoction of the same type when crafting a level 2 decoction.",
+   "Potent Brews - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Potent Brews - 3",
+   "Create one additional decoction of the same type when crafting a level 3 decoction.",
+   "Potent Brews - 2 and Rank 3",
+   "2",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Potion Monger - 1",
+   "Once per event at check in, gain 1 decoction that you can craft for no cost OR acquire one Level 1 Alchemy schematic of your choice.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Potion Monger - 2",
+   "Once per event at check in, gain 2 decoctions that you can brew for no cost OR acquire one Alchemy schematic of your choice from any level you can craft up to level 2.",
+   "Potion Monger - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Potion Monger - 3",
+   "Once per event at check in, gain 3 decoctions that you can brew for no cost OR acquire one Alchemy schematic of your choice from any level you can craft up to level 3.",
+   "Potion Monger - 2 and Rank 3",
+   "2",
+   "Magister",
+   "Alchemist"
+  ],
+  [
+   "Chirurgeon - 1",
+   "Fully heal a player from any state; Wounded, Bleeding, and Dying. Heals all limb injuries as well. This is the only ability that heals the Wounded state. This ability requires 20 minutes of uninterrupted roleplay and one use of a Chirurgeon\u2019s Kit. This skill cannot be used in the field on a module; it must be performed in a space designed to be a hospital or surgery center.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Chirurgeon - 2",
+   "Uninterrupted roleplay duration decreased to 15 minutes. This skill requires one use of a Chirurgeon's Kit.",
+   "Chirurgeon - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Chirurgeon - 3",
+   "Uninterrupted roleplay duration decreased to 10 minutes. This skill requires one use of a Chirurgeon's Kit.",
+   "Chirurgeon - 2 and Rank 3",
+   "2",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Master Chirurgeon (Signature)",
+   "Use of the Chirurgeon skill no longer requires the use of a Chirurgeon's Kit.",
+   "Chirurgeon - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Mend Limb - 1",
+   "Fully restore the use of an injured limb after 6 minutes of uninterrupted roleplay. This skill requires one use of a Chirurgeon's Kit.",
+   "Rank 0",
+   "1",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Mend Limb - 2",
+   "Restore the use of an injured limb after 4 minutes. This skill requires one use of a Chirurgeon's Kit.",
+   "Mend Limb - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Mend Limb - 3",
+   "Restore the use of an injured limb after 2 minutes. This skill requires one use of a Chirurgeon's Kit.",
+   "Mend Limb - 2 and Rank 3",
+   "2",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Resuscitate (Signature)",
+   "Once per event, you may resuscitate a character who has exceeded their Dying Count by five minutes or less, by performing at least 3 minutes of uninterrupted roleplay. This skill requires one use of a Chirurgeon's Kit. After resuscitation, the target player will be in the Wounded state and any injuries they sustained will be present.",
+   "Chirurgeon - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Trained Physician - 1",
+   "Medicine Skill may now halt another character's Dying count. Reduce your Medicine Skill healing time by one minute.",
+   "Medicine - 1 and Rank 0",
+   "1",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Trained Physician - 2",
+   "Reduce your Medicine Skill healing time by three minutes.",
+   "Trained Physician - 1 and Rank 2",
+   "2",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Trained Physician - 3",
+   "Reduce your Medicine Skill healing time by five minutes.",
+   "Trained Physician - 2 and Rank 2",
+   "2",
+   "Magister",
+   "Chirurgeon"
+  ],
+  [
+   "Calling Favors (Signature)",
+   "Convert 1 Influence to 4 silver dragons per event at check in. Up to 32 silver dragons may be converted in this way.",
+   "The Second Estate - 1, Taxation - 1, and Rank 2",
+   "2",
+   "Noble",
+   "General"
+  ],
+  [
+   "Courtiers - 1",
+   "Gain +1 Retainer slot and ability to bestow 1 Courtier archetype on a player. A courtier made in this way does not need to become your retainer.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Courtiers - 2",
+   "Gain +1 Retainer slot and bestow 1 additional Courtier archetype.",
+   "Courtiers - 1 and Rank 2",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Courtiers - 3",
+   "Gain +1 Retainer slot and bestow 1 additional Courtier archetype.",
+   "Courtiers - 2 and Rank 3",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Feudalism (Signature)",
+   "Gain 2 Influence per Retainer at check-in.",
+   "The Second Estate - 1 and Rank 2",
+   "2",
+   "Noble",
+   "General"
+  ],
+  [
+   "Household - 1",
+   "Gain +2 Retainer slots.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Household - 2",
+   "Gain +2 Retainer slots.",
+   "Household - 1 and Rank 2",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Household - 3",
+   "Gain +2 Retainer slots.",
+   "Household - 2 and Rank 3",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Pulling Strings - 1",
+   "Once per event, gain 4 Influence for the purpose of contributing to an Interactive Event.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Pulling Strings - 2",
+   "Once per event, gain 8 Influence for the purpose of contributing to an Interactive Event.",
+   "Pulling Strings - 1 and Rank 2",
+   "2",
+   "Noble",
+   "General"
+  ],
+  [
+   "Pulling Strings - 3",
+   "Once per event, gain 12 Influence for the purpose of contributing to an Interactive Event.",
+   "Pulling Strings - 2 and Rank 3",
+   "2",
+   "Noble",
+   "General"
+  ],
+  [
+   "Rousing Speech",
+   "Once per event, after an inspirational speech to your Retainers and/or anyone who has sworn an oath of loyalty to you and bears your blazon, you may grant them one temporary point of Tough and they may negate the Fear effect once anytime throughout the rest of the event.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Taxation - 1",
+   "Gain 8 silver dragons per event at check in.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "Taxation - 2",
+   "Gain 24 silver dragons per event at check in.",
+   "Taxation - 1 and Rank 2",
+   "2",
+   "Noble",
+   "General"
+  ],
+  [
+   "Taxation - 3",
+   "Gain 4 gold dragons per event at check in.",
+   "Taxation - 2 and Rank 3",
+   "2",
+   "Noble",
+   "General"
+  ],
+  [
+   "The Second Estate - 1",
+   "Gain 1 Influence per event at check in.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "General"
+  ],
+  [
+   "The Second Estate - 2",
+   "Gain 3 Influence per event at check in.",
+   "The Second Estate - 1 and Rank 2",
+   "2",
+   "Noble",
+   "General"
+  ],
+  [
+   "The Second Estate - 3",
+   "Gain 5 Influence per event at check in.",
+   "The Second Estate - 2 and Rank 3",
+   "2",
+   "Noble",
+   "General"
+  ],
+  [
+   "Student of the Tower",
+   "Choose one of the following Magister archetype skills: Library, Rigorous Studies, Esoteric Studies, Chemist, Potion Monger, Mithridatism. You gain Level 1 in that skill. All subsequent levels of that skill can be purchased normally.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Aragon"
+  ],
+  [
+   "Master of the Mists",
+   "Once per event, reduce a Magister\u2019s promotion costs by 20%. You do not have to be retaining them.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Aragon"
+  ],
+  [
+   "Wasteland Warrior",
+   "Choose one of the following skills: Two-Handed Weapons - 1, Tough - 1, Combat Agility - 1. If you use spears, gain 1 use of Stagger active martial skill per Refresh.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Aragon"
+  ],
+  [
+   "Higher Education (Signature)",
+   "Gain Academics 2. Gain 1 CP to spend on any of the following skills: Household, Courtiers, Influential, Espionage, 2-Handed Weapons, or Alchemy.",
+   "Academics - 1 and Rank 2",
+   "2",
+   "Noble",
+   "Aragon"
+  ],
+  [
+   "Little Birds",
+   "Gain 1 Espionage per Retainer to a maximum of 4 per event at check in. You may forgo gaining any Espionage and instead gain a maximum of 2 Influence.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Bannon"
+  ],
+  [
+   "Friends in High Places",
+   "Add +2 Influence to any Influence contributed with Pulling Strings once per event.",
+   "Pulling Strings - 1 and Rank 0",
+   "1",
+   "Noble",
+   "Bannon"
+  ],
+  [
+   "Entourage (Signature)",
+   "Gain +4 Retainer slots.",
+   "Household - 1 and Rank 2",
+   "2",
+   "Noble",
+   "Bannon"
+  ],
+  [
+   "Connections at Court",
+   "Once per event, reduce a Vigil\u2019s promotion cost by 20%. You do not have to be retaining them.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Bannon"
+  ],
+  [
+   "Fervor of the Dawnbringer",
+   "Your Rousing Speech also refreshes a use of Master of Arms for all of those who have it.",
+   "Rousing Speech and Rank 0",
+   "1",
+   "Noble",
+   "Blayne"
+  ],
+  [
+   "Theocracy (Signature)",
+   "Gain 4 Influence or 2 Gold Dragons every event at check in.",
+   "The Second Estate - 1, Taxation - 1, and Rank 2",
+   "2",
+   "Noble",
+   "Blayne"
+  ],
+  [
+   "Monasticism",
+   "Once per event, reduce an Auron\u2019s promotion costs by 20%. You do not have to be retaining them.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Blayne"
+  ],
+  [
+   "Humble Beginnings",
+   "Qualify for the Noble Archetype as a Commonfolk Archetype.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Blayne"
+  ],
+  [
+   "Martial Instruction",
+   "Choose any two of the following martial skills: One-Handed Weapons - 1, Two-Handed Weapons - 1, Armor Specialist - 1, Armor Proficiency - 1, Shields - 1",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Corveaux"
+  ],
+  [
+   "Lord Captain",
+   "Choose one of the following Knight archetype skills: Lionheart, Armor Mastery, Martial Expertise, Trained Medic, Battlefield Medicine. You gain Level 1 in that skill. All subsequent levels of that skill can be purchased normally.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Corveaux"
+  ],
+  [
+   "Knight Commander",
+   "Once per event, reduce a Knight\u2019s promotion costs by 20%. You do not have to be retaining them.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Corveaux"
+  ],
+  [
+   "Heavy Armor Training (Signature)",
+   "Gain +2 Armor Value (AV) when wearing heavy armor.",
+   "Armor Proficiency - 1 and Rank 2",
+   "2",
+   "Noble",
+   "Corveaux"
+  ],
+  [
+   "Raiding Party (Signature)",
+   "For every Knight or Soldier archetype you retain, gain 5 random resources per event at check in",
+   "Household - 1 and Rank 2",
+   "2",
+   "Noble",
+   "Hale"
+  ],
+  [
+   "Raised by Wolves",
+   "Choose any two of the following martial skills: One-Handed Weapons - 1, Two-Handed Weapons - 1, Tough - 1, Armor Proficiency - 1, Shields - 1",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Hale"
+  ],
+  [
+   "Berserkers",
+   "When using your Rousing Speech ability, you can alternatively grant 2 Tough or 2 Fear negations instead of its normal 1 Tough and 1 Fear negation.",
+   "Rousing Speech and Rank 0",
+   "1",
+   "Noble",
+   "Hale"
+  ],
+  [
+   "Axe Master",
+   "Gain One-Handed Weapons - 1. Instead of gaining a Stun however, you gain a Sunder active martial skill that can only be used with one- or two-handed axes.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Hale"
+  ],
+  [
+   "Rally",
+   "May use the Rally skill once per Refresh. This skill mirrors the Auron skill, Embolden, but does not require religious context or the Book of Magnus.",
+   "Ways of Old",
+   "-",
+   "Noble",
+   "Innis"
+  ],
+  [
+   "Strength of the Oak",
+   "May use the Strength of the Oak skill once per Refresh. This skill mirrors the Auron skill Bulwark of Faith but does not require a religious inclined speech or the Book of Magnus.",
+   "Ways of Old",
+   "-",
+   "Noble",
+   "Innis"
+  ],
+  [
+   "Ways of Old (Signature)",
+   "Gain Rally and Strength of the Oak as skills.",
+   "Rousing Speech and Rank 2",
+   "2",
+   "Noble",
+   "Innis"
+  ],
+  [
+   "Masters of the Arrow",
+   "Gain +1 Retainer slot that can only be used for the Bowyer archetype.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Innis"
+  ],
+  [
+   "Whispers of the Deepwood",
+   "Choose a 1 CP skill from another Noble House tree. You acquire that skill. It replaces this one.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Innis"
+  ],
+  [
+   "Horn of the Wood",
+   "May use your Rousing Speech ability an additional time per event.",
+   "Rousing Speech and Rank 0",
+   "1",
+   "Noble",
+   "Innis"
+  ],
+  [
+   "Pact of Old",
+   "Gain +1 Retainer slot that can only be used for Blacksmith or Gunsmith archetypes.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Richter"
+  ],
+  [
+   "Scion of the Dark Tower",
+   "Gain a one-time payout of 10 Influence.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Richter"
+  ],
+  [
+   "The Iron Fist (Signature)",
+   "Gain +4 Influence every event at check in.",
+   "The Second Estate - 1 and Rank 2",
+   "2",
+   "Noble",
+   "Richter"
+  ],
+  [
+   "Legacy of the Forge",
+   "Once per event, you may purchase a schematic (at the market cost) matching the type, and not exceeding the level, of a crafter Retainer in your employ.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Richter"
+  ],
+  [
+   "Scallywag",
+   "Choose one of the following Cirque archetype skills: Blackmail, Gossip, Shadow Merchant. You gain Level 1 in that skill. All subsequent levels of that skill can be purchased normally.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Rourke"
+  ],
+  [
+   "Pirate Cove (Signature)",
+   "May sell items at check in for Cirque buyback prices. A maximum of 25 silver dragons in goods can be sold this way. Influence can be gained instead of coin at a rate of 5 silver dragons to 1 Influence.",
+   "Rank 2",
+   "2",
+   "Noble",
+   "Rourke"
+  ],
+  [
+   "Plunder",
+   "For every Commonfolk, Urchin, or Brigand Retainer in your employ, gain 3 random resources every event at check in.",
+   "Household - 1 and Rank 0",
+   "1",
+   "Noble",
+   "Rourke"
+  ],
+  [
+   "Dead Man's Chest",
+   "Gain 1 gold dragon every event at check in.",
+   "Taxation - 1 and Rank 0",
+   "1",
+   "Noble",
+   "Rourke"
+  ],
+  [
+   "Discourse",
+   "For every two Retainers in your employ, gain a random level 1 lore prop, up to 2, every event at check in. You may instead forgo all lore props to gain one syllabus of your choice.",
+   "Household - 1 and Rank 0",
+   "1",
+   "Noble",
+   "Twilight Empire"
+  ],
+  [
+   "Duelist Training",
+   "Choose any two of the following martial skills: Archer, Two-Handed Weapons - 1, Tough - 1, Armor Proficiency - 1, Shields - 1",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Twilight Empire"
+  ],
+  [
+   "Shadowing Moon and Radiant Sun (Signature)",
+   "Gain both of the following abilities:1) Once per event, by holding a scholarly conclave, you gain insight into an opened lore that you or one of your Retainers owns. You may ask one question of staff about that lore. It cannot be Forbidden Lore.2) Hyper Awareness - 1 per the Vigil archetype skills.",
+   "Academics - 1 and Rank 2",
+   "2",
+   "Noble",
+   "Twilight Empire"
+  ],
+  [
+   "Strategically Minded",
+   "Choose one of the following Vigil archetype skills: Courtly Intrigue, Sense Influence OR the Magister archetype skill, Logistician. You gain level 1 in that skill. All subsequent levels in that skill may be purchased normally.",
+   "Rank 0",
+   "1",
+   "Noble",
+   "Twilight Empire"
+  ],
+  [
+   "Hardy Constitution (Signature)",
+   "Once you have had, and been cured or survived, a Level 1 Poison or Disease, you cannot be afflicted by it again.",
+   "Rank 2",
+   "2",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Home Remedy - 1",
+   "Gain 1 level 1 Disease or Poison cure of your choice per event.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Home Remedy - 2",
+   "Gain 2 level 1 Disease or Poison cure of your choice per event.",
+   "Home Remedy - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Home Remedy - 3",
+   "Gain 3 level 1 Disease or Poison cure of your choice per event.",
+   "Home Remedy - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Lorekeeper - 1",
+   "Gain 1 random level 1 lore prop (not a Syllabus) in a category of your choice per event at check in.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Lorekeeper - 2",
+   "Gain 2 random level 1 lore props (not Syllabi) in a category of your choice per event at check in.",
+   "Lorekeeper - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Lorekeeper - 3",
+   "Gain 3 random level 1 lore props (not Syllabi) in a category of your choice per event at check in.",
+   "Lorekeeper - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Rub Dirt On It (Signature)",
+   "Reduce your Medicine skill healing time by two minutes.",
+   "Medicine - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Sawbones",
+   "May mend injured limbs. You must roleplay uninterrupted mending a limb for 5 minutes. This takes a use of a Chirurgeon's Kit.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Scrivener - 1",
+   "You may copy 1 lore prop that you have opened per event. Cannot copy Syllabi.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Scrivener - 2",
+   "You may copy 2 lore props that you have opened per event. Cannot copy Syllabi.",
+   "Scrivener - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Scrivener - 3",
+   "You may copy 3 lore props that you have opened per event. Cannot copy Syllabi.",
+   "Scrivener - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Well Read",
+   "Reduce the number of lore props it takes to acquire additional levels in lore skills. This does not apply to the first level of a Lore skill. Each time you level up a lore skill, it costs you 1 less than the listed amount of required lores.",
+   "Academics - 1 and Rank 1",
+   "1",
+   "Veteran",
+   "Academic"
+  ],
+  [
+   "Apprentice (Signature)",
+   "Gain 1 random Schematic every event at check in of a craft you own. The maximum level of any acquired Schematic is your level in that craft.",
+   "A Crafting Skill and Rank 2",
+   "2",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Architect - 1",
+   "Once per event, turn in 1 character Archetype card that only has a Basic or Veteran Archetype for 10 iron ingots, refined wood, leather, or cloth toward a Construction Project. The archetype card should not be retained by anyone.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Architect - 2",
+   "Once per event, turn in up to 2 character Archetype cards that only have a Basic or Veteran Archetype for 10 iron ingots, refined wood, leather, or cloth toward a Construction project. The archetype cards should not be retained by anyone.",
+   "Architect - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Architect - 3",
+   "Once per event, turn in up to 3 character Archetype cards that only have a Basic or Veteran Archetype for 10 iron ingots, refined wood, leather, or cloth toward a Construction project. The archetype cards should not be retained by anyone.",
+   "Architect - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Brewmaster - 1",
+   "Gain 1 decoction that you can craft at check in every event for no cost.",
+   "Alchemy - 1 and Rank 1",
+   "1",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Brewmaster - 2",
+   "Gain 2 decoctions that you can craft at check in every event for no cost.",
+   "Brewmaster - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Brewmaster - 3",
+   "Gain 3 decoctions that you can craft at check in every event for no cost.",
+   "Brewmaster - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Entrepreneur - 1",
+   "Gain 4 silver dragons per event at check in.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Entrepreneur - 2",
+   "Gain 12 silver dragons per event at check in.",
+   "Entrepreneur - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Entrepreneur - 3",
+   "Gain 20 silver dragons per event at check in.",
+   "Entrepreneur - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Market Exchange",
+   "Once per event at check in, you may convert resources into coin, or coin into resources (1 resource = 1 silver dragon). Up to 2 Gold Dragons worth of value may be traded in this way.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Trade Deals (Signature)",
+   "Once per event at check in, turn in up to 3 character Archetype cards that only have a Basic or Veteran Archetype for three resources (of your choice) or three silver dragons per card. The archetype cards should not be retained by anyone.",
+   "Rank 2",
+   "2",
+   "Veteran",
+   "Artisan"
+  ],
+  [
+   "Call to Arms",
+   "Once per Refresh, grant any number of Basic or Veteran Archetypes who hear you give a rousing speech one temporary use of Tough.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Mob Rule (Signature)",
+   "Once per event at check in, turn in up to 3 character Archetype cards that only have a Basic or Veteran Archetype to remove one Influence per card from a player of your choice. A player can only be targeted once every other event by this power. The archetype cards used for this should not be retained by anyone.",
+   "Rank 2",
+   "2",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Power of the People (Signature)",
+   "Once per event at check in, turn in up to 3 character Archetype cards that only have a Basic or Veteran Archetype for one Influence or four silver dragons per card. The archetype cards should not be retained by anyone.",
+   "Rank 2",
+   "2",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Prominent Citizen - 1",
+   "Gain 1 Influence every event at check in",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Prominent Citizen - 2",
+   "Gain 3 Influence every event at check in.",
+   "Prominent Citizen - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Prominent Citizen - 3",
+   "Gain 5 Influence every event at check in.",
+   "Prominent Citizen - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Village Gossip - 1",
+   "Once per event at check in, gain 3 Espionage points that can only be used to acquire rumors.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Village Gossip - 2",
+   "Once per event at check in, gain 6 Espionage points that can only be used to acquire rumors.",
+   "Village Gossip - 1 and Rank 2",
+   "1",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Village Gossip - 3",
+   "Once per event at check in, gain 9 Espionage points that can only be used to acquire rumors.",
+   "Village Gossip - 2 and Rank 3",
+   "1",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Voice of the People",
+   "Once per event at check in, turn in up to 3 character Archetype cards that only have a Basic or Veteran Archetype for one Influence per card for the purpose of placing in the Decisive Moment box(es) of your choice.",
+   "Rank 1",
+   "2",
+   "Veteran",
+   "Burgher"
+  ],
+  [
+   "Advanced Herbalism (Signature)",
+   "Gain an additional 12 herbs when you use Herbalism at check in. You may now choose which herbs you get for all your Herbalism at check in.",
+   "Herbalism - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Life of Labor - 1",
+   "Gain +1 Tough.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Life of Labor - 2",
+   "Gain +1 Tough.",
+   "Life of Labor - 1 and Rank 2",
+   "1",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Life of Labor - 3",
+   "Gain +1 Tough.",
+   "Life of Labor - 2 and Rank 3",
+   "1",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Farmer - 1",
+   "Gain an additional 6 cloth per event at check in.",
+   "Farming - 1 and Rank 1",
+   "1",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Farmer - 2",
+   "Gain an additional 16 cloth per event at check in.",
+   "Master Farmer - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Farmer - 3",
+   "Gain an additional 26 cloth per event at check in.",
+   "Master Farmer - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Feller - 1",
+   "Gain an additional 6 refined wood per event at check in.",
+   "Woodcutting - 1 and Rank 1",
+   "1",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Feller - 2",
+   "Gain an additional 16 refined wood per event at check in.",
+   "Master Feller - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Feller - 3",
+   "Gain an additional 26 refined wood per event at check in.",
+   "Master Feller - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Hunter - 1",
+   "Gain an additional 6 leather per event at check in.",
+   "Hunting - 1 and Rank 1",
+   "1",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Hunter - 2",
+   "Gain an additional 16 leather per event at check in.",
+   "Master Hunter - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Hunter - 3",
+   "Gain an additional 26 leather per event at check in.",
+   "Master Hunter - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Miner - 1",
+   "Gain an additional 6 iron ingots per event at check in.",
+   "Mining - 1 and Rank 1",
+   "1",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Miner - 2",
+   "Gain an additional 16 iron ingots per event at check in.",
+   "Master Miner - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Master Miner - 3",
+   "Gain an additional 26 iron ingots per event at check in.",
+   "Master Miner - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Resourceful (Signature)",
+   "Once per event at check in, gain an additional 12 resources. You may now choose which resources you get for all your gathering.",
+   "Gathering - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Peasant"
+  ],
+  [
+   "Mark - 1",
+   "1 time per Refresh, ask a player or NPC how much Influence OR coin they have. They must answer truthfully.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Mark - 2",
+   "3 times per refresh, ask a player or NPC how much Influence OR coin they have. They must answer truthfully.",
+   "Mark - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Mark - 3",
+   "5 times per refresh, ask a player or NPC how much Influence OR coin they have. They must answer truthfully.",
+   "Mark - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Sabotage (Signature)",
+   "Once per event at check in, gain 6 Espionage for the purpose of putting into the Decisive Moment box(es) of your choice.",
+   "Rank 2",
+   "2",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Scrounger",
+   "Once per event at check in, you can swap any resources you gain or have for any other resources of the same level. Iron, Leather, Cloth, and Wood cannot be traded for Herbs but Herbs can be traded for other Herbs of the same level.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Second Story Job - 1",
+   "Gain 1 permanent letter between A-H. Automatically defeat a Level 1 lock once per Refresh.",
+   "Disable Device - 1 and Rank 1",
+   "1",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Second Story Job - 2",
+   "Gain 1 permanent letter between I-P. Automatically defeat up to a level 2 lock once per refresh.",
+   "Second Story Job - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Second Story Job - 3",
+   "Gain 1 permanent letter between Q-X. Automatically defeat up to a level 3 lock once per refresh.",
+   "Second Story Job - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Spy Network (Signature)",
+   "Once per event at check in, turn in up to 3 character Archetype cards that only have a Basic or Veteran Archetype for 2 Espionage per card. The archetype cards used for this should not be retained by anyone.",
+   "Espionage - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Word on the Street",
+   "Once per event, you can ask who is currently winning a Decisive Moment.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Scoundrel"
+  ],
+  [
+   "Grizzled (Signature)",
+   "Gain 1 use of Master of Arms and Second Wind per Refresh.",
+   "Master of Arms - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Gutsy",
+   "Negate 1 Fear call per refresh.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Light Armor Focus",
+   "Gain 1 Armor Value (AV) when wearing light armor.",
+   "Armor Proficiency - 1 and Rank 1",
+   "1",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Mercenary Captain - 1",
+   "You can no longer be Retained, but you gain +1 retainer slot. Any retainers you employ can be Soldier, Brigand, or Urchin Basic Archetype only. They may have the Veteran Advanced Archetype.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Mercenary Captain - 2",
+   "Gain +1 retainer slot for Soldier, Brigand, or Urchin Archetypes.",
+   "Mercenary Captain - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Mercenary Captain - 3",
+   "Gain +1 retainer slot for Soldier, Brigand, or Urchin Archetypes.",
+   "Mercenary Captain - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Militiaman",
+   "Gain the Martial Training skill. At character creation, you may take the Soldier archetype starting equipment and coin instead of your basic archetype\u2019s. You will still maintain your original basic archetype\u2019s skills and card.",
+   "Any Martial Skill and Rank 1",
+   "1",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Phalanx",
+   "Gain Two-Handed Weapons - 1. When you use a spear, you gain 1 Stagger active martial skill per Refresh.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Plucky (Signature)",
+   "Gain 1 Resist active martial skill per Refresh.",
+   "Rank 2",
+   "2",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Quartermaster - 1",
+   "Once per event at check in, gain 5 silver dragons worth of items from the Cirque price sheet.",
+   "Rank 1",
+   "1",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Quartermaster - 2",
+   "Once per event at check in, gain 14 silver dragons worth of items from the Cirque price sheet.",
+   "Quartermaster - 1 and Rank 2",
+   "2",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Quartermaster - 3",
+   "Once per event at check in, gain 24 silver dragons worth of items from the Cirque price sheet.",
+   "Quartermaster - 2 and Rank 3",
+   "2",
+   "Veteran",
+   "Soldier"
+  ],
+  [
+   "Favored of the Court - 1",
+   "Gain 1 Influence per event at check in.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "General"
+  ],
+  [
+   "Favored of the Court - 2",
+   "Gain 3 Influence per event at check in.",
+   "Favored of the Court - 1 and Rank 2",
+   "2",
+   "Vigil",
+   "General"
+  ],
+  [
+   "Favored of the Court - 3",
+   "Gain 5 Influence per event at check in.",
+   "Favored of the Court - 2 and Rank 3",
+   "2",
+   "Vigil",
+   "General"
+  ],
+  [
+   "Hardened Constitution",
+   "You are now immune to any level 1 poison. If you are subjected to a level 1 poison, you know that you have been poisoned, but not what the poison is, unless you have the Diagnose ability.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "General"
+  ],
+  [
+   "Whispers in the Halls - 1",
+   "Gain 2 Espionage per event at check in.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "General"
+  ],
+  [
+   "Whispers in the Halls - 2",
+   "Gain 4 Espionage per event at check in.",
+   "Whispers in the Halls - 1 and Rank 2",
+   "1",
+   "Vigil",
+   "General"
+  ],
+  [
+   "Whispers in the Halls - 3",
+   "Gain 6 Espionage per event at check in.",
+   "Whispers in the Halls - 2 and Rank 3",
+   "1",
+   "Vigil",
+   "General"
+  ],
+  [
+   "Courtly Intrigue - 1",
+   "Gain 2 Espionage per event at check in. Gain special insight into 1 rumor you have gained via the Espionage system.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Courtly Intrigue - 2",
+   "Gain 4 Espionage per event at check in. Gain special insight into 2 rumors you have gained via the Espionage system.",
+   "Courtly Intrigue - 1 and Rank 2",
+   "2",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Courtly Intrigue - 3",
+   "Gain 6 Espionage per event at check in. Gain special insight into 3 rumors you have gained via the Espionage system.",
+   "Courtly Intrigue - 2 and Rank 3",
+   "2",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Extortion",
+   "May convert 3 Espionage points to 1 Influence OR 1 influence to 2 Espionage every event at check in. Up to 3 Influence or 6 Espionage may be generated in this way.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Eye for Detail (Signature)",
+   "Gain Perception - 1 and Perception - 2. Once per event, you may ask staff for insight on something you have seen or heard.",
+   "Rank 2",
+   "2",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Kingmaker (Signature)",
+   "Remove or grant X Influence from each character you started a rumor about using the Whisper Campaign skill at check in. X equals your level in the Whisper Campaign skill. A player can only be targeted once every other event by this power. Granted Influence is supplied by staff and removed Influence is given to staff.",
+   "Whisper Campaign - 1 and Rank 2",
+   "2",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Sense Influence - 1",
+   "1 time per Refresh, ask a player or NPC how much Influence and Espionage they have. They must answer truthfully.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Sense Influence - 2",
+   "3 times per refresh, ask a player or NPC how much Influence and Espionage they have. They must answer truthfully.",
+   "Sense Influence - 1 and Rank 2",
+   "1",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Sense Influence - 3",
+   "5 times per refresh, ask a player or NPC how much Influence and Espionage they have. They must answer truthfully.",
+   "Sense Influence - 2 and Rank 3",
+   "1",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Whisper Campaign - 1",
+   "Add 1 positive or negative rumor based about another character to the pool of rumors. Send your rumor(s) to staff at least one week before each event via contact@eldritchlarp.com or our Contact form.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Whisper Campaign - 2",
+   "Add 2 positive or negative rumors about up to two different characters to the pool of rumors.",
+   "Whisper Campaign - 1 and Rank 2",
+   "2",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Whisper Campaign - 3",
+   "Add 3 positive or negative rumors about up to three different characters to the pool of rumors.",
+   "Whisper Campaign - 2 and Rank 3",
+   "2",
+   "Vigil",
+   "Justicar"
+  ],
+  [
+   "Guardian - 1",
+   "Once per Refresh, while within arm\u2019s reach of another character, you may transfer one active martial call or melee strike targeted at that character to you.",
+   "Tough - 1, Hyper Awareness - 1 and Rank 0",
+   "1",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Guardian - 2",
+   "May now use the Guardian skill twice per refresh.",
+   "Guardian - 1 and Rank 2",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Guardian - 3",
+   "May now use the Guardian skill three times per refresh.",
+   "Guardian - 2 and Rank 3",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Hyper Awareness - 1",
+   "Gain +1 use of the Resist active martial skill per Refresh.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Hyper Awareness - 2",
+   "Gain +1 use of Resist per refresh.",
+   "Hyper Awareness - 1 and Rank 2",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Hyper Awareness - 3",
+   "Gain +1 use of Resist per refresh.",
+   "Hyper Awareness - 2 and Rank 3",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Iron Body (Signature)",
+   "Gain +2 points of Tough.",
+   "Tough - 3 and Rank 2",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Martial Prowess - 1",
+   "Gain +1 level of Master of Arms. This stacks with your existing level(s) of Master of Arms. Master of Arms levels above 3 give the same benefit as Master of Arms 3",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Martial Prowess - 2",
+   "Gain +1 level of Master of Arms. This stacks with your existing level(s) of Master of Arms.",
+   "Martial Prowess - 1 and Rank 2",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Martial Prowess - 3",
+   "Gain +1 level of Master of Arms. This stacks with your existing level(s) of Master of Arms.",
+   "Martial Prowess - 2 and Rank 3",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Wylding Hand - 1",
+   "Gain the ability to use brawling boffers (Claws). Gain access to the Stun active martial skill. May use one Stun per Refresh.",
+   "Rank 0",
+   "1",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Wylding Hand - 2",
+   "Gain access to the Disarm active martial skill with your brawling boffers. May use one Disarm per refresh.",
+   "Wylding Hand - 1 and Rank 2",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ],
+  [
+   "Wylding Hand - 3",
+   "Gain access to the Cleave active martial skill with your brawling boffers. May use one Cleave per refresh.",
+   "Wylding Hand - 2 and Rank 3",
+   "2",
+   "Vigil",
+   "Sentinel"
+  ]
+ ],
+ "lore": [
+  [
+   "History - 1",
+   "Lore",
+   "-",
+   "Information about Arnesse\u2019s past, be it locations, people, or events.",
+   "None",
+   "Lore Syllabus",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "History - 2",
+   "Lore",
+   "-",
+   "",
+   "History - 1",
+   "6 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "History - 3",
+   "Lore",
+   "-",
+   "",
+   "History - 2",
+   "9 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Religion - 1",
+   "Lore",
+   "-",
+   "Information about the faiths of Arnesse.",
+   "None",
+   "Lore Syllabus",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Religion - 2",
+   "Lore",
+   "-",
+   "",
+   "Religion - 1",
+   "6 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Religion - 3",
+   "Lore",
+   "-",
+   "",
+   "Religion - 2",
+   "9 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Languages - 1",
+   "Lore",
+   "-",
+   "Information about the languages, grammar, and related arts of Arnesse. Note that the primary language spoken in the kingdom is the common tongue, which a player must have Academics 1 to read.",
+   "None",
+   "Lore Syllabus",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Languages - 2",
+   "Lore",
+   "-",
+   "",
+   "Languages - 1",
+   "6 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Languages - 3",
+   "Lore",
+   "-",
+   "",
+   "Languages - 2",
+   "9 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "The Vale - 1",
+   "Lore",
+   "-",
+   "The lore of the Vale is any information that pertains to geography, demographics, social customs, or current events of the day.",
+   "None",
+   "Lore Syllabus",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "The Vale - 2",
+   "Lore",
+   "-",
+   "",
+   "The Vale - 1",
+   "6 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "The Vale - 3",
+   "Lore",
+   "-",
+   "",
+   "The Vale - 2",
+   "9 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "The Welkin - 1",
+   "Lore",
+   "-",
+   "The lore of the Welkin is any information about the otherworldly realms and their denizens beyond the Vale.",
+   "None",
+   "Lore Syllabus",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "The Welkin - 2",
+   "Lore",
+   "-",
+   "",
+   "The Welkin - 1",
+   "6 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "The Welkin - 3",
+   "Lore",
+   "-",
+   "",
+   "The Welkin - 2",
+   "9 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Mythology - 1",
+   "Lore",
+   "-",
+   "Mythology is the stories and lore of the ancient past. It is more tales than history, but those tales can and do often contain a grain of truth. Mythology can contain lore about heroes, items, places, or even entire civilizations.",
+   "None",
+   "Lore Syllabus",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Mythology - 2",
+   "Lore",
+   "-",
+   "",
+   "Mythology - 1",
+   "6 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Mythology - 3",
+   "Lore",
+   "-",
+   "",
+   "Mythology - 2",
+   "9 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Metaphysics - 1",
+   "Lore",
+   "-",
+   "Metaphysics is the lore of the \u201celdritch\u201d; the strange and unusual phenomena that manifests in the present day. It is beyond that which is understood by science; the unexplained, the occult, and the seemingly magical.",
+   "None",
+   "Lore Syllabus",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Metaphysics - 2",
+   "Lore",
+   "-",
+   "",
+   "Metaphysics - 1",
+   "6 Props",
+   "#REF!",
+   "",
+   ""
+  ],
+  [
+   "Metaphysics - 3",
+   "Lore",
+   "-",
+   "",
+   "Metaphysics - 2",
+   "9 Props",
+   "#REF!",
+   "",
+   ""
+  ]
+ ],
+ "subtype": {
+  "Alchemy": "Crafting",
+  "Artificer": "Crafting",
+  "Blacksmith": "Crafting",
+  "Bowyer": "Crafting",
+  "Farming": "Gathering",
+  "Gathering": "Gathering",
+  "Gunsmith": "Crafting",
+  "Herbalism": "Gathering",
+  "Hunting": "Gathering",
+  "Mining": "Gathering",
+  "Woodcutting": "Gathering",
+  "Archer": "Attack",
+  "Armor Proficiency": "Defend",
+  "Combat Agility": "Defend",
+  "Gunner": "Attack",
+  "Master of Arms": "Attack",
+  "One-Handed Weapons": "Attack",
+  "Resilience": "Defend",
+  "Shields": "Defend",
+  "Tough": "Defend",
+  "Two-Handed Weapons": "Attack"
+ },
+ "basicArchetypes": [
+  [
+   "Apothecary",
+   "4",
+   "2 Apothecary Kits, 4 level 1 apothecary schematics of your choice, and enough resources to craft two schematics",
+   "None",
+   "8 Common Herbs",
+   "3 silver dragons",
+   "Alchemy - 1 and Herbalism - 1",
+   "None"
+  ],
+  [
+   "Artificer",
+   "4",
+   "2 Artificer Kits, 4 level 1 artificer schematics of your choice, and enough resources to craft two schematics",
+   "None",
+   "8 Cloth OR 8 Leather",
+   "3 silver dragons",
+   "Artificer - 1, and Hunting - 1 or Farming - 1",
+   "Retained by Cirque only"
+  ],
+  [
+   "Blacksmith",
+   "4",
+   "2 Blacksmith Kits, all level 0 blacksmith schematics, and enough resources to craft two schematics",
+   "None",
+   "8 Iron Ingots or 8 Leather",
+   "3 silver dragons",
+   "Blacksmith - 1, and Mining - 1 or Hunting - 1",
+   "Retained by Cirque only"
+  ],
+  [
+   "Bowyer",
+   "4",
+   "2 Bowyer Kits or Artificer Kits (or one of each), both Level 1 Bowyer Schematics, 2 Level 1 Artificer Schematics of your choice, and enough resources to craft two schematics",
+   "None",
+   "8 Refined Wood",
+   "3 silver dragons",
+   "Artificer 1, Bowyer - 1",
+   "Retained by Cirque only (or Innis Noble with applicable skill)"
+  ],
+  [
+   "Brigand",
+   "2",
+   "8d4 silver dragons in gear",
+   "20 silver dragons",
+   "4d3 silver dragons in wares",
+   "3 silver dragons",
+   "Income 1 AND Choose 1: 1-Hand Weapon 1, 2-Hand Weapon 1, Archer",
+   "None"
+  ],
+  [
+   "Commonfolk",
+   "1",
+   "20 resources of your choice",
+   "20 Silver Dragons",
+   "8 Silver Dragons",
+   "3 Silver Dragons",
+   "1 non-crafting, level 1 general skill",
+   "None"
+  ],
+  [
+   "Courtier",
+   "2",
+   "None",
+   "None",
+   "4 Espionage Points",
+   "1 Influence",
+   "Gain 1 character point to spend on Espionage - 1, Influential - 1, or Income - 1.",
+   "This archetype can only be granted by a Noble, and can take the place of any other archetype. Characters cannot start the game as Courtiers. 10% reduction on all rank increases while retained by a Noble."
+  ],
+  [
+   "Farmer",
+   "1",
+   "20 Cloth",
+   "20 silver dragons",
+   "8 Cloth",
+   "3 silver dragons",
+   "Farming - 1",
+   "None"
+  ],
+  [
+   "Feller",
+   "1",
+   "20 Refined Wood",
+   "20 silver dragons",
+   "8 Refined Wood",
+   "3 silver dragons",
+   "Woodcutting - 1",
+   "None"
+  ],
+  [
+   "Gentry",
+   "4",
+   "None",
+   "60 silver dragons",
+   "2 Influence",
+   "4 silver dragons",
+   "Either Academics - 1 or Espionage - 1, and either Income - 1 or Influential - 1",
+   "Gentry get a 25% reduction on all rank increases."
+  ],
+  [
+   "Gunsmith",
+   "4",
+   "2 Gunsmith Kits or Artificer Kits (or one of both), both Level 1 Gunsmith Schematics, 2 Level 1 Artificer schematics, and enough resources to craft two schematic",
+   "None",
+   "8 Iron Ingots",
+   "3 silver dragons",
+   "Artificer - 1 and Gunsmith - 1",
+   "This archetype can only be retained by Richter nobles with the Pact of Old skill and must be retained by a Richter noble with Pact of Old at every check in."
+  ],
+  [
+   "Herbalist",
+   "1",
+   "20 Common Herbs",
+   "20 silver dragons",
+   "8 Common Herbs",
+   "3 silver dragons",
+   "Herbalism - 1",
+   "None"
+  ],
+  [
+   "Hunter",
+   "1",
+   "20 LeatherorBow and 2 quivers of Arrows and no Starting Coin",
+   "20 silver dragons",
+   "8 Leather",
+   "3 silver dragons",
+   "Hunting - 1",
+   "None"
+  ],
+  [
+   "Merchant",
+   "2",
+   "None",
+   "40 silver dragons",
+   "8 Silver Dragons",
+   "3 silver dragons",
+   "Income - 1 and Gathering - 1",
+   "Retained by Cirque only"
+  ],
+  [
+   "Miner",
+   "1",
+   "20 Iron Ingots",
+   "20 silver dragons",
+   "8 Iron Ingots",
+   "3 silver dragons",
+   "Mining - 1",
+   "None"
+  ],
+  [
+   "Physician",
+   "2",
+   "2 Chirurgeon's Kits",
+   "20 silver dragons",
+   "2 Influence",
+   "4 silver dragons",
+   "Diagnose - 1 and Medicine - 1",
+   "None"
+  ],
+  [
+   "Scholar",
+   "2",
+   "None",
+   "10 silver dragons",
+   "2 random Level 1 Lore props",
+   "4 silver dragons",
+   "Academics - 1 and any Level 1 Lore skill.",
+   "For the Scholar Retainer Benefit, if you receive a Lore that you already own, you can redraw."
+  ],
+  [
+   "Soldier",
+   "2",
+   "None",
+   "50 silver dragons (40 spent on weapons/armor)",
+   "4d3 silver dragons in wares",
+   "3 silver dragons",
+   "Choose 2: 1-Hand Weapon 1, 2-Hand Weapon 1, Archer, Tough 1, Shield 1",
+   "None"
+  ],
+  [
+   "Urchin",
+   "1",
+   "4 Influence (Espionage chosen) OR 2 Lockpicking Kits (Disable Device chosen)",
+   "20 silver dragons",
+   "4 Espionage Points",
+   "1 Influence",
+   "Espionage - 1 or Disable Device - 1",
+   "None"
+  ]
+ ],
+ "advancedArchetypes": [
+  [
+   "Auron",
+   "3",
+   "Rank 0: BasicRank 1: Basic + 1 Influence Rank 2: Basic + 2 Influence Rank 3: Basic + 3 Influence",
+   "Rank 0: BasicRank 1: Basic + 2 silver dragons Rank 2: Basic + 4 silver dragons Rank 3: Basic + 6 silver dragons",
+   "Any except for Courtier or Gentry",
+   "A level 1 skill in the Auron skill tree.",
+   "Basic Archetypes that cost 1 CP pay -15% on all Rank advancement costs."
+  ],
+  [
+   "Cirque",
+   "3",
+   "Rank 0: BasicRank 1: Basic + 4 resources Rank 2: Basic + 8 resources Rank 3: Basic + 12 resources",
+   "Rank 0: BasicRank 1: Basic + 2 silver dragons Rank 2: Basic + 4 silver dragons Rank 3: Basic + 6 silver dragons",
+   "Any except Courtier or Gentry",
+   "A level 1 skill in your Primary Cirque skill tree or Cirque general skills.",
+   "Merchant, Blacksmith, Artificer, Bowyer, and Urchin Basic Archetypes pay -15% on all Rank advancement costs."
+  ],
+  [
+   "Knight",
+   "3",
+   "Rank 0: BasicRank 1: Basic + 1 Influence Rank 2: Basic + 2 Influence Rank 3: Basic + 3 Influence",
+   "Rank 0: BasicRank 1: Basic + 2 silver dragons Rank 2: Basic + 4 silver dragons Rank 3: Basic + 6 silver dragons",
+   "Gentry, Physician, Soldier, or Courtier",
+   "A level 1 skill in your Primary Knight skill tree or Knight general skills.",
+   ""
+  ],
+  [
+   "Magister",
+   "3",
+   "Rank 0: BasicRank 1: Basic + 4 resources Rank 2: Basic + 8 resources Rank 3: Basic + 12 resources",
+   "Rank 0: BasicRank 1: Basic + 2 silver dragons Rank 2: Basic + 4 silver dragons Rank 3: Basic + 6 silver dragons",
+   "Scholar, Apothecary, Physician, Gentry, or Courtier",
+   "A level 1 skill in your Primary Apotheca skill tree or Apotheca general skills.",
+   ""
+  ],
+  [
+   "Noble",
+   "6",
+   "Rank 0: BasicRank 1: Basic + 1 Influence OR 4 silver dragons Rank 2: Basic + 2 Influence OR 8 silver dragonsRank 3: Basic + 3 Influence OR 12 silver dragons",
+   "Rank 0: BasicRank 1: Basic + 2 silver dragons Rank 2: Basic + 4 silver dragons Rank 3: Basic + 6 silver dragons",
+   "Courtier or Gentry",
+   "2 level 1 skills in the General Noble skill tree and 1 from a chosen House skill tree.",
+   ""
+  ],
+  [
+   "Veteran",
+   "1",
+   "Rank 2: Basic + 8 resources OR 8 silver dragonsRank 3: Basic + 12 resources OR 12 silver dragons",
+   "Rank 2: Basic + 4 silver dragons Rank 3: Basic + 6 silver dragons",
+   "Any",
+   "A level 1 skill in your Primary Veteran skill tree.",
+   "Start at Rank 2 instead of Rank 1.Basic Archetypes that cost 1 or 2 CP pay -10% on all Rank advancement costs."
+  ],
+  [
+   "Vigil",
+   "3",
+   "Rank 0: BasicRank 1: Basic + 2 Espionage points Rank 2: Basic + 4 Espionage points Rank 3: Basic + 6 espionage points",
+   "Rank 0: BasicRank 1: Basic + 2 silver dragons Rank 2: Basic + 4 silver dragons Rank 3: Basic + 6 silver dragons",
+   "Courtier or Gentry",
+   "A level 1 skill in your Primary Vigil skill tree or Vigil general skills.",
+   ""
+  ]
+ ]
+}

@@ -19,6 +19,7 @@ import type {
   Ruleset,
   Trait,
   TraitGroup,
+  TraitSelector,
 } from './rules-schema';
 
 export type Phase = 'creation' | 'advancement';
@@ -51,6 +52,57 @@ export function indexRuleset(ruleset: Ruleset): RulesetIndex {
  * Condition evaluation
  * ------------------------------------------------------------------ */
 
+/** Whether a trait is in the set a selector picks out. */
+export function traitMatches(
+  trait: Trait,
+  selector: TraitSelector,
+  idx: RulesetIndex
+): boolean {
+  if (selector.tag !== undefined && !trait.tags.includes(selector.tag)) return false;
+  if (selector.notTag !== undefined && trait.tags.includes(selector.notTag)) return false;
+  if (selector.groupId !== undefined) {
+    // Group membership is inherited: a skill in a subtree of the named group
+    // is in that group, or "any martial skill" would miss every skill filed
+    // one level down.
+    let current: TraitGroup | undefined = idx.groups.get(trait.groupId);
+    let inGroup = false;
+    while (current) {
+      if (current.id === selector.groupId) {
+        inGroup = true;
+        break;
+      }
+      current = current.parentId ? idx.groups.get(current.parentId) : undefined;
+    }
+    if (!inGroup) return false;
+  }
+  return true;
+}
+
+/** How many of the character's traits satisfy an anyTrait clause. */
+function countMatching(
+  condition: Extract<Condition, { kind: 'anyTrait' }>,
+  character: Character,
+  idx: RulesetIndex
+): number {
+  let n = 0;
+  for (const [traitId, level] of Object.entries(character.traitLevels)) {
+    if (level < condition.minLevel) continue;
+    const trait = idx.traits.get(traitId);
+    if (trait && traitMatches(trait, condition.matching, idx)) n++;
+  }
+  return n;
+}
+
+/** Human wording for a selector, e.g. "martial" or "a crafting skill". */
+function describeSelector(selector: TraitSelector, idx: RulesetIndex): string {
+  const parts: string[] = [];
+  if (selector.tag !== undefined) parts.push(selector.tag);
+  if (selector.groupId !== undefined) {
+    parts.push(idx.groups.get(selector.groupId)?.name ?? selector.groupId);
+  }
+  return parts.length > 0 ? parts.join(' ') : 'any';
+}
+
 export function evaluate(
   condition: Condition,
   character: Character,
@@ -63,6 +115,8 @@ export function evaluate(
       return false;
     case 'trait':
       return (character.traitLevels[condition.traitId] ?? 0) >= condition.minLevel;
+    case 'anyTrait':
+      return countMatching(condition, character, idx) >= (condition.count ?? 1);
     case 'package':
       return character.packageIds.includes(condition.packageId);
     case 'packageTier':
@@ -102,6 +156,14 @@ export function describeCondition(condition: Condition, idx: RulesetIndex): stri
     case 'trait': {
       const name = idx.traits.get(condition.traitId)?.name ?? condition.traitId;
       return `${name} ${condition.minLevel}`;
+    }
+    case 'anyTrait': {
+      const count = condition.count ?? 1;
+      const what = describeSelector(condition.matching, idx);
+      const level = condition.minLevel > 1 ? ` ${condition.minLevel}` : '';
+      return count === 1
+        ? `any ${what} skill${level}`
+        : `${count} ${what} skills${level}`;
     }
     case 'package':
       return idx.packages.get(condition.packageId)?.name ?? condition.packageId;
@@ -241,6 +303,7 @@ function matchesTarget(
   }
   // traitCost
   if (target.kind !== 'trait') return false;
+  if (t.minLevel !== undefined && target.level < t.minLevel) return false;
   if (t.traitId !== undefined) return t.traitId === target.traitId;
   if (t.tag !== undefined) {
     return idx.traits.get(target.traitId)?.tags.includes(t.tag) ?? false;
@@ -249,7 +312,8 @@ function matchesTarget(
 }
 
 export type ModifierTarget =
-  | { kind: 'trait'; traitId: Id }
+  /** `level` is which tier is being priced, so a discount can be scoped. */
+  | { kind: 'trait'; traitId: Id; level: number }
   | { kind: 'track'; trackId: Id }
   | { kind: 'package'; packageId: Id };
 
@@ -323,7 +387,12 @@ export function traitTierCost(
   if (!tier) return null;
   return {
     currencyId: tier.cost.currencyId,
-    amount: applyModifiers(tier.cost.amount, { kind: 'trait', traitId }, character, idx),
+    amount: applyModifiers(
+      tier.cost.amount,
+      { kind: 'trait', traitId, level },
+      character,
+      idx
+    ),
   };
 }
 
@@ -463,9 +532,11 @@ function capFor(
 
   for (const rule of idx.ruleset.purchaseRules) {
     if (rule.phase !== 'both' && rule.phase !== phase) continue;
-    if (rule.appliesTo.tag && !trait.tags.includes(rule.appliesTo.tag)) continue;
-    if (rule.appliesTo.groupId && trait.groupId !== rule.appliesTo.groupId) continue;
+    // Same matcher as anyTrait, so a cap and a prerequisite that name the
+    // same selector cannot disagree about which skills they mean.
+    if (!traitMatches(trait, rule.appliesTo, idx)) continue;
     if (rule.onlyIfNotGranted && granted.has(trait.id)) continue;
+    if (rule.when && !evaluate(rule.when, character, idx)) continue;
     if (!tightest || rule.maxLevel < tightest.maxLevel) {
       tightest = { maxLevel: rule.maxLevel, message: rule.message };
     }
