@@ -1,6 +1,11 @@
 import { randomUUID } from 'crypto';
 import { Pool } from 'pg';
-import { normalizeCharacter, normalizeRuleset } from '../../../shared/normalize';
+import {
+  normalizeCharacter,
+  normalizeNarrative,
+  normalizeRuleset,
+} from '../../../shared/normalize';
+import type { NarrativeMap } from '../../../shared/narrative-schema';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
 import type { AppRole, ProjectRole } from '../auth/permissions';
 import type {
@@ -76,6 +81,18 @@ export class PostgresStore implements Store {
         version     TEXT NOT NULL,
         data        JSONB NOT NULL,
         created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+    `);
+
+    // One map per project, stored whole like a ruleset. It is read and
+    // written in one piece and edited by a handful of staff, so rows per
+    // entity would buy contention handling nobody needs and cost every read
+    // a join.
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS narratives (
+        ruleset_id  TEXT PRIMARY KEY REFERENCES rulesets(id) ON DELETE CASCADE,
+        data        JSONB NOT NULL,
         updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
       );
     `);
@@ -402,6 +419,28 @@ export class PostgresStore implements Store {
       `UPDATE project_invites SET uses = uses + 1 WHERE id = $1;`,
       [id]
     );
+  }
+
+  /* ---------------- narrative ---------------- */
+
+  async getNarrative(rulesetId: string): Promise<NarrativeMap | null> {
+    const { rows } = await this.pool.query(
+      `SELECT data FROM narratives WHERE ruleset_id = $1;`,
+      [rulesetId]
+    );
+    return rows[0] ? normalizeNarrative(rows[0].data, rulesetId) : null;
+  }
+
+  async putNarrative(map: NarrativeMap): Promise<NarrativeMap> {
+    await this.pool.query(
+      `INSERT INTO narratives (ruleset_id, data)
+            VALUES ($1, $2)
+       ON CONFLICT (ruleset_id) DO UPDATE
+               SET data = EXCLUDED.data,
+                   updated_at = now();`,
+      [map.rulesetId, JSON.stringify(map)]
+    );
+    return map;
   }
 
   /* ---------------- characters ---------------- */

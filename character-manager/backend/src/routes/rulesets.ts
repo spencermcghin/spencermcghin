@@ -13,6 +13,7 @@ import {
   createCharacter,
   listCharacters,
 } from '../controllers/characterController';
+import { getNarrative, saveNarrative } from '../controllers/narrativeController';
 import {
   createInvite,
   listInvites,
@@ -43,6 +44,10 @@ router.delete('/:id/members/:userId', removeMember);
 router.get('/:id/invites', listInvites);
 router.post('/:id/invites', createInvite);
 router.delete('/:id/invites/:inviteId', revokeInvite);
+
+// The story map belongs to a project the way its rules do.
+router.get('/:rulesetId/narrative', getNarrative);
+router.put('/:rulesetId/narrative', saveNarrative);
 
 // Characters are always created within a project.
 router.get('/:rulesetId/characters', listCharacters);

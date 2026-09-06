@@ -15,6 +15,7 @@
  * would silently destroy data written by a newer version.
  */
 
+import type { NarrativeMap } from './narrative-schema';
 import type { Character, Ruleset } from './rules-schema';
 
 /** Fields that are arrays on Ruleset, and must exist even when empty. */
@@ -91,4 +92,38 @@ export function normalizeCharacter(raw: unknown): Character {
   if (typeof c.fieldValues !== 'object' || c.fieldValues === null) c.fieldValues = {};
 
   return c as unknown as Character;
+}
+
+/**
+ * The same job for a stored narrative map.
+ *
+ * A map saved before a field existed simply does not have it, and a project
+ * that has never had one at all should read as empty rather than as broken.
+ * The rulesetId is taken from the row's key rather than trusted from the
+ * document, so a copied map cannot claim to belong to another project.
+ */
+export function normalizeNarrative(raw: unknown, rulesetId: string): NarrativeMap {
+  const m = { ...(raw as Record<string, unknown>) };
+
+  for (const field of ['entityKinds', 'relationKinds', 'entities', 'relations']) {
+    if (!Array.isArray(m[field])) m[field] = [];
+  }
+
+  m.entities = (m.entities as NarrativeMap['entities']).map((e) => ({
+    ...e,
+    aliases: Array.isArray(e?.aliases) ? e.aliases : [],
+    tags: Array.isArray(e?.tags) ? e.tags : [],
+    sources: Array.isArray(e?.sources) ? e.sources : [],
+    status: e?.status ?? 'draft',
+  }));
+
+  m.relations = (m.relations as NarrativeMap['relations']).map((r) => ({
+    ...r,
+    sources: Array.isArray(r?.sources) ? r.sources : [],
+  }));
+
+  m.rulesetId = rulesetId;
+  if (typeof m.updatedAt !== 'string') m.updatedAt = new Date(0).toISOString();
+
+  return m as unknown as NarrativeMap;
 }

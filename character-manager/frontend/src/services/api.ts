@@ -1,6 +1,8 @@
 import axios from 'axios';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
 import type { PendingCheck, TraitOption, Violation } from '../../../shared/engine';
+import type { NarrativeMap } from '../../../shared/narrative-schema';
+import type { MapIssue } from '../../../shared/narrative';
 
 /**
  * Same-origin by default, which is what a single-service deploy needs and
@@ -196,6 +198,23 @@ export interface AwardResult {
   /** Server-worded confirmation, so the client does not restate the rules. */
   message: string;
 }
+
+export interface StoryMapResponse {
+  map: NarrativeMap;
+  issues: MapIssue[];
+  /** Ids of entities nothing connects to. */
+  orphans: string[];
+  hubs: { id: string; name: string; degree: number }[];
+  canEdit: boolean;
+}
+
+export const storyApi = {
+  get: async (rulesetId: string): Promise<StoryMapResponse> =>
+    (await api.get(`/rulesets/${rulesetId}/narrative`)).data,
+
+  save: async (rulesetId: string, map: NarrativeMap): Promise<NarrativeMap> =>
+    (await api.put(`/rulesets/${rulesetId}/narrative`, map)).data,
+};
 
 export default api;
 

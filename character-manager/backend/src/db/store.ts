@@ -1,3 +1,4 @@
+import type { NarrativeMap } from '../../../shared/narrative-schema';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
 import type { AppRole, ProjectRole } from '../auth/permissions';
 
@@ -108,6 +109,10 @@ export interface Store {
   listInvites(rulesetId: string): Promise<Invite[]>;
   revokeInvite(id: string, rulesetId: string): Promise<boolean>;
   recordInviteUse(id: string): Promise<void>;
+
+  /* --- narrative --- */
+  getNarrative(rulesetId: string): Promise<NarrativeMap | null>;
+  putNarrative(map: NarrativeMap): Promise<NarrativeMap>;
 
   /* --- characters --- */
   listCharacters(rulesetId: string): Promise<CharacterRow[]>;

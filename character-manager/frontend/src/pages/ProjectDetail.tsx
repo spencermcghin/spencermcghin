@@ -165,6 +165,9 @@ export default function ProjectDetail() {
           <button className="button" onClick={exportJson}>
             Export
           </button>
+          <Link to={`/projects/${id}/story`} className="button">
+            Story
+          </Link>
           {isStaff && (
             <Link to={`/projects/${id}/edit`} className="button button-primary">
               Edit rules

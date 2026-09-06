@@ -1,0 +1,335 @@
+{
+  "_provenance": {
+    "sources": [
+      "Event 9 Synopsis & Definitions (Google Doc 10dQnPyWhcBgCxxWlLL-8IIQvi2jLwqwkX5azNJqlRwU)",
+      "Event 10 - The End Design Doc (Google Doc 1CVxS_L4USnnj3QaJXVRNZSQzKK5-TaeqlkCnEmNowxg)",
+      "Eldritch Dev Team > Events (Google Drive folder 1ebzJARVkm29E8wJk2KmQOPMPvOyEwkja)"
+    ],
+    "extracted": "2026-09-06",
+    "note": "A first pass over two documents, not the whole drive. Everything here is traceable to a source; nothing is invented. Load it into a project's story map and edit from there."
+  },
+
+  "rulesetId": "eldritch",
+  "updatedAt": "2026-09-06T00:00:00.000Z",
+
+  "entityKinds": [
+    { "id": "event", "label": "Event", "plural": "Events", "shape": "event",
+      "description": "A game weekend. The campaign's spine." },
+    { "id": "thread", "label": "Plot thread", "plural": "Plot threads", "shape": "idea",
+      "description": "A story that is open and wants resolving. The backlog." },
+    { "id": "power", "label": "Power", "plural": "Powers", "shape": "person",
+      "description": "Vanyir, Veldyr and the Unbound: the immortals the campaign turns on." },
+    { "id": "npc", "label": "Character", "plural": "Characters", "shape": "person",
+      "description": "Named NPCs and the roles that recur across events." },
+    { "id": "faction", "label": "Faction", "plural": "Factions", "shape": "group" },
+    { "id": "place", "label": "Place", "plural": "Places", "shape": "place" },
+    { "id": "artifact", "label": "Artifact", "plural": "Artifacts", "shape": "thing" },
+    { "id": "rite", "label": "Rite", "plural": "Rites", "shape": "idea",
+      "description": "Rituals and ceremonies the campaign is built around." }
+  ],
+
+  "relationKinds": [
+    { "id": "leads-to", "label": "leads to", "inverseLabel": "follows from",
+      "description": "Campaign order: what this sets up." },
+    { "id": "appears-in", "label": "appears in", "inverseLabel": "features" },
+    { "id": "within", "label": "is within", "inverseLabel": "contains" },
+    { "id": "rules", "label": "rules", "inverseLabel": "is ruled by" },
+    { "id": "guards", "label": "guards", "inverseLabel": "is guarded by" },
+    { "id": "member-of", "label": "belongs to", "inverseLabel": "includes" },
+    { "id": "opposes", "label": "opposes", "inverseLabel": "is opposed by", "symmetric": true },
+    { "id": "seeks", "label": "seeks", "inverseLabel": "is sought by" },
+    { "id": "concerns", "label": "concerns", "inverseLabel": "is the subject of" },
+    { "id": "resolves-in", "label": "is to be resolved in", "inverseLabel": "must resolve" }
+  ],
+
+  "entities": [
+    { "id": "event-8", "kindId": "event", "name": "Event 8 — The Precipice", "aliases": [], "tags": ["past"], "status": "canon",
+      "summary": "Ends with Obeah luring the players to a circus and carrying them into her realm, one step ahead of the undead armies.",
+      "occursAt": "Event 8",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "event-9", "kindId": "event", "name": "Event 9 — The Undercroft", "aliases": ["The Undercroft"], "tags": ["past"], "status": "canon",
+      "summary": "Played entirely inside the Crimson Vale. Players recover the five tombs and gather the evidence to clear Obeah of the Oathbreaker title.",
+      "body": "By interacting with encounters at Event 9, PCs should come to understand: that Obeah's realm is a shadow of its former self, straining to keep out oblivion; that Obeah did not earn the title of Oathbreaker and must right this wrong; and that they need the five coffins to conduct the Rite of Aeons at Event 10.",
+      "occursAt": "Event 9",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "event-10", "kindId": "event", "name": "Event 10 — The End", "aliases": ["The End"], "tags": ["upcoming"], "status": "draft",
+      "summary": "Players return to a Mystvale six months into a losing war, and either enact or sabotage the Rite of Aeons.",
+      "body": "Mystvale is a final redoubt. Oblivion has claimed the aetheric Wells at the leyline intersections and uses them to summon an avatar for each of the Unbound. The site divides into safe, grey and nether zones; the Rite must be performed at dusk on Saturday.",
+      "occursAt": "Event 10",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "rite-of-aeons", "kindId": "rite", "name": "The Rite of Aeons", "aliases": ["the Rite"], "tags": ["central"], "status": "canon",
+      "summary": "The ritual that held back Oblivion three hundred years ago, went wrong, and must be performed again.",
+      "body": "The five points of the pentacle are the five tombs, each holding a mortal element. Each requires a sacrifice with a strong resonance to that element, who must not have died before. The first Rite removed all Eldritch from the world and broke the Annwyn off from Arnesse.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }, { "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "obeah", "kindId": "power", "name": "Obeah", "aliases": ["the Blood Goddess", "the Striga"], "tags": ["veldyr"], "status": "canon",
+      "summary": "Welkin-bound Veldyr whose power is the binding of oaths. Cursed Oathbreaker after the last Rite despite keeping her own oath.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "Obeah" }] },
+
+    { "id": "hyperion", "kindId": "power", "name": "Hyperion", "aliases": [], "tags": ["vanyir"], "status": "canon",
+      "summary": "Vanyir whose noncommittalness at the last Rite helped break it. Restored but limited, holding only half his shards.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "scathach", "kindId": "power", "name": "Scathach", "aliases": ["Scathatch"], "tags": ["vanyir"], "status": "canon",
+      "summary": "Vanyir, tied to the witches. Whether she stands with the players depends on what they did about Obeah.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "egregore", "kindId": "power", "name": "Egregore", "aliases": [], "tags": ["veldyr", "corrupted"], "status": "canon",
+      "summary": "Veldyr, now consumed by the Void and leading the Corrupted Dream. An enemy to be resolved at Event 10.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "sigrayne-richter", "kindId": "npc", "name": "Sigrayne Richter", "aliases": [], "tags": [], "status": "canon",
+      "summary": "One of the five who powered the last Rite. Her tomb holds the element of Mind.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "crixos", "kindId": "power", "name": "Crixos, the Black King", "aliases": ["the Dark Tyrant"], "tags": [], "status": "canon",
+      "summary": "Titan lord of the Undercroft.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "The Undercroft" }] },
+
+    { "id": "nightwarden-rho", "kindId": "npc", "name": "Nightwarden Rho", "aliases": [], "tags": [], "status": "canon",
+      "summary": "Tampered with the last Rite. Part of why the seal came out wrong and Obeah was blamed.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "Obeah" }] },
+
+    { "id": "oblivion", "kindId": "faction", "name": "Oblivion", "aliases": [], "tags": ["antagonist"], "status": "canon",
+      "summary": "The force the Rite exists to hold back. At Event 10 it has claimed the Wells and besieges Mystvale.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "slototh", "kindId": "power", "name": "Slototh, the Seeker", "aliases": [], "tags": ["unbound", "avatar"], "status": "draft",
+      "summary": "Unbound avatar. Sees what should stay hidden; silences the ground it stands on.",
+      "body": "Vulnerable to a strike delivered by an attacker holding a lit torch or lantern, which forces Weakness. Gaze of the Seeker delivers Paralyze at will. Within its zone, no player may speak.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "Avatars of the Unbound" }] },
+
+    { "id": "nglush", "kindId": "power", "name": "N'glush, the Betrayer", "aliases": ["Nglush"], "tags": ["unbound", "avatar"], "status": "draft",
+      "summary": "Unbound avatar. Turns friend against friend, and cannot be named.",
+      "body": "A player who has learned its true name can shout it while landing a strike to force a Stagger. Players in unbroken physical contact cannot be targeted by Friend to Enemy. Within its zone no character may aid another.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "Avatars of the Unbound" }] },
+
+    { "id": "xogos", "kindId": "power", "name": "Xogos, the Corruptor", "aliases": [], "tags": ["unbound", "avatar"], "status": "draft",
+      "summary": "Unbound avatar of rot. Strikes from a diseased player do nothing to it.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "Avatars of the Unbound" }] },
+
+    { "id": "craxen", "kindId": "power", "name": "Craxen, the Annihilator", "aliases": [], "tags": ["unbound", "avatar"], "status": "draft",
+      "summary": "Unbound avatar. Annihilates outright, and shrinks the ground beneath the fight.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "Avatars of the Unbound" }] },
+
+    { "id": "crimson-vale", "kindId": "place", "name": "The Crimson Vale", "aliases": ["Obeah's realm", "the court of Oaths"], "tags": [], "status": "canon",
+      "summary": "Obeah's realm: a town frozen at the moment of the failed Rite, fragmenting each time it repeats itself.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "The Crimson Vale" }] },
+
+    { "id": "undercroft", "kindId": "place", "name": "The Undercroft", "aliases": [], "tags": [], "status": "canon",
+      "summary": "A world beneath the world. A Welkin realm of endless ruins, ruled by Crixos.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "The Undercroft" }] },
+
+    { "id": "welkin", "kindId": "place", "name": "The Welkin", "aliases": [], "tags": [], "status": "canon",
+      "summary": "The realm beyond the Vale, where other worlds and monsters reside.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "Definitions" }] },
+
+    { "id": "vale", "kindId": "place", "name": "The Vale", "aliases": [], "tags": [], "status": "canon",
+      "summary": "The world where humans live.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "Definitions" }] },
+
+    { "id": "mystvale", "kindId": "place", "name": "Mystvale", "aliases": ["Mistvale"], "tags": [], "status": "canon",
+      "summary": "The last redoubt. Six months into the siege, everything left in the Annwyn has fallen back here.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "annwyn", "kindId": "place", "name": "The Annwyn", "aliases": ["An Breogan"], "tags": [], "status": "canon",
+      "summary": "Broken off from Arnesse by the failed Rite, and visible to the world again now that the Rite is failing.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "How did we get here?" }] },
+
+    { "id": "the-archive", "kindId": "place", "name": "The Archive", "aliases": ["the forbidden section"], "tags": [], "status": "canon",
+      "summary": "The Grand Librarian's archive, holding the oath ledger and, in its forbidden section, the Echoes of the Rite.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "five-noble-vampires", "kindId": "faction", "name": "The Five Noble Vampires", "aliases": ["the Keepers", "Obeah's Eversworn"], "tags": [], "status": "canon",
+      "summary": "Caretakers of the Crimson Vale, each bound by a broken oath to maintain one function of the realm and guard one tomb.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "groundskeeper", "kindId": "npc", "name": "The Groundskeeper", "aliases": [], "tags": ["keeper"], "status": "canon",
+      "summary": "Maintains the realm's physical boundaries. Leads players in ward-making and the Path Puzzle.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "curator", "kindId": "npc", "name": "The Curator", "aliases": [], "tags": ["keeper"], "status": "canon",
+      "summary": "Maintains the Museum's visual record, filling its gaps with fabrications they can no longer tell from truth.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "magistrate", "kindId": "npc", "name": "The Magistrate", "aliases": [], "tags": ["keeper"], "status": "canon",
+      "summary": "Presides over the Courtroom. The only figure with standing to strip the Oathbreaker title, and no evidence to act on until the players bring it.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "grand-librarian", "kindId": "npc", "name": "The Grand Librarian", "aliases": [], "tags": ["keeper"], "status": "canon",
+      "summary": "Runs the Archive and the Shrine of Two Hearts, keeping the oath ledger and the blood token economy.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "lightbringer", "kindId": "npc", "name": "The Lightbringer", "aliases": ["the Lightkeeper"], "tags": ["keeper"], "status": "canon",
+      "summary": "The most direct link to Hyperion's betrayal; an oath split between two masters whose demands now conflict.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "tomb-blood", "kindId": "artifact", "name": "The Tomb of Blood", "aliases": ["Obeah's tomb"], "tags": ["coffin"], "status": "canon",
+      "summary": "One of the five sarcophagi that powered the last Rite. Holds the element of Blood.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "tomb-bone", "kindId": "artifact", "name": "The Tomb of Bone", "aliases": ["Scathach's tomb"], "tags": ["coffin"], "status": "canon",
+      "summary": "Holds the element of Bone.", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "tomb-spirit", "kindId": "artifact", "name": "The Tomb of Spirit", "aliases": ["Egregore's tomb"], "tags": ["coffin"], "status": "canon",
+      "summary": "Holds the element of Spirit.", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "tomb-mind", "kindId": "artifact", "name": "The Tomb of Mind", "aliases": ["Sigrayne Richter's tomb"], "tags": ["coffin"], "status": "canon",
+      "summary": "Holds the element of Mind.", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "tomb-breath", "kindId": "artifact", "name": "The Tomb of Breath", "aliases": ["Hyperion's tomb"], "tags": ["coffin"], "status": "canon",
+      "summary": "Holds the element of Breath.", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "echoes-of-the-rite", "kindId": "artifact", "name": "The Echoes of the Rite", "aliases": [], "tags": ["evidence"], "status": "canon",
+      "summary": "Held in the Archive's forbidden section. Among the primary evidence for clearing Obeah's name.",
+      "requires": { "kind": "trait", "traitId": "metaphysics", "minLevel": 2 },
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "light-of-empyrean", "kindId": "artifact", "name": "The Light of the Empyrean", "aliases": ["the Last Light"], "tags": ["asset"], "status": "draft",
+      "summary": "Unlocked at Event 8. Its fire must be tended, and holds Oblivion back from whatever it stands over.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "PC Assets" }] },
+
+    { "id": "aetheric-conduits", "kindId": "artifact", "name": "The Aetheric Conduits", "aliases": ["pylons"], "tags": ["asset"], "status": "draft",
+      "summary": "Necro-tech taken from the five Nexus points, reverse engineered to power the Rite.",
+      "body": "The schematic should require complete schematics from several crafting disciplines: artificer, blacksmith and alchemist.",
+      "requires": { "kind": "anyTrait", "matching": { "tag": "crafting" }, "minLevel": 2 },
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "You Must Construct Additional Pylons" }] },
+
+    { "id": "grand-cirque", "kindId": "faction", "name": "The Grand Cirque Obscura", "aliases": ["the circus", "the Midway"], "tags": [], "status": "canon",
+      "summary": "Obeah's mortal pets and unwitting cover, and the players' straight men inside the Crimson Vale.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions", "locator": "The Circus" }] },
+
+    { "id": "townsfolk", "kindId": "faction", "name": "The Townsfolk", "aliases": ["the villagers"], "tags": [], "status": "canon",
+      "summary": "Daytime manifestations of the lesser vampires, each tied to one of the five Nobles by a matching broken oath.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "core-army-dead", "kindId": "faction", "name": "The Core Army of the Dead", "aliases": ["the Bright Company"], "tags": ["oblivion"], "status": "draft",
+      "summary": "Legions raised from the field, led by Emil the Craxen Champion and the officers of the Bright Company.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "corrupted-dream", "kindId": "faction", "name": "The Corrupted Dream", "aliases": [], "tags": ["oblivion"], "status": "draft",
+      "summary": "Egregore's faction, spearheaded by Dreadwolves.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "calicans", "kindId": "faction", "name": "The Calicans", "aliases": ["Corpus Regnum", "the Cult of the Dead"], "tags": ["oblivion"], "status": "draft",
+      "summary": "Undead followers of Morghost, led by Calico.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "king-liandra", "kindId": "npc", "name": "King Liandra", "aliases": ["the King that was Promised"], "tags": [], "status": "draft",
+      "summary": "Leading the defence of Mystvale after six months of siege. Grizzled, and expecting the players to return with the Rite.",
+      "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "thread-oathbreaker", "kindId": "thread", "name": "Clearing Obeah's name", "aliases": [], "tags": [], "status": "canon",
+      "summary": "Players gather evidence that Obeah kept her oath, and bring it to the Magistrate, who alone can strip the title.",
+      "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "thread-hyperion-shards", "kindId": "thread", "name": "Resolve the Hyperion shards", "aliases": [], "tags": ["unresolved"], "status": "draft",
+      "summary": "Hyperion holds half his shards. Players may be able to return them at great cost — possibly their lives.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "8/16 Plot Meeting" }] },
+
+    { "id": "thread-forsaken", "kindId": "thread", "name": "Five Forsaken need resolutions", "aliases": [], "tags": ["unresolved"], "status": "draft",
+      "summary": "Rhona, Sutton, Erendil, Jinlong and Ylva were Forsaken by the Nightwarden and Witch rituals, and each needs an ending.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "8/23 Plot Meeting" }] },
+
+    { "id": "thread-egregore-confrontation", "kindId": "thread", "name": "Corrupted Egregore confrontation", "aliases": [], "tags": ["unresolved"], "status": "draft",
+      "summary": "What becomes of the players carrying Egregore's Lost Arts once he is faced as an enemy.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "8/16 Plot Meeting" }] },
+
+    { "id": "thread-elemental-resonance", "kindId": "thread", "name": "Elemental resonance and the five sacrifices", "aliases": [], "tags": ["unresolved"], "status": "draft",
+      "summary": "Each tomb needs a sacrifice resonant with its element, who must not have died before. Two have volunteered; three are open.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "Resonance with the Elements" }] },
+
+    { "id": "thread-nexus-points", "kindId": "thread", "name": "Capture and hold the five Nexus points", "aliases": [], "tags": [], "status": "draft",
+      "summary": "The five leyline junctions Oblivion has claimed. Taking and holding them is what powers the Rite.",
+      "sources": [{ "label": "Event 10 — The End Design Doc", "locator": "Saturday Detail" }] }
+  ],
+
+  "relations": [
+    { "id": "r1", "kindId": "leads-to", "fromId": "event-8", "toId": "event-9", "sources": [{ "label": "Event 9 Synopsis & Definitions" }],
+      "note": "Obeah lures the players to the circus and carries them into her realm." },
+    { "id": "r2", "kindId": "leads-to", "fromId": "event-9", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }],
+      "note": "Players return to Mystvale with the tombs, six months later." },
+
+    { "id": "r3", "kindId": "rules", "fromId": "obeah", "toId": "crimson-vale", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r4", "kindId": "within", "fromId": "crimson-vale", "toId": "undercroft", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r5", "kindId": "within", "fromId": "undercroft", "toId": "welkin", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r6", "kindId": "rules", "fromId": "crixos", "toId": "undercroft", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r7", "kindId": "within", "fromId": "mystvale", "toId": "annwyn", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r8", "kindId": "within", "fromId": "the-archive", "toId": "crimson-vale", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "r10", "kindId": "appears-in", "fromId": "crimson-vale", "toId": "event-9", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r11", "kindId": "appears-in", "fromId": "mystvale", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "r12", "kindId": "member-of", "fromId": "groundskeeper", "toId": "five-noble-vampires", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r13", "kindId": "member-of", "fromId": "curator", "toId": "five-noble-vampires", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r14", "kindId": "member-of", "fromId": "magistrate", "toId": "five-noble-vampires", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r15", "kindId": "member-of", "fromId": "grand-librarian", "toId": "five-noble-vampires", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r16", "kindId": "member-of", "fromId": "lightbringer", "toId": "five-noble-vampires", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "r17", "kindId": "guards", "fromId": "groundskeeper", "toId": "tomb-bone", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r18", "kindId": "guards", "fromId": "curator", "toId": "tomb-spirit", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r19", "kindId": "guards", "fromId": "magistrate", "toId": "tomb-mind", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r20", "kindId": "guards", "fromId": "grand-librarian", "toId": "tomb-blood", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r21", "kindId": "guards", "fromId": "lightbringer", "toId": "tomb-breath", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "r22", "kindId": "concerns", "fromId": "tomb-bone", "toId": "scathach", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r23", "kindId": "concerns", "fromId": "tomb-spirit", "toId": "egregore", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r24", "kindId": "concerns", "fromId": "tomb-mind", "toId": "sigrayne-richter", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r25", "kindId": "concerns", "fromId": "tomb-blood", "toId": "obeah", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r26", "kindId": "concerns", "fromId": "tomb-breath", "toId": "hyperion", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "r27", "kindId": "concerns", "fromId": "rite-of-aeons", "toId": "tomb-blood", "sources": [{ "label": "Event 10 — The End Design Doc" }],
+      "note": "The five points of the pentacle are the five tombs." },
+    { "id": "r28", "kindId": "concerns", "fromId": "rite-of-aeons", "toId": "tomb-bone", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r29", "kindId": "concerns", "fromId": "rite-of-aeons", "toId": "tomb-spirit", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r30", "kindId": "concerns", "fromId": "rite-of-aeons", "toId": "tomb-mind", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r31", "kindId": "concerns", "fromId": "rite-of-aeons", "toId": "tomb-breath", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "r32", "kindId": "resolves-in", "fromId": "rite-of-aeons", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r33", "kindId": "opposes", "fromId": "rite-of-aeons", "toId": "oblivion", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "r34", "kindId": "concerns", "fromId": "nightwarden-rho", "toId": "rite-of-aeons", "sources": [{ "label": "Event 9 Synopsis & Definitions" }],
+      "note": "Tampered with the last Rite." },
+    { "id": "r35", "kindId": "concerns", "fromId": "hyperion", "toId": "rite-of-aeons", "sources": [{ "label": "Event 9 Synopsis & Definitions" }],
+      "note": "His noncommittalness helped break the seal." },
+
+    { "id": "r36", "kindId": "within", "fromId": "echoes-of-the-rite", "toId": "the-archive", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r37", "kindId": "concerns", "fromId": "echoes-of-the-rite", "toId": "thread-oathbreaker", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+    { "id": "r38", "kindId": "concerns", "fromId": "magistrate", "toId": "thread-oathbreaker", "sources": [{ "label": "Event 9 Synopsis & Definitions" }],
+      "note": "The only figure with standing to strip the title." },
+    { "id": "r39", "kindId": "resolves-in", "fromId": "thread-oathbreaker", "toId": "event-9", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "r40", "kindId": "member-of", "fromId": "townsfolk", "toId": "five-noble-vampires", "sources": [{ "label": "Event 9 Synopsis & Definitions" }],
+      "note": "Each villager's broken oath echoes the oath of their Noble." },
+    { "id": "r41", "kindId": "seeks", "fromId": "obeah", "toId": "grand-cirque", "sources": [{ "label": "Event 9 Synopsis & Definitions" }],
+      "note": "Became their patron, and used the circus as cover to find mortals who could carry out the Rite." },
+    { "id": "r42", "kindId": "appears-in", "fromId": "grand-cirque", "toId": "event-9", "sources": [{ "label": "Event 9 Synopsis & Definitions" }] },
+
+    { "id": "r43", "kindId": "member-of", "fromId": "slototh", "toId": "oblivion", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r44", "kindId": "member-of", "fromId": "nglush", "toId": "oblivion", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r45", "kindId": "member-of", "fromId": "xogos", "toId": "oblivion", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r46", "kindId": "member-of", "fromId": "craxen", "toId": "oblivion", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r47", "kindId": "member-of", "fromId": "core-army-dead", "toId": "oblivion", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r48", "kindId": "member-of", "fromId": "corrupted-dream", "toId": "oblivion", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r49", "kindId": "member-of", "fromId": "calicans", "toId": "oblivion", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r50", "kindId": "rules", "fromId": "egregore", "toId": "corrupted-dream", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "r51", "kindId": "appears-in", "fromId": "slototh", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r52", "kindId": "appears-in", "fromId": "nglush", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r53", "kindId": "appears-in", "fromId": "xogos", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r54", "kindId": "appears-in", "fromId": "craxen", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r55", "kindId": "appears-in", "fromId": "king-liandra", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+
+    { "id": "r56", "kindId": "resolves-in", "fromId": "thread-hyperion-shards", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r57", "kindId": "concerns", "fromId": "thread-hyperion-shards", "toId": "hyperion", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r58", "kindId": "resolves-in", "fromId": "thread-forsaken", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r59", "kindId": "resolves-in", "fromId": "thread-egregore-confrontation", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r60", "kindId": "concerns", "fromId": "thread-egregore-confrontation", "toId": "egregore", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r61", "kindId": "resolves-in", "fromId": "thread-elemental-resonance", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r62", "kindId": "concerns", "fromId": "thread-elemental-resonance", "toId": "rite-of-aeons", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r63", "kindId": "resolves-in", "fromId": "thread-nexus-points", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r64", "kindId": "concerns", "fromId": "thread-nexus-points", "toId": "aetheric-conduits", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r65", "kindId": "concerns", "fromId": "aetheric-conduits", "toId": "rite-of-aeons", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r66", "kindId": "appears-in", "fromId": "light-of-empyrean", "toId": "event-10", "sources": [{ "label": "Event 10 — The End Design Doc" }] },
+    { "id": "r67", "kindId": "opposes", "fromId": "light-of-empyrean", "toId": "oblivion", "sources": [{ "label": "Event 10 — The End Design Doc" }] }
+  ]
+}

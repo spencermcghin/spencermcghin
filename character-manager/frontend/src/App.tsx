@@ -7,6 +7,7 @@ import SignIn from './pages/SignIn';
 import JoinProject from './pages/JoinProject';
 import AdminUsers from './pages/AdminUsers';
 import RulesetEditor from './pages/RulesetEditor';
+import StoryMap from './pages/StoryMap';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { AuthProvider } from './auth/AuthProvider';
 import { RequireAuth } from './auth/RequireAuth';
@@ -89,6 +90,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <RulesetEditor />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/projects/:id/story"
+            element={
+              <RequireAuth>
+                <StoryMap />
               </RequireAuth>
             }
           />
