@@ -6,5 +6,5 @@ dist/
 *.log
 .DS_Store
 
-# engine test build output
-character-manager/.engine-build/
+# engine test build output (path is relative to this file)
+.engine-build/
