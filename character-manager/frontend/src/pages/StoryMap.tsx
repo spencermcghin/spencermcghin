@@ -10,6 +10,7 @@ import * as edit from '../../../shared/narrative-editor';
 import Hint from '../components/Hint';
 import TagInput from '../components/TagInput';
 import StoryGraph from '../components/StoryGraph';
+import CampaignBoard from '../components/CampaignBoard';
 import './StoryMap.css';
 
 /**
@@ -37,7 +38,7 @@ export default function StoryMap() {
   const [kind, setKind] = useState('all');
   const [query, setQuery] = useState('');
   const [showKinds, setShowKinds] = useState(false);
-  const [view, setView] = useState<'list' | 'graph'>('list');
+  const [view, setView] = useState<'list' | 'graph' | 'campaign'>('list');
   /**
    * Where you have walked, so you can get back. Exploring a graph without a
    * way back is a maze: every click is a commitment and the way you came is
@@ -299,13 +300,13 @@ export default function StoryMap() {
               ))}
             </div>
             <div className="ed-seg">
-              {(['list', 'graph'] as const).map((v) => (
+              {(['list', 'graph', 'campaign'] as const).map((v) => (
                 <button
                   key={v}
                   className={view === v ? 'is-on' : ''}
                   onClick={() => setView(v)}
                 >
-                  {v === 'list' ? 'List' : 'Graph'}
+                  {v === 'list' ? 'List' : v === 'graph' ? 'Graph' : 'Campaign'}
                 </button>
               ))}
             </div>
@@ -333,8 +334,17 @@ export default function StoryMap() {
 
           {showKinds && <KindsPanel map={map} canEdit={canEdit} apply={apply} />}
 
-          <div className={`story-body ${view === 'graph' ? 'is-graph' : ''}`}>
-            {view === 'graph' ? (
+          <div className={`story-body ${view !== 'list' ? 'is-graph' : ''}`}>
+            {view === 'campaign' ? (
+              <CampaignBoard
+                map={map}
+                idx={idx}
+                canEdit={canEdit}
+                selectedId={selected}
+                onSelect={open}
+                onShape={(campaign) => apply((m) => ({ ...m, campaign }))}
+              />
+            ) : view === 'graph' ? (
               selected ? (
                 <div className="graph-frame">
                   {trail.length > 0 && (

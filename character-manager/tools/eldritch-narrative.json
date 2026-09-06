@@ -7,7 +7,7 @@
    "Eldritch Retro and Plot Meeting — 2026-07-19 (Google Doc 1yG4izUPHvISCAL9pfEM0voXzhTB-pblscgE5O_tu7MI)"
   ],
   "extracted": "2026-09-06",
-  "note": "Extracted from the Player's Guide, two event design documents and one plot meeting. Everything here is traceable to a source; nothing is invented. Meeting notes are read for canon decisions only -- staffing, personnel and safety matters discussed in the same meetings are deliberately excluded, because this map is readable by everyone in the project."
+  "note": "Extracted from the Player's Guide, two event design documents and one plot meeting. Everything here is traceable to a source; nothing is invented. Meeting notes are read for canon decisions only -- staffing, personnel and safety matters discussed in the same meetings are deliberately excluded, because this map is readable by everyone in the project. The campaign shape names 'event' as the spine and 'track' as the lanes; both are this project's own declared kinds, nominated on the map rather than assumed by the app."
  },
  "rulesetId": "eldritch",
  "updatedAt": "2026-09-06T00:00:00.000Z",
@@ -64,6 +64,20 @@
    "plural": "Rites",
    "shape": "idea",
    "description": "Rituals and ceremonies the campaign is built around."
+  },
+  {
+   "id": "track",
+   "label": "Track",
+   "plural": "Tracks",
+   "shape": "idea",
+   "description": "A strand of content running across events. The guide's own word: encounters are labelled \"(General Track)\" or \"(Rite Track)\"."
+  },
+  {
+   "id": "encounter",
+   "label": "Encounter",
+   "plural": "Encounters",
+   "shape": "event",
+   "description": "A single piece of run content, in a track and at an event."
   }
  ],
  "relationKinds": [
@@ -1073,6 +1087,211 @@
      "locator": "Decisions"
     }
    ]
+  },
+  {
+   "id": "track-general",
+   "kindId": "track",
+   "name": "General Track",
+   "aliases": [],
+   "tags": [],
+   "status": "canon",
+   "summary": "The through-line every player is on: arrival, the battle, the war.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "track-rite",
+   "kindId": "track",
+   "name": "Rite Track",
+   "aliases": [],
+   "tags": [],
+   "status": "canon",
+   "summary": "Everything that has to happen for the Rite of Aeons to be performable at dusk on Saturday.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "enc-the-return",
+   "kindId": "encounter",
+   "name": "The Return",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Players come back to Mystvale in nine groups, each with one of the nobles, starting at different places in the mists.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "occursAt": "Event 10 · Friday"
+  },
+  {
+   "id": "enc-battle-mystvale",
+   "kindId": "encounter",
+   "name": "Battle for Mystvale",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Groups arrive staggered to find the tavern under attack and King Liandra leading a desperate defence.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "occursAt": "Event 10 · Friday"
+  },
+  {
+   "id": "enc-guided-planning",
+   "kindId": "encounter",
+   "name": "Guided Planning of the Rite",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "The hook that gets players planning the real execution steps, against a dusk-on-Saturday deadline.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "occursAt": "Event 10 · Friday"
+  },
+  {
+   "id": "enc-pylons",
+   "kindId": "encounter",
+   "name": "You Must Construct Additional Pylons",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Retrieve the aetheric conduits from the five Nexus points and reverse engineer them off their nethermancy settings.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "body": "The schematic should require complete schematics from several crafting disciplines: artificer, blacksmith and alchemist.",
+   "occursAt": "Event 10 · Friday"
+  },
+  {
+   "id": "enc-scavenging",
+   "kindId": "encounter",
+   "name": "Scavenging Amongst the Horde",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Supplying Liandra's war effort while avoiding roving undead. Both a combat and a non-combat route.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "occursAt": "Event 10 · Friday"
+  },
+  {
+   "id": "enc-nexus-points",
+   "kindId": "encounter",
+   "name": "Capture and Hold the Five Nexus Points",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Install the reconfigured conduits and hold the five leyline junctions through waves.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "occursAt": "Event 10 · Saturday"
+  },
+  {
+   "id": "enc-the-rite-itself",
+   "kindId": "encounter",
+   "name": "The Rite Itself",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Performed at dusk, alongside a field battle, with the players holding the ritual space until the casting completes.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "occursAt": "Event 10 · Saturday"
+  },
+  {
+   "id": "enc-canoe",
+   "kindId": "encounter",
+   "name": "The Not So Gentle Canoe Mod",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "A dangerous expedition, deliberately non-invasive to the main story. Wounded players cannot be got back to a surgeon in time.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "occursAt": "Event 10"
+  },
+  {
+   "id": "enc-doomed-escape",
+   "kindId": "encounter",
+   "name": "Doomed Escape",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Wilhelm returns with a desperate plan to leave the Annwyn. Players either kill the hope or send them off to die.",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "occursAt": "Event 10"
+  },
+  {
+   "id": "enc-oathbreaker-trial",
+   "kindId": "encounter",
+   "name": "The Trial of Obeah",
+   "aliases": [],
+   "tags": [],
+   "status": "canon",
+   "summary": "The Magistrate's courtroom, where the evidence gathered across the realm is finally presented.",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ],
+   "occursAt": "Event 9"
+  },
+  {
+   "id": "enc-path-puzzle",
+   "kindId": "encounter",
+   "name": "The Path Puzzle",
+   "aliases": [],
+   "tags": [],
+   "status": "canon",
+   "summary": "The Groundskeeper leads players in ward-making and a wayfinding puzzle across the site.",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ],
+   "occursAt": "Event 9"
   }
  ],
  "relations": [
@@ -1932,6 +2151,380 @@
      "locator": "Decisions"
     }
    ]
+  },
+  {
+   "id": "c1",
+   "kindId": "appears-in",
+   "fromId": "enc-the-return",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "kindId": "member-of",
+   "fromId": "enc-the-return",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "kindId": "appears-in",
+   "fromId": "enc-battle-mystvale",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "kindId": "member-of",
+   "fromId": "enc-battle-mystvale",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "kindId": "appears-in",
+   "fromId": "enc-guided-planning",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "kindId": "member-of",
+   "fromId": "enc-guided-planning",
+   "toId": "track-rite",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "kindId": "appears-in",
+   "fromId": "enc-pylons",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "kindId": "member-of",
+   "fromId": "enc-pylons",
+   "toId": "track-rite",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "kindId": "appears-in",
+   "fromId": "enc-scavenging",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "kindId": "member-of",
+   "fromId": "enc-scavenging",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "kindId": "member-of",
+   "fromId": "enc-scavenging",
+   "toId": "track-rite",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ],
+   "note": "Labelled \"Rite Track/General Track\" in the outline."
+  },
+  {
+   "id": "c12",
+   "kindId": "appears-in",
+   "fromId": "enc-nexus-points",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "kindId": "member-of",
+   "fromId": "enc-nexus-points",
+   "toId": "track-rite",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "kindId": "appears-in",
+   "fromId": "enc-the-rite-itself",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "kindId": "member-of",
+   "fromId": "enc-the-rite-itself",
+   "toId": "track-rite",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "kindId": "appears-in",
+   "fromId": "enc-canoe",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "kindId": "member-of",
+   "fromId": "enc-canoe",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "kindId": "appears-in",
+   "fromId": "enc-doomed-escape",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "kindId": "member-of",
+   "fromId": "enc-doomed-escape",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "kindId": "appears-in",
+   "fromId": "enc-oathbreaker-trial",
+   "toId": "event-9",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "kindId": "member-of",
+   "fromId": "enc-oathbreaker-trial",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "kindId": "appears-in",
+   "fromId": "enc-path-puzzle",
+   "toId": "event-9",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "kindId": "member-of",
+   "fromId": "enc-path-puzzle",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "kindId": "concerns",
+   "fromId": "enc-pylons",
+   "toId": "aetheric-conduits",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "kindId": "concerns",
+   "fromId": "enc-nexus-points",
+   "toId": "thread-nexus-points",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "kindId": "concerns",
+   "fromId": "enc-the-rite-itself",
+   "toId": "rite-of-aeons",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "kindId": "concerns",
+   "fromId": "enc-battle-mystvale",
+   "toId": "king-liandra",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "kindId": "concerns",
+   "fromId": "enc-oathbreaker-trial",
+   "toId": "thread-oathbreaker",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "kindId": "concerns",
+   "fromId": "enc-oathbreaker-trial",
+   "toId": "magistrate",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "kindId": "concerns",
+   "fromId": "enc-path-puzzle",
+   "toId": "groundskeeper",
+   "sources": [
+    {
+     "label": "Event 9 Synopsis & Definitions"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "kindId": "concerns",
+   "fromId": "enc-guided-planning",
+   "toId": "rite-of-aeons",
+   "sources": [
+    {
+     "label": "Event 10 — The End Design Doc",
+     "locator": "Event Outline"
+    }
+   ]
   }
- ]
+ ],
+ "campaign": {
+  "spineKindId": "event",
+  "laneKindId": "track",
+  "contentKindIds": [
+   "encounter",
+   "thread"
+  ]
+ }
 }

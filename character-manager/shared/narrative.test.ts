@@ -5,7 +5,15 @@ import { join } from 'node:path';
 
 import { eldritch } from './rulesets/eldritch';
 import { emptyNarrativeMap, type NarrativeMap } from './narrative-schema';
-import { connectionsOf, hubs, indexMap, orphans, validateMap } from './narrative';
+import {
+  campaignBoard,
+  cellKey,
+  connectionsOf,
+  hubs,
+  indexMap,
+  orphans,
+  validateMap,
+} from './narrative';
 import * as nedit from './narrative-editor';
 
 /**
@@ -233,4 +241,101 @@ test('a starter vocabulary is coherent on its own', () => {
   const map: NarrativeMap = { ...emptyNarrativeMap('x'), ...v };
   assert.deepEqual(validateMap(map), []);
   assert.ok(v.entityKinds.length > 0 && v.relationKinds.length > 0);
+});
+
+/* ------------------------------------------------------------------ *
+ * The campaign board
+ * ------------------------------------------------------------------ */
+
+test('a map with no campaign shape has no board', () => {
+  // A one-shot, or anything that is not a sequence, simply never gets the
+  // view -- rather than being shown an empty grid it cannot fill.
+  const { campaign, ...rest } = eldritchMap;
+  assert.equal(campaignBoard(indexMap(rest as NarrativeMap)), null);
+});
+
+test('the spine is ordered, and ten comes after nine', () => {
+  const board = campaignBoard(indexMap(eldritchMap))!;
+  assert.deepEqual(
+    board.spine.map((e) => e.name),
+    ['Event 8 — The Precipice', 'Event 9 — The Undercroft', 'Event 10 — The End']
+  );
+});
+
+test('content lands in the cell for its track and its event', () => {
+  const board = campaignBoard(indexMap(eldritchMap))!;
+  const rite = board.cells.get(cellKey('track-rite', 'event-10'))!;
+  assert.ok(rite.some((e) => e.id === 'enc-the-rite-itself'));
+  assert.ok(rite.some((e) => e.id === 'enc-pylons'));
+  // A General Track encounter is not in the Rite Track cell.
+  assert.ok(!rite.some((e) => e.id === 'enc-the-return'));
+});
+
+test('content in two tracks appears in both', () => {
+  // The outline labels Scavenging "Rite Track/General Track", and a board
+  // that made you pick one would be lying about the plan.
+  const board = campaignBoard(indexMap(eldritchMap))!;
+  for (const lane of ['track-rite', 'track-general']) {
+    assert.ok(
+      board.cells.get(cellKey(lane, 'event-10'))!.some((e) => e.id === 'enc-scavenging'),
+      `expected Scavenging in ${lane}`
+    );
+  }
+});
+
+test('the axes are not content on themselves', () => {
+  const board = campaignBoard(indexMap(eldritchMap))!;
+  const everywhere = [
+    ...[...board.cells.values()].flat(),
+    ...[...board.untracked.values()].flat(),
+    ...[...board.unscheduled.values()].flat(),
+  ].map((e) => e.id);
+  assert.ok(!everywhere.includes('event-10'), 'an event must not sit in its own column');
+  assert.ok(!everywhere.includes('track-rite'), 'a track must not sit in its own row');
+});
+
+test('content at an event but in no track still shows', () => {
+  // Otherwise the board quietly hides work, which is the one thing a
+  // planning view must never do.
+  const board = campaignBoard(indexMap(eldritchMap))!;
+  const loose = board.untracked.get('event-10') ?? [];
+  assert.ok(loose.length > 0);
+  assert.ok(loose.some((e) => e.id === 'thread-nexus-points'));
+});
+
+test('the board works for a game that names its own axes', () => {
+  // The whole point of nominating the kinds: nothing here says "event".
+  const map: NarrativeMap = {
+    ...emptyNarrativeMap('tabletop'),
+    campaign: { spineKindId: 'session', laneKindId: 'arc' },
+    entityKinds: [
+      { id: 'session', label: 'Session', plural: 'Sessions' },
+      { id: 'arc', label: 'Arc', plural: 'Arcs' },
+      { id: 'scene', label: 'Scene', plural: 'Scenes' },
+    ],
+    relationKinds: [{ id: 'in', label: 'is in', inverseLabel: 'contains' }],
+    entities: [
+      { id: 's2', kindId: 'session', name: 'Session 2', aliases: [], tags: [], status: 'canon', sources: [] },
+      { id: 's10', kindId: 'session', name: 'Session 10', aliases: [], tags: [], status: 'canon', sources: [] },
+      { id: 'a1', kindId: 'arc', name: 'The Long Con', aliases: [], tags: [], status: 'canon', sources: [] },
+      { id: 'sc1', kindId: 'scene', name: 'The Handoff', aliases: [], tags: [], status: 'draft', sources: [] },
+    ],
+    relations: [
+      { id: 'x1', kindId: 'in', fromId: 'sc1', toId: 's10', sources: [] },
+      { id: 'x2', kindId: 'in', fromId: 'sc1', toId: 'a1', sources: [] },
+    ],
+  };
+  const board = campaignBoard(indexMap(map))!;
+  assert.deepEqual(board.spine.map((e) => e.name), ['Session 2', 'Session 10']);
+  assert.deepEqual(board.lanes.map((e) => e.name), ['The Long Con']);
+  assert.deepEqual(board.cells.get(cellKey('a1', 's10'))!.map((e) => e.id), ['sc1']);
+});
+
+test('a spine with no lanes still gives a usable board', () => {
+  // Nominating only the spine is legitimate: a sequence with no strands.
+  const map = { ...eldritchMap, campaign: { spineKindId: 'event' } };
+  const board = campaignBoard(indexMap(map))!;
+  assert.equal(board.lanes.length, 0);
+  assert.equal(board.cells.size, 0);
+  assert.ok((board.untracked.get('event-10') ?? []).length > 0);
 });

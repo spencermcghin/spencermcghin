@@ -139,9 +139,43 @@ export interface Relation {
  * The map
  * ------------------------------------------------------------------ */
 
+/**
+ * Which of the project's own kinds organise a campaign.
+ *
+ * Most games run as a sequence of somethings -- events, sessions, chapters --
+ * with several strands of content running across them. Naming those two kinds
+ * turns the map into a board: the spine along the top, the lanes down the
+ * side, and content in the cells.
+ *
+ * Nominated rather than assumed. Hard-coding "event" and "track" would make
+ * this Eldritch's board; a tabletop chronicle nominates Session and Arc, and
+ * a one-shot nominates nothing and never sees the view. Both fields optional
+ * for the same reason: a map with no campaign shape is a perfectly good map.
+ */
+export interface CampaignShape {
+  /** The kind whose entries run along the top, in order. */
+  spineKindId?: Id;
+  /** The kind whose entries run down the side. */
+  laneKindId?: Id;
+  /**
+   * Which kinds count as the work being planned.
+   *
+   * Without this the board fills with everything merely connected to a point
+   * in the sequence -- the monsters that appear at an event, the place it
+   * happens in -- which is true but is not a plan. Naming the kinds that are
+   * work keeps the board about what has to be written and run.
+   *
+   * Empty or absent means everything, which is the right default before a
+   * project has enough content to need the distinction.
+   */
+  contentKindIds?: Id[];
+}
+
 export interface NarrativeMap {
   /** The ruleset this belongs to. One project, one map. */
   rulesetId: Id;
+  /** Absent until a project says what shape its campaign has. */
+  campaign?: CampaignShape;
   entityKinds: EntityKind[];
   relationKinds: RelationKind[];
   entities: NarrativeEntity[];

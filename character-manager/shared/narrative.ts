@@ -303,3 +303,103 @@ export function gatedContent(
         .map((c) => c.name),
     }));
 }
+
+/* ------------------------------------------------------------------ *
+ * The campaign board
+ *
+ * A map becomes a plan when you can see the sequence and what runs across
+ * it. Which kinds do that is the project's choice, declared on the map --
+ * see CampaignShape -- so this code never asks whether something is an
+ * "event".
+ * ------------------------------------------------------------------ */
+
+export interface CampaignBoard {
+  /** Entries of the spine kind, in order. */
+  spine: NarrativeEntity[];
+  /** Entries of the lane kind. */
+  lanes: NarrativeEntity[];
+  /** `${laneId}|${spineId}` -> what sits in that cell. */
+  cells: Map<string, NarrativeEntity[]>;
+  /** In a lane, but not attached to anything on the spine yet. */
+  unscheduled: Map<Id, NarrativeEntity[]>;
+  /** On the spine, but in no lane. The row that catches everything else. */
+  untracked: Map<Id, NarrativeEntity[]>;
+}
+
+export const cellKey = (laneId: Id, spineId: Id) => `${laneId}|${spineId}`;
+
+/**
+ * Orders the spine.
+ *
+ * By `occursAt` where a project fills it in, else by name -- and comparing
+ * numbers inside the string as numbers, because "Event 10" sorts before
+ * "Event 9" otherwise and a campaign board that puts the finale in the middle
+ * is worse than no board.
+ */
+function naturally(a: string, b: string): number {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+}
+
+export function campaignBoard(idx: MapIndex): CampaignBoard | null {
+  const shape = idx.map.campaign;
+  if (!shape?.spineKindId) return null;
+
+  const spine = idx.map.entities
+    .filter((e) => e.kindId === shape.spineKindId)
+    .sort((a, b) => naturally(a.occursAt ?? a.name, b.occursAt ?? b.name));
+
+  const lanes = shape.laneKindId
+    ? idx.map.entities
+        .filter((e) => e.kindId === shape.laneKindId)
+        .sort((a, b) => naturally(a.name, b.name))
+    : [];
+
+  const spineIds = new Set(spine.map((e) => e.id));
+  const laneIds = new Set(lanes.map((e) => e.id));
+
+  /** What an entry is attached to, whichever way the relation was written. */
+  const touches = (entity: NarrativeEntity, of: Set<Id>): Id[] =>
+    (idx.byEntity.get(entity.id) ?? [])
+      .map((r) => (r.fromId === entity.id ? r.toId : r.fromId))
+      .filter((id) => of.has(id));
+
+  const cells = new Map<string, NarrativeEntity[]>();
+  const unscheduled = new Map<Id, NarrativeEntity[]>();
+  const untracked = new Map<Id, NarrativeEntity[]>();
+
+  const push = (map: Map<string, NarrativeEntity[]>, key: string, e: NarrativeEntity) => {
+    const list = map.get(key);
+    if (list) list.push(e);
+    else map.set(key, [e]);
+  };
+
+  const isContent = (e: NarrativeEntity) =>
+    !shape.contentKindIds?.length || shape.contentKindIds.includes(e.kindId);
+
+  for (const entity of idx.map.entities) {
+    // The spine and the lanes are the axes, not content sitting on them.
+    if (spineIds.has(entity.id) || laneIds.has(entity.id)) continue;
+    if (!isContent(entity)) continue;
+
+    const onSpine = touches(entity, spineIds);
+    const inLanes = touches(entity, laneIds);
+    if (onSpine.length === 0 && inLanes.length === 0) continue;
+
+    if (onSpine.length === 0) {
+      // In a lane, not yet placed in the sequence.
+      for (const laneId of inLanes) push(unscheduled, laneId, entity);
+      continue;
+    }
+
+    for (const spineId of onSpine) {
+      if (inLanes.length === 0) {
+        push(untracked, spineId, entity);
+        continue;
+      }
+      // Content belonging to two lanes appears in both, because it does.
+      for (const laneId of inLanes) push(cells, cellKey(laneId, spineId), entity);
+    }
+  }
+
+  return { spine, lanes, cells, unscheduled, untracked };
+}
