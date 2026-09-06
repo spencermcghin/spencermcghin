@@ -475,3 +475,92 @@ test('a quality can be renamed without touching the rules that use it', () => {
   assert.equal(r.qualities.find((q) => q.id === 'lockpicking-kit')!.name, 'Thieves’ Tools');
   assert.deepEqual(validateRuleset(r), []);
 });
+
+/* ------------------------------------------------------------------ *
+ * The outline's shape
+ * ------------------------------------------------------------------ */
+
+test('trees nest the way the ruleset declares', () => {
+  const buckets = edit.bucketsFor(eldritch, 'group');
+
+  // Top level is the general trees plus one per advanced archetype -- not the
+  // 40 groups flat, which is what made the outline a wall.
+  assert.ok(buckets.length < 12, `expected a short top level, got ${buckets.length}`);
+
+  const knight = buckets.find((b) => b.key === 'knight')!;
+  assert.ok(knight, 'expected a Knight bucket at the top level');
+  assert.deepEqual(
+    knight.children.map((c) => c.key),
+    ['knight-general', 'knight-martial', 'knight-mercy']
+  );
+  // The archetype itself files no skills; they are all in its subtrees.
+  assert.equal(knight.traits.length, 0);
+  assert.equal(
+    knight.total,
+    knight.children.reduce((n, c) => n + c.traits.length, 0)
+  );
+});
+
+test('every skill appears exactly once in the outline', () => {
+  const seen: string[] = [];
+  const walk = (bs: edit.TraitBucket[]) => {
+    for (const b of bs) {
+      seen.push(...b.traits.map((t) => t.id));
+      walk(b.children);
+    }
+  };
+  walk(edit.bucketsFor(eldritch, 'group'));
+  assert.equal(seen.length, eldritch.traits.length);
+  assert.equal(new Set(seen).size, eldritch.traits.length);
+});
+
+test('a skill whose tree was deleted is still shown, not lost', () => {
+  // Silently dropping it would leave an author with a validation error they
+  // cannot navigate to.
+  const orphaned = edit.removeGroup(eldritch, 'general');
+  const buckets = edit.bucketsFor(orphaned, 'group');
+  const orphans = buckets.find((b) => b.key === '__orphans');
+  assert.ok(orphans, 'expected an "not in any tree" bucket');
+  assert.ok(orphans.traits.some((t) => t.id === 'academics'));
+});
+
+test('a tree whose parent was deleted is promoted, not hidden', () => {
+  const cut = edit.removeGroup(eldritch, 'knight');
+  const buckets = edit.bucketsFor(cut, 'group');
+  assert.ok(buckets.some((b) => b.key === 'knight-martial'));
+});
+
+test('grouping by rank or tag stays flat', () => {
+  for (const dimension of ['track:rank', 'tag']) {
+    const buckets = edit.bucketsFor(eldritch, dimension);
+    assert.ok(buckets.length > 0);
+    assert.ok(
+      buckets.every((b) => b.children.length === 0),
+      `${dimension} should not nest`
+    );
+  }
+});
+
+test('filtering keeps the path to a match', () => {
+  const buckets = edit.bucketsFor(eldritch, 'group');
+  const found = edit.filterBuckets(buckets, (t) => t.id === 'shield-wall');
+
+  // Shield Wall is two levels down, under Knight then Knight · Martial.
+  assert.deepEqual(found.map((b) => b.key), ['knight']);
+  assert.deepEqual(found[0].children.map((b) => b.key), ['knight-martial']);
+  assert.deepEqual(found[0].children[0].traits.map((t) => t.id), ['shield-wall']);
+  assert.equal(found[0].total, 1);
+});
+
+test('filtering to nothing yields nothing, rather than empty trees', () => {
+  const buckets = edit.bucketsFor(eldritch, 'group');
+  assert.deepEqual(edit.filterBuckets(buckets, () => false), []);
+});
+
+test('bucketKeys reaches every level', () => {
+  const buckets = edit.bucketsFor(eldritch, 'group');
+  const keys = edit.bucketKeys(buckets);
+  assert.ok(keys.includes('knight'));
+  assert.ok(keys.includes('knight-martial'));
+  assert.equal(new Set(keys).size, keys.length, 'keys must be unique');
+});

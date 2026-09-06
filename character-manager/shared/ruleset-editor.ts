@@ -479,6 +479,141 @@ export function trackPositionOf(
   return highest;
 }
 
+/* ------------------------------------------------------------------ *
+ * Buckets
+ *
+ * How the outline is organised. Trees nest -- an archetype holds its
+ * subtrees, which hold the skills -- so the tree grouping is a tree, while
+ * grouping by rank or by tag is a flat set of derived piles.
+ * ------------------------------------------------------------------ */
+
+export interface TraitBucket {
+  key: string;
+  label: string;
+  description?: string;
+  /** Traits filed directly here, not in one of the children. */
+  traits: Trait[];
+  children: TraitBucket[];
+  /** Present when the bucket is a real group, so skills can be added to it. */
+  groupId?: Id;
+  /** Traits here and in every descendant, for the count on a closed group. */
+  total: number;
+}
+
+function countAll(bucket: TraitBucket): number {
+  return (
+    bucket.traits.length + bucket.children.reduce((n, c) => n + countAll(c), 0)
+  );
+}
+
+/**
+ * The outline, grouped the way the caller asked for.
+ *
+ * `group` follows the tree structure the ruleset already declares through
+ * parentId; the others are derived piles with no nesting to follow. A group
+ * whose parent has been deleted is promoted to the top rather than
+ * disappearing, because a skill that cannot be seen cannot be fixed.
+ */
+export function bucketsFor(r: Ruleset, groupBy: string): TraitBucket[] {
+  const flat = (
+    entries: { key: string; label: string; traits: Trait[] }[]
+  ): TraitBucket[] =>
+    entries.map((e) => ({ ...e, children: [], total: e.traits.length }));
+
+  if (groupBy.startsWith('track:')) {
+    const trackId = groupBy.slice(6);
+    const track = r.tracks.find((t) => t.id === trackId);
+    const entries = (track?.steps ?? []).map((step) => ({
+      key: `s${step.index}`,
+      label: step.label ?? `${track?.name} ${step.index}`,
+      traits: r.traits.filter((t) => trackPositionOf(t, trackId) === step.index),
+    }));
+    const ungated = r.traits.filter((t) => trackPositionOf(t, trackId) === null);
+    if (ungated.length > 0) entries.push({ key: 'none', label: 'No gate', traits: ungated });
+    return flat(entries);
+  }
+
+  if (groupBy === 'tag') {
+    const tags = [...new Set(r.traits.flatMap((t) => t.tags))].sort();
+    const entries = tags.map((tag) => ({
+      key: tag,
+      label: tag,
+      traits: r.traits.filter((t) => t.tags.includes(tag)),
+    }));
+    const untagged = r.traits.filter((t) => t.tags.length === 0);
+    if (untagged.length > 0) {
+      entries.push({ key: 'untagged', label: 'Untagged', traits: untagged });
+    }
+    return flat(entries);
+  }
+
+  const groupIds = new Set(r.traitGroups.map((g) => g.id));
+  const build = (group: TraitGroup): TraitBucket => {
+    const bucket: TraitBucket = {
+      key: group.id,
+      label: group.name,
+      description: group.description,
+      groupId: group.id,
+      traits: r.traits.filter((t) => t.groupId === group.id),
+      children: r.traitGroups.filter((g) => g.parentId === group.id).map(build),
+      total: 0,
+    };
+    bucket.total = countAll(bucket);
+    return bucket;
+  };
+
+  const roots = r.traitGroups
+    .filter((g) => !g.parentId || !groupIds.has(g.parentId))
+    .map(build);
+
+  // Skills whose group was deleted would otherwise be invisible.
+  const filed = new Set<Id>();
+  const collect = (b: TraitBucket) => {
+    for (const t of b.traits) filed.add(t.id);
+    b.children.forEach(collect);
+  };
+  roots.forEach(collect);
+  const orphans = r.traits.filter((t) => !filed.has(t.id));
+  if (orphans.length > 0) {
+    roots.push({
+      key: '__orphans',
+      label: 'Not in any tree',
+      description: 'These skills name a tree that no longer exists.',
+      traits: orphans,
+      children: [],
+      total: orphans.length,
+    });
+  }
+
+  return roots;
+}
+
+/**
+ * Keeps only the traits a predicate accepts, and only the buckets left
+ * holding something. A parent survives if any descendant does, so a match
+ * deep in a tree still shows the path to itself.
+ */
+export function filterBuckets(
+  buckets: TraitBucket[],
+  matches: (trait: Trait) => boolean
+): TraitBucket[] {
+  const out: TraitBucket[] = [];
+  for (const bucket of buckets) {
+    const traits = bucket.traits.filter(matches);
+    const children = filterBuckets(bucket.children, matches);
+    if (traits.length === 0 && children.length === 0) continue;
+    const next: TraitBucket = { ...bucket, traits, children, total: 0 };
+    next.total = countAll(next);
+    out.push(next);
+  }
+  return out;
+}
+
+/** Every bucket key in a tree, for expanding or collapsing the lot. */
+export function bucketKeys(buckets: TraitBucket[]): string[] {
+  return buckets.flatMap((b) => [b.key, ...bucketKeys(b.children)]);
+}
+
 /**
  * The dimensions a ruleset can meaningfully be grouped by in a list view.
  *

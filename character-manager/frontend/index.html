@@ -8,12 +8,31 @@
     <meta name="color-scheme" content="dark light" />
     <title>LARP Character Manager</title>
 
+    <!--
+      Fonts are loaded without blocking the first paint.
+
+      A plain stylesheet link here holds rendering until Google answers, so a
+      slow or unreachable font CDN leaves the app showing nothing at all --
+      measured at twelve seconds on a network that throttles it. Loading it
+      as `print` and switching to `all` once it arrives means the page paints
+      immediately in the fallback stack and re-renders in the real faces when
+      they land. The `noscript` copy keeps them for readers without script,
+      who have nothing to lose by waiting.
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&family=Pirata+One&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'; this.onload=null;"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&family=Pirata+One&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
 
     <!--
       Apply the saved theme before first paint so there is no flash of the

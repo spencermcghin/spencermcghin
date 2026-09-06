@@ -28,8 +28,12 @@ export default function RulesetEditor() {
   const [dirty, setDirty] = useState(false);
   const [groupBy, setGroupBy] = useState('group');
   const [open, setOpen] = useState<string[]>([]);
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
+  const [query, setQuery] = useState('');
   /** Previous values, newest last. Operations are pure, so undo is a pop. */
   const history = useRef<Ruleset[]>([]);
+  /** The open/closed default is chosen once, not re-imposed on every edit. */
+  const openInitialised = useRef(false);
 
   useEffect(() => {
     Promise.all([rulesetApi.get(id), memberApi.list(id).catch(() => [])])
@@ -68,45 +72,60 @@ export default function RulesetEditor() {
     [ruleset]
   );
 
-  const buckets = useMemo(() => {
-    if (!ruleset) return [];
-    if (groupBy.startsWith('track:')) {
-      const trackId = groupBy.slice(6);
-      const track = ruleset.tracks.find((t) => t.id === trackId);
-      const out = (track?.steps ?? []).map((step) => ({
-        key: `s${step.index}`,
-        label: `${track?.name} ${step.index}`,
-        traits: ruleset.traits.filter(
-          (t) => edit.trackPositionOf(t, trackId) === step.index
-        ),
-      }));
-      const ungated = ruleset.traits.filter(
-        (t) => edit.trackPositionOf(t, trackId) === null
-      );
-      if (ungated.length > 0) {
-        out.push({ key: 'none', label: 'No gate', traits: ungated });
-      }
-      return out;
-    }
-    if (groupBy === 'tag') {
-      const tags = [...new Set(ruleset.traits.flatMap((t) => t.tags))].sort();
-      const out = tags.map((tag) => ({
-        key: tag,
-        label: tag,
-        traits: ruleset.traits.filter((t) => t.tags.includes(tag)),
-      }));
-      const untagged = ruleset.traits.filter((t) => t.tags.length === 0);
-      if (untagged.length > 0) {
-        out.push({ key: 'untagged', label: 'Untagged', traits: untagged });
-      }
-      return out;
-    }
-    return ruleset.traitGroups.map((g) => ({
-      key: g.id,
-      label: g.name,
-      traits: ruleset.traits.filter((t) => t.groupId === g.id),
-    }));
-  }, [ruleset, groupBy]);
+  const buckets = useMemo(
+    () => (ruleset ? edit.bucketsFor(ruleset, groupBy) : []),
+    [ruleset, groupBy]
+  );
+
+  /**
+   * Searching matches a skill's name, its tags, and the prose on it. Tags and
+   * descriptions are included because "which skills mention a lockpick" is a
+   * question an author has, and a name-only search cannot answer it.
+   */
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return buckets;
+    return edit.filterBuckets(buckets, (t) =>
+      [t.name, t.summary ?? '', ...t.tags, ...t.tiers.map((x) => x.description)]
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [buckets, query]);
+
+  const searching = query.trim().length > 0;
+  const allGroupKeys = useMemo(() => edit.bucketKeys(buckets), [buckets]);
+  const matchCount = useMemo(
+    () => (searching ? shown.reduce((n, b) => n + b.total, 0) : 0),
+    [shown, searching]
+  );
+
+  /**
+   * Trees start closed on a ruleset big enough for that to matter, and open
+   * on one small enough to take in at a glance. A real ruleset is 200 skills
+   * across 40 trees; opening all of it is a wall. A demo is a dozen, and
+   * making someone click into every tree to see it would be worse.
+   */
+  useEffect(() => {
+    if (!ruleset || openInitialised.current) return;
+    openInitialised.current = true;
+    const all = edit.bucketKeys(edit.bucketsFor(ruleset, 'group'));
+    setOpenGroups(ruleset.traits.length <= 30 ? all : []);
+  }, [ruleset]);
+
+  const toggleGroup = useCallback(
+    (key: string) =>
+      setOpenGroups((g) => (g.includes(key) ? g.filter((x) => x !== key) : [...g, key])),
+    []
+  );
+
+  const toggleSkill = useCallback(
+    (traitId: string) =>
+      setOpen((o) =>
+        o.includes(traitId) ? o.filter((x) => x !== traitId) : [...o, traitId]
+      ),
+    []
+  );
 
   const save = async () => {
     if (!ruleset) return;
@@ -216,6 +235,31 @@ export default function RulesetEditor() {
         </Hint>
       </div>
 
+      <div className="ed-bar ed-findbar">
+        <input
+          className="ed-find"
+          type="search"
+          value={query}
+          placeholder="Find a skill…"
+          aria-label="Find a skill"
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {searching ? (
+          <span className="ed-hint">
+            {matchCount} {matchCount === 1 ? 'match' : 'matches'}
+          </span>
+        ) : (
+          <>
+            <button className="ed-add" onClick={() => setOpenGroups(allGroupKeys)}>
+              Expand all
+            </button>
+            <button className="ed-add" onClick={() => setOpenGroups([])}>
+              Collapse all
+            </button>
+          </>
+        )}
+      </div>
+
       {issues.length > 0 && (
         <div className="ed-issues">
           <span className="ed-issues-head">
@@ -235,42 +279,145 @@ export default function RulesetEditor() {
 
       <QualityPanel ruleset={ruleset} canEdit={canEdit} apply={apply} />
 
-      {buckets.map((b) => (
-        <section key={b.key} className="ed-group">
-          <div className="ed-group-head">
-            <span className="ed-group-name">{b.label}</span>
-            <span className="ed-group-count">{b.traits.length}</span>
-            {canEdit && groupBy === 'group' && (
-              <button className="ed-add" onClick={() => addSkill(b.key)}>
-                + Skill
-              </button>
-            )}
-          </div>
-
-          {b.traits.length === 0 ? (
-            <p className="ed-empty">Nothing here.</p>
-          ) : (
-            b.traits.map((trait) => (
-              <SkillRow
-                key={trait.id + b.key}
-                trait={trait}
-                ruleset={ruleset}
-                canEdit={canEdit}
-                open={open.includes(trait.id)}
-                onToggle={() =>
-                  setOpen((o) =>
-                    o.includes(trait.id)
-                      ? o.filter((x) => x !== trait.id)
-                      : [...o, trait.id]
-                  )
-                }
-                apply={apply}
-              />
-            ))
-          )}
-        </section>
-      ))}
+      {shown.length === 0 ? (
+        <p className="ed-empty">
+          Nothing matches “{query.trim()}”.
+        </p>
+      ) : (
+        shown.map((bucket) => (
+          <BucketSection
+            key={bucket.key}
+            bucket={bucket}
+            depth={0}
+            ruleset={ruleset}
+            canEdit={canEdit}
+            canAdd={canEdit && groupBy === 'group'}
+            // A search shows what it found, rather than making you open the
+            // tree it was found in.
+            forceOpen={searching}
+            openGroups={openGroups}
+            toggleGroup={toggleGroup}
+            openSkills={open}
+            toggleSkill={toggleSkill}
+            addSkill={addSkill}
+            apply={apply}
+          />
+        ))
+      )}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * One tree and everything under it.
+ *
+ * Recursive, because the trees are: an archetype holds its subtrees, which
+ * hold the skills. A closed tree renders none of its contents, which is what
+ * keeps a 200-skill ruleset from arriving all at once.
+ */
+function BucketSection({
+  bucket,
+  depth,
+  ruleset,
+  canEdit,
+  canAdd,
+  forceOpen,
+  openGroups,
+  toggleGroup,
+  openSkills,
+  toggleSkill,
+  addSkill,
+  apply,
+}: {
+  bucket: edit.TraitBucket;
+  depth: number;
+  ruleset: Ruleset;
+  canEdit: boolean;
+  canAdd: boolean;
+  forceOpen: boolean;
+  openGroups: string[];
+  toggleGroup: (key: string) => void;
+  openSkills: string[];
+  toggleSkill: (id: string) => void;
+  addSkill: (groupId: string) => void;
+  apply: (next: (r: Ruleset) => Ruleset) => void;
+}) {
+  const isOpen = forceOpen || openGroups.includes(bucket.key);
+  const hasChildren = bucket.children.length > 0;
+
+  return (
+    <section className={`ed-group ed-depth-${Math.min(depth, 2)}`}>
+      <div className="ed-group-head">
+        <button
+          className="ed-caret"
+          onClick={() => toggleGroup(bucket.key)}
+          aria-expanded={isOpen}
+          aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${bucket.label}`}
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="3"
+               style={{ transform: isOpen ? 'rotate(90deg)' : undefined }}>
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+        <button className="ed-group-name is-button" onClick={() => toggleGroup(bucket.key)}>
+          {bucket.label}
+        </button>
+        <span className="ed-group-count">{bucket.total}</span>
+        {hasChildren && (
+          <span className="ed-group-sub">
+            {bucket.children.length} {bucket.children.length === 1 ? 'tree' : 'trees'}
+          </span>
+        )}
+        {canAdd && bucket.groupId && (
+          <button className="ed-add" onClick={() => addSkill(bucket.groupId!)}>
+            + Skill
+          </button>
+        )}
+      </div>
+
+      {isOpen && (
+        <div className="ed-group-body">
+          {bucket.description && <p className="ed-group-desc">{bucket.description}</p>}
+
+          {bucket.traits.length === 0 && !hasChildren && (
+            <p className="ed-empty">Nothing here.</p>
+          )}
+
+          {bucket.traits.map((trait) => (
+            <SkillRow
+              key={trait.id + bucket.key}
+              trait={trait}
+              ruleset={ruleset}
+              canEdit={canEdit}
+              open={openSkills.includes(trait.id)}
+              onToggle={() => toggleSkill(trait.id)}
+              apply={apply}
+            />
+          ))}
+
+          {bucket.children.map((child) => (
+            <BucketSection
+              key={child.key}
+              bucket={child}
+              depth={depth + 1}
+              ruleset={ruleset}
+              canEdit={canEdit}
+              canAdd={canAdd}
+              forceOpen={forceOpen}
+              openGroups={openGroups}
+              toggleGroup={toggleGroup}
+              openSkills={openSkills}
+              toggleSkill={toggleSkill}
+              addSkill={addSkill}
+              apply={apply}
+            />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

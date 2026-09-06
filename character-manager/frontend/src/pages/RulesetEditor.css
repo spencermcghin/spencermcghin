@@ -463,3 +463,89 @@
 
 /* A staff check is prose, so it gets the room the id pickers do not need. */
 .cl-row .cl-text { flex: 1; min-width: 12rem; }
+
+/* ---------------- outline structure ---------------- */
+
+/* Nesting is shown with a rule down the left rather than indentation alone:
+   at three levels deep, indentation on its own stops reading as hierarchy
+   and starts reading as drift. */
+.ed-depth-1,
+.ed-depth-2 {
+  margin-bottom: 0;
+}
+
+.ed-group-body {
+  padding-left: 0.2rem;
+}
+
+.ed-depth-1 > .ed-group-body,
+.ed-depth-2 > .ed-group-body {
+  margin-left: 0.55rem;
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--border);
+}
+
+.ed-depth-1 > .ed-group-head,
+.ed-depth-2 > .ed-group-head {
+  margin-left: 0.55rem;
+  border-bottom-color: transparent;
+  padding-bottom: 0.3rem;
+}
+
+.ed-depth-1 > .ed-group-head .ed-group-name,
+.ed-depth-2 > .ed-group-head .ed-group-name {
+  font-size: 0.63rem;
+  letter-spacing: 0.14em;
+  color: var(--text-mute);
+}
+
+/* The whole heading is a hit target, not just the caret. Only the button's
+   own chrome is reset -- inheriting the typography would override the
+   .ed-group-name rules this element also carries. */
+.ed-group-name.is-button {
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ed-group-name.is-button:hover { color: var(--accent); }
+
+.ed-group-sub {
+  font-size: 0.68rem;
+  color: var(--text-mute);
+}
+
+.ed-group-desc {
+  max-width: 68ch;
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-mute);
+}
+
+/* ---------------- find ---------------- */
+
+.ed-findbar {
+  margin-top: -0.5rem;
+}
+
+.ed-find {
+  width: 22rem;
+  max-width: 100%;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.ed-find:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.ed-find::placeholder { color: var(--text-mute); }
