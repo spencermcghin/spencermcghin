@@ -422,3 +422,65 @@ export function removePrerequisite(
     requires: withoutTrait(tier.requires, requiredTraitId),
   });
 }
+
+/**
+ * The track positions a condition demands, at the top level.
+ *
+ * The counterpart to prerequisiteEdges: a Rank gate is structurally the same
+ * kind of clause as a skill prerequisite, so it can be read back the same way.
+ * That is what lets a view group skills by Rank without anyone maintaining a
+ * separate field -- the grouping is derived from the rule, not duplicated
+ * beside it.
+ */
+export function trackGates(
+  condition: Condition
+): { trackId: Id; minStep: number }[] {
+  if (condition.kind === 'track') {
+    return [{ trackId: condition.trackId, minStep: condition.minStep }];
+  }
+  if (condition.kind === 'all') return condition.of.flatMap(trackGates);
+  // As with prerequisites, a clause under `any` or `not` is not a hard gate
+  // and must not be presented as one.
+  return [];
+}
+
+/**
+ * A skill's position on a track, taken as the highest step any of its levels
+ * demands. Null when the skill is not gated on that track at all.
+ */
+export function trackPositionOf(
+  trait: Trait,
+  trackId: Id
+): number | null {
+  let highest: number | null = null;
+  const consider = (c: Condition) => {
+    for (const g of trackGates(c)) {
+      if (g.trackId === trackId) {
+        highest = highest === null ? g.minStep : Math.max(highest, g.minStep);
+      }
+    }
+  };
+  if (trait.requires) consider(trait.requires);
+  for (const tier of trait.tiers) consider(tier.requires);
+  return highest;
+}
+
+/**
+ * The dimensions a ruleset can meaningfully be grouped by in a list view.
+ *
+ * All are derived from what the ruleset already says, so a new grouping costs
+ * an author nothing. A game with no tracks simply offers fewer.
+ */
+export function groupingDimensions(
+  r: Ruleset
+): { id: string; label: string; buckets: number }[] {
+  const dims = [
+    { id: 'group', label: 'Tree', buckets: r.traitGroups.length },
+  ];
+  for (const track of r.tracks) {
+    dims.push({ id: `track:${track.id}`, label: track.name, buckets: track.steps.length });
+  }
+  const tags = new Set(r.traits.flatMap((t) => t.tags));
+  if (tags.size > 0) dims.push({ id: 'tag', label: 'Tag', buckets: tags.size });
+  return dims;
+}

@@ -11,14 +11,13 @@ import './DesignOptions.css';
  * rows), not estimated.
  */
 
-type Tab = 'evidence' | 'outline' | 'matrix' | 'graph' | 'condition';
+type Tab = 'evidence' | 'outline' | 'graph' | 'condition';
 
 const TABS: { id: Tab; label: string; note: string }[] = [
   { id: 'evidence', label: 'Evidence', note: 'What the ruleset actually looks like' },
-  { id: 'outline', label: 'A · Outline', note: 'Tree → skill → level' },
-  { id: 'matrix', label: 'B · Rank board', note: 'Organised by the dominant gate' },
-  { id: 'graph', label: 'C · Graph', note: 'The 74 real dependencies' },
-  { id: 'condition', label: 'Condition editor', note: 'Needed by all three' },
+  { id: 'outline', label: 'The editor', note: 'One list, grouped how you like' },
+  { id: 'graph', label: 'Graph', note: 'A read-only lens on 74 dependencies' },
+  { id: 'condition', label: 'Condition editor', note: 'Where Rank is just a clause' },
 ];
 
 export default function DesignOptions() {
@@ -52,8 +51,7 @@ export default function DesignOptions() {
       </nav>
 
       {tab === 'evidence' && <Evidence />}
-      {tab === 'outline' && <Outline />}
-      {tab === 'matrix' && <Matrix />}
+      {tab === 'outline' && <Workbench />}
       {tab === 'graph' && <GraphView />}
       {tab === 'condition' && <ConditionEditor />}
     </div>
@@ -133,186 +131,192 @@ function Evidence() {
 
 /* ------------------------------------------------------------------ */
 
-const OUTLINE = [
-  {
-    group: 'General Skills',
-    gate: null as string | null,
-    skills: [
-      { name: 'Academics', tags: [], tiers: [
-        { lv: 1, cost: 1, pre: '—' },
-        { lv: 2, cost: 2, pre: 'Academics 1' },
-        { lv: 3, cost: 2, pre: 'Academics 2' },
-      ] },
-      { name: 'Artificer', tags: ['crafting'], tiers: [
-        { lv: 1, cost: 3, pre: '—' },
-        { lv: 2, cost: 3, pre: 'Artificer 1' },
-        { lv: 3, cost: 3, pre: 'Artificer 2' },
-      ] },
-      { name: 'Bowyer', tags: ['crafting'], tiers: [
-        { lv: 1, cost: 1, pre: 'Artificer 1' },
-        { lv: 2, cost: 1, pre: 'Artificer 2 · Bowyer 1' },
-        { lv: 3, cost: 1, pre: 'Artificer 3 · Bowyer 2' },
-      ] },
-    ],
-  },
-  {
-    group: 'Knight Skills',
-    gate: 'Requires Knight',
-    skills: [
-      { name: 'Shield Wall', tags: [], tiers: [{ lv: 1, cost: 2, pre: '—' }] },
-      { name: 'Banner of Mercy', tags: ['signature'], tiers: [
-        { lv: 1, cost: 2, pre: 'Rank 2' },
-      ] },
-    ],
-  },
+/**
+ * One flat list of skills. Tree, rank and tags are all properties of the
+ * skill, so every grouping below is a read of the same data -- nothing here
+ * is maintained per view.
+ *
+ * `rank` is written as null where a skill has no rank gate, exactly as
+ * trackPositionOf returns for one.
+ */
+const SKILLS = [
+  { name: 'Academics', tree: 'General Skills', rank: null as number | null, tags: [] as string[],
+    tiers: [{ lv: 1, cost: 1, pre: '—' }, { lv: 2, cost: 2, pre: 'Academics 1' }, { lv: 3, cost: 2, pre: 'Academics 2' }] },
+  { name: 'Artificer', tree: 'General Skills', rank: null, tags: ['crafting'],
+    tiers: [{ lv: 1, cost: 3, pre: '—' }, { lv: 2, cost: 3, pre: 'Artificer 1' }, { lv: 3, cost: 3, pre: 'Artificer 2' }] },
+  { name: 'Bowyer', tree: 'General Skills', rank: null, tags: ['crafting'],
+    tiers: [{ lv: 1, cost: 1, pre: 'Artificer 1' }, { lv: 2, cost: 1, pre: 'Artificer 2 · Bowyer 1' }, { lv: 3, cost: 1, pre: 'Artificer 3 · Bowyer 2' }] },
+  { name: 'Shield Wall', tree: 'Knight Skills', rank: 0, tags: [],
+    tiers: [{ lv: 1, cost: 2, pre: '—' }] },
+  { name: 'Armor Mastery', tree: 'Knight Skills', rank: 1, tags: [],
+    tiers: [{ lv: 1, cost: 2, pre: 'Armor Proficiency 1 · Rank 1' }] },
+  { name: 'Banner of Mercy', tree: 'Knight Skills', rank: 2, tags: ['signature'],
+    tiers: [{ lv: 1, cost: 2, pre: 'Rank 2' }] },
+  { name: 'Martial Expertise', tree: 'Martial Skills', rank: 3, tags: [],
+    tiers: [{ lv: 1, cost: 2, pre: '1-Hand Weapon 1 · Rank 3' }] },
 ];
 
-function Outline() {
+type GroupBy = 'tree' | 'rank' | 'tag';
+
+const GROUPINGS: { id: GroupBy; label: string }[] = [
+  { id: 'tree', label: 'Tree' },
+  { id: 'rank', label: 'Rank' },
+  { id: 'tag', label: 'Tag' },
+];
+
+function Workbench() {
+  const [by, setBy] = useState<GroupBy>('tree');
   const [open, setOpen] = useState<string[]>(['Bowyer']);
   const toggle = (n: string) =>
     setOpen((o) => (o.includes(n) ? o.filter((x) => x !== n) : [...o, n]));
 
+  // Rank grouping reads as a progression, so it gets columns; the others are
+  // sections. Same list either way.
+  const asBoard = by === 'rank';
+
+  const buckets: { key: string; label: string; sub?: string; skills: typeof SKILLS }[] =
+    by === 'tree'
+      ? [...new Set(SKILLS.map((s) => s.tree))].map((t) => ({
+          key: t, label: t, skills: SKILLS.filter((s) => s.tree === t),
+        }))
+      : by === 'rank'
+        ? [0, 1, 2, 3].map((r) => ({
+            key: `r${r}`,
+            label: `Rank ${r}`,
+            sub: r === 0 ? 'archetype cost' : `${[0, 12, 16, 20][r]} Influence`,
+            skills: SKILLS.filter((s) => s.rank === r),
+          }))
+        : [...new Set(SKILLS.flatMap((s) => (s.tags.length ? s.tags : ['untagged'])))].map(
+            (t) => ({
+              key: t, label: t,
+              skills: SKILLS.filter((s) =>
+                t === 'untagged' ? s.tags.length === 0 : s.tags.includes(t)
+              ),
+            })
+          );
+
   return (
     <div className="opts-body">
       <section className="opts-card is-wide">
-        <h2>Option A — Outline</h2>
+        <h2>The editor</h2>
         <p className="muted opts-p">
-          Tree → skill → level, the shape the guide is already written in.
-          Everything is a row, so nothing needs arranging. Scales to 192 skills
-          by scrolling rather than panning.
+          Skill → level, the shape the guide is already written in. Tree, Rank
+          and tags are all properties of a skill, so grouping by any of them is
+          a view of the same list. Nothing needs arranging, and nothing is kept
+          in two places.
         </p>
 
-        <div className="ol">
-          {OUTLINE.map((g) => (
-            <div key={g.group} className="ol-group">
-              <div className="ol-group-head">
-                <span className="ol-group-name">{g.group}</span>
-                {g.gate && <span className="chip">{g.gate}</span>}
-                <span className="ol-count">{g.skills.length}</span>
-              </div>
-
-              {g.skills.map((s) => {
-                const isOpen = open.includes(s.name);
-                return (
-                  <div key={s.name} className={`ol-skill ${isOpen ? 'is-open' : ''}`}>
-                    <button className="ol-skill-head" onClick={() => toggle(s.name)}>
-                      <span className={`ol-caret ${isOpen ? 'is-open' : ''}`}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" strokeWidth="3">
-                          <path d="M9 6l6 6-6 6" />
-                        </svg>
-                      </span>
-                      <span className="ol-skill-name">{s.name}</span>
-                      {s.tags.map((t) => (
-                        <span key={t} className="chip is-tag">{t}</span>
-                      ))}
-                      <span className="ol-skill-meta">
-                        {s.tiers.length} level{s.tiers.length > 1 ? 's' : ''}
-                      </span>
-                    </button>
-
-                    {isOpen && (
-                      <table className="ol-tiers">
-                        <thead>
-                          <tr><th>Level</th><th>Cost</th><th>Requires</th><th /></tr>
-                        </thead>
-                        <tbody>
-                          {s.tiers.map((t) => (
-                            <tr key={t.lv}>
-                              <td className="ol-lv">{t.lv}</td>
-                              <td className="ol-cost">{t.cost} CP</td>
-                              <td className="ol-pre">{t.pre}</td>
-                              <td className="ol-edit">Edit</td>
-                            </tr>
-                          ))}
-                          <tr className="ol-add"><td colSpan={4}>+ Add level</td></tr>
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+        <div className="wb-bar">
+          <span className="wb-bar-label">Group by</span>
+          <div className="wb-seg">
+            {GROUPINGS.map((g) => (
+              <button
+                key={g.id}
+                className={by === g.id ? 'is-on' : ''}
+                onClick={() => setBy(g.id)}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+          <span className="wb-hint">
+            {asBoard
+              ? 'Drag a skill between columns to change the Rank it needs'
+              : 'Grouping is derived from each skill’s own conditions'}
+          </span>
         </div>
+
+        {asBoard ? (
+          <div className="board">
+            {buckets.map((b) => (
+              <div key={b.key} className="board-col">
+                <div className="board-col-head">
+                  <span className="board-rank">{b.label}</span>
+                  <span className="board-cost">{b.sub}</span>
+                </div>
+                <div className="board-col-body">
+                  {b.skills.map((s) => (
+                    <div key={s.name} className="board-card">
+                      <span className="board-card-name">{s.name}</span>
+                      <span className="board-card-meta">
+                        {s.tree} · {s.tiers[0].cost} CP
+                      </span>
+                    </div>
+                  ))}
+                  <div className="board-drop">Drop here to gate on {b.label}</div>
+                </div>
+              </div>
+            ))}
+            <p className="wb-note">
+              {SKILLS.filter((s) => s.rank === null).length} skills have no Rank
+              gate and sit outside the board — which is why Rank is a grouping,
+              not the only way in.
+            </p>
+          </div>
+        ) : (
+          <div className="ol">
+            {buckets.map((b) => (
+              <div key={b.key} className="ol-group">
+                <div className="ol-group-head">
+                  <span className="ol-group-name">{b.label}</span>
+                  <span className="ol-count">{b.skills.length}</span>
+                </div>
+                {b.skills.map((s) => {
+                  const isOpen = open.includes(s.name);
+                  return (
+                    <div key={s.name + b.key} className="ol-skill">
+                      <button className="ol-skill-head" onClick={() => toggle(s.name)}>
+                        <span className={`ol-caret ${isOpen ? 'is-open' : ''}`}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                               stroke="currentColor" strokeWidth="3">
+                            <path d="M9 6l6 6-6 6" />
+                          </svg>
+                        </span>
+                        <span className="ol-skill-name">{s.name}</span>
+                        {s.tags.map((t) => (
+                          <span key={t} className="chip is-tag">{t}</span>
+                        ))}
+                        {s.rank !== null && <span className="chip">Rank {s.rank}</span>}
+                        <span className="ol-skill-meta">
+                          {s.tiers.length} level{s.tiers.length > 1 ? 's' : ''}
+                        </span>
+                      </button>
+                      {isOpen && (
+                        <table className="ol-tiers">
+                          <thead>
+                            <tr><th>Level</th><th>Cost</th><th>Requires</th><th /></tr>
+                          </thead>
+                          <tbody>
+                            {s.tiers.map((t) => (
+                              <tr key={t.lv}>
+                                <td className="ol-lv">{t.lv}</td>
+                                <td className="ol-cost">{t.cost} CP</td>
+                                <td className="ol-pre">{t.pre}</td>
+                                <td className="ol-edit">Edit</td>
+                              </tr>
+                            ))}
+                            <tr className="ol-add"><td colSpan={4}>+ Add level</td></tr>
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
 
         <Tradeoff
           good={[
-            'Nothing to lay out — 192 skills is a scroll, not a canvas',
-            'Edits land where the data lives: on the level',
-            'Mirrors the guide, so transcribing is line-for-line',
-            'Searchable, keyboard-navigable, diffs cleanly',
-          ]}
-          bad={['Chains like Artificer → Bowyer → … are not visible at a glance']}
-        />
-      </section>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-
-const RANKS = [0, 1, 2, 3];
-const BOARD: Record<number, { name: string; tree: string; cost: number }[]> = {
-  0: [
-    { name: 'Second Wind', tree: 'Veteran', cost: 1 },
-    { name: 'Sure Footed', tree: 'Veteran', cost: 1 },
-    { name: 'Shield Wall', tree: 'Knight', cost: 2 },
-  ],
-  1: [
-    { name: 'Armor Mastery', tree: 'Knight', cost: 2 },
-    { name: 'Rallying Cry', tree: 'Knight', cost: 2 },
-  ],
-  2: [
-    { name: 'Banner of Mercy', tree: 'Knight', cost: 2 },
-    { name: 'Combat Agility', tree: 'Veteran', cost: 2 },
-    { name: 'Stun Mastery', tree: 'Veteran', cost: 3 },
-  ],
-  3: [{ name: 'Martial Expertise', tree: 'Veteran', cost: 2 }],
-};
-
-function Matrix() {
-  return (
-    <div className="opts-body">
-      <section className="opts-card is-wide">
-        <h2>Option B — Rank board</h2>
-        <p className="muted opts-p">
-          Rank gates 292 clauses, more than any other relationship. This makes
-          it the layout: columns are ranks, so a skill's position <em>is</em> its
-          gate, and no condition has to be read to see when it unlocks.
-        </p>
-
-        <div className="board">
-          {RANKS.map((r) => (
-            <div key={r} className="board-col">
-              <div className="board-col-head">
-                <span className="board-rank">Rank {r}</span>
-                <span className="board-cost">
-                  {r === 0 ? 'archetype cost' : `${[0, 12, 16, 20][r]} Influence`}
-                </span>
-              </div>
-              <div className="board-col-body">
-                {(BOARD[r] ?? []).map((s) => (
-                  <div key={s.name} className="board-card">
-                    <span className="board-card-name">{s.name}</span>
-                    <span className="board-card-meta">{s.tree} · {s.cost} CP</span>
-                  </div>
-                ))}
-                <div className="board-drop">Drop a skill here to gate it on Rank {r}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <Tradeoff
-          good={[
-            'The most common gate becomes position, not buried text',
-            'Dragging between columns re-gates a skill — one obvious gesture',
-            'Reads as a progression, which is what players experience',
+            'One editor: a skill is edited in the same place however it is grouped',
+            'Groupings are read from the conditions, so none are maintained by hand',
+            'Rank gets columns because it reads as a progression — presentation follows the dimension',
+            'Nothing to lay out; 192 skills is a scroll',
           ]}
           bad={[
-            'Only works for rulesets that have a rank-like track',
-            'Skills with no rank gate need somewhere to live',
+            'Skills with no Rank gate sit outside the board and need the other groupings',
+            'Chains like Artificer → Bowyer are still easier to see on the graph',
           ]}
         />
       </section>

@@ -635,3 +635,68 @@ test('a refund is a negative cost, and reduces spend', () => {
   });
   assert.deepEqual(validateRuleset(r), []);
 });
+
+/* ------------------------------------------------------------------ *
+ * Grouping derived from the rules
+ * ------------------------------------------------------------------ */
+
+test('a Rank gate reads back the same way a skill prerequisite does', () => {
+  const banner = eldritch.traits.find((t) => t.id === 'banner-of-mercy')!;
+  assert.deepEqual(edit.trackGates(banner.tiers[0].requires), [
+    { trackId: 'rank', minStep: 2 },
+  ]);
+});
+
+test('a skill sorts under its Rank without anyone recording one', () => {
+  // This is what makes a "rank board" a grouping of the outline rather than a
+  // second editor: the column is computed from the condition already written.
+  const at = (id: string) =>
+    edit.trackPositionOf(eldritch.traits.find((t) => t.id === id)!, 'rank');
+  assert.equal(at('banner-of-mercy'), 2);
+  assert.equal(at('shield-wall'), null); // ungated: belongs in no rank column
+  assert.equal(at('academics'), null);
+});
+
+test('a compound gate still yields its rank', () => {
+  // "Martial Expertise 3 requires Martial Expertise 2 and Rank 3" -- the rank
+  // is buried beside a ladder clause, and must still be found.
+  let r = edit.addTrait(eldritch, {
+    id: 'martial-expertise',
+    name: 'Martial Expertise',
+    groupId: 'martial',
+    tags: [],
+    tiers: [],
+  });
+  r = edit.addTier(r, 'martial-expertise', {
+    level: 1,
+    description: '',
+    cost: { currencyId: 'cp', amount: 2 },
+    requires: {
+      kind: 'all',
+      of: [
+        { kind: 'trait', traitId: 'one-hand-weapon', minLevel: 1 },
+        { kind: 'track', trackId: 'rank', minStep: 3 },
+      ],
+    },
+    grants: [],
+  });
+  const t = r.traits.find((x) => x.id === 'martial-expertise')!;
+  assert.equal(edit.trackPositionOf(t, 'rank'), 3);
+  // ...and it is still a normal prerequisite edge as well.
+  assert.deepEqual(edit.prerequisiteEdges(t.tiers[0].requires), [
+    { traitId: 'one-hand-weapon', minLevel: 1 },
+  ]);
+});
+
+test('groupings are offered from what the ruleset already contains', () => {
+  const dims = edit.groupingDimensions(eldritch);
+  assert.deepEqual(
+    dims.map((d) => d.label),
+    ['Tree', 'Rank', 'Tag']
+  );
+
+  // A game with no track simply offers one fewer, with no special-casing.
+  let plain = edit.emptyRuleset('p', 'Plain');
+  plain = edit.addGroup(plain, { id: 'g', name: 'Skills' });
+  assert.deepEqual(edit.groupingDimensions(plain).map((d) => d.label), ['Tree']);
+});

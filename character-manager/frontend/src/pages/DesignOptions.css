@@ -664,3 +664,65 @@
   border-radius: 999px;
   background: var(--border-strong);
 }
+
+/* ---------------- grouping control ---------------- */
+
+.wb-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.wb-bar-label {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.wb-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.wb-seg button {
+  padding: 0.32rem 0.95rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.wb-seg button:hover {
+  color: var(--text);
+}
+
+.wb-seg button.is-on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.wb-hint {
+  font-size: 0.75rem;
+  color: var(--text-mute);
+}
+
+.wb-note {
+  grid-column: 1 / -1;
+  margin-top: 0.9rem;
+  font-size: 0.78rem;
+  color: var(--text-mute);
+}
