@@ -101,7 +101,6 @@ export default function ProjectDetail() {
           <h1>{ruleset.name}</h1>
           <p className="muted">
             Version {ruleset.version} · <span className="role-badge">{myRole ?? 'app admin'}</span>
-            {ruleset.description ? ` · ${ruleset.description}` : ''}
           </p>
         </div>
         <div className="actions">
@@ -123,6 +122,10 @@ export default function ProjectDetail() {
           )}
         </div>
       </div>
+
+      {/* Its own block rather than a muted byline: on the ruleset a new
+          account starts with, this paragraph is the orientation. */}
+      {ruleset.description && <p className="project-blurb">{ruleset.description}</p>}
 
       <div className="character-info-grid">
         <div className="info-card">

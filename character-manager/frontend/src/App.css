@@ -1159,3 +1159,15 @@
   font-size: clamp(2.25rem, 5vw, 3.25rem);
   font-weight: 500;
 }
+
+/* A project's own description, given room to be read. On the demo ruleset
+   this paragraph is the orientation, not a caption. */
+.project-blurb {
+  max-width: 62ch;
+  margin: 1.25rem 0 1.75rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--accent);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-soft);
+}

@@ -5,6 +5,7 @@ import type { Condition, Ruleset, Trait } from '../../../shared/rules-schema';
 import { validateRuleset } from '../../../shared/ruleset-validation';
 import * as edit from '../../../shared/ruleset-editor';
 import { useAuth } from '../auth/useAuth';
+import Hint from '../components/Hint';
 import TagInput from '../components/TagInput';
 import './RulesetEditor.css';
 
@@ -206,6 +207,13 @@ export default function RulesetEditor() {
         <span className="ed-hint">
           Read from each skill's own conditions — nothing to maintain
         </span>
+        <Hint>
+          These are ways of looking at the same skills, not places to put
+          them. Each grouping is worked out from what the skills already
+          require, so grouping by a track sorts them by the rank they are
+          gated on, and a skill gated on nothing falls into "No gate". Only
+          the tree a skill belongs to is stored on the skill itself.
+        </Hint>
       </div>
 
       {issues.length > 0 && (
@@ -318,6 +326,14 @@ function QualityPanel({
         <span className="ed-hint">
           Gear, backgrounds, boons — anything a rule needs that isn't a skill
         </span>
+        <Hint>
+          A quality is something a character has rather than something they
+          have learned: a piece of equipment, an origin, a favour owed. Define
+          one here and any skill can then require it. Mark it{' '}
+          <strong>Staff</strong> when it represents something the game awarded,
+          and players will see it on their sheet without being able to give it
+          to themselves.
+        </Hint>
         {canEdit && (
           <button className="ed-add" onClick={addQuality}>
             + Quality
@@ -488,7 +504,15 @@ function SkillRow({
       {open && (
         <div className="ed-skill-body">
           <label className="ed-field">
-            <span>Description</span>
+            <span>
+              Description
+              <Hint>
+                The skill as a whole: what it is, and why someone would take
+                it. What each level actually does belongs on the level below,
+                so that a player comparing level 2 to level 3 can see the
+                difference without reading this twice.
+              </Hint>
+            </span>
             <textarea
               rows={2}
               value={trait.summary ?? ''}
@@ -501,7 +525,16 @@ function SkillRow({
           </label>
 
           <div className="ed-field">
-            <span>Tags</span>
+            <span>
+              Tags
+              <Hint>
+                Tags are how a rule reaches a set of skills without naming each
+                one. A cap that applies to the tag "crafting" covers every
+                skill you have tagged that way, including ones you add later,
+                and a cost reduction can target a tag the same way. Spelling
+                matters: "crafting" and "Crafting" are two different tags.
+              </Hint>
+            </span>
             <TagInput
               tags={trait.tags}
               suggestions={[...new Set(ruleset.traits.flatMap((t) => t.tags))].sort()}
@@ -517,6 +550,15 @@ function SkillRow({
               <div key={tier.level} className="ed-tier">
                 <div className="ed-tier-head">
                   <span className="ed-tier-lv">Level {tier.level}</span>
+                  {tier.level === 1 && (
+                    <Hint>
+                      Levels run from 1 upward with no gaps. Each one carries
+                      its own cost and its own requirement, so a skill can get
+                      steeper as it goes, and a later level can demand
+                      something the first did not. A cost may be negative,
+                      which hands points back.
+                    </Hint>
+                  )}
                   <label className="ed-cost">
                     <input
                       type="number"
@@ -633,6 +675,14 @@ function ClauseEditor({
     <div className="cl">
       <div className="cl-head">
         <span className="cl-label">Requires</span>
+        <Hint>
+          What a character needs before they can buy this level. Every kind of
+          gate is a clause here, whether it names a skill, a rank, an
+          archetype, or something they own — so a requirement with several
+          parts is several clauses. With more than one, <strong>all</strong>{' '}
+          demands every clause and <strong>any</strong> demands one of them.
+          Leave it empty and anyone can buy this.
+        </Hint>
         {clauses.length > 1 && (
           <div className="cl-seg">
             {(['all', 'any'] as const).map((op) => (
@@ -762,6 +812,7 @@ function ClauseEditor({
       {canEdit && (
         <div className="cl-add">
           <button
+            title="Requires another skill at a given level"
             onClick={() =>
               write([...clauses, {
                 kind: 'trait',
@@ -774,6 +825,7 @@ function ClauseEditor({
           </button>
           {ruleset.tracks.length > 0 && (
             <button
+              title={`Requires a position on the ${ruleset.tracks[0].name} track`}
               onClick={() =>
                 write([...clauses, {
                   kind: 'track',
@@ -787,6 +839,7 @@ function ClauseEditor({
           )}
           {ruleset.packages.length > 0 && (
             <button
+              title="Requires holding a particular archetype"
               onClick={() =>
                 write([...clauses, {
                   kind: 'package',
@@ -799,6 +852,7 @@ function ClauseEditor({
           )}
           {ruleset.qualities.length > 0 && (
             <button
+              title="Requires something the character has rather than has learned"
               onClick={() =>
                 write([...clauses, {
                   kind: 'quality',
@@ -810,7 +864,7 @@ function ClauseEditor({
             </button>
           )}
           <button
-            title="For a requirement the app cannot check by itself"
+            title="For a requirement nothing here can settle. It never blocks the purchase; it appears on the sheet for a person to confirm."
             onClick={() => write([...clauses, { kind: 'manual', text: '' }])}
           >
             + Staff check

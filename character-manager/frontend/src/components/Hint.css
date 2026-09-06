@@ -1,0 +1,81 @@
+/* Inline explanation attached to a control. */
+
+.hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  /* Separates the mark from the label it follows. Harmless where the parent
+     is a flex row that already spaces its children. */
+  margin-left: 0.35rem;
+  /* Sits above neighbouring rows so the bubble is never overlapped by the
+     control below it. */
+  z-index: 20;
+}
+
+.hint-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  height: 0.95rem;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-mute);
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  cursor: help;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.hint-mark:hover,
+.hint:focus-within .hint-mark {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.hint-bubble {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  width: max-content;
+  max-width: 21rem;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-soft);
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 45%);
+
+  /* Hidden without being removed, so aria-describedby still resolves. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition:
+    opacity 0.15s var(--ease),
+    transform 0.15s var(--ease),
+    visibility 0.15s;
+  pointer-events: none;
+}
+
+.hint-bubble.is-left { left: -0.5rem; }
+.hint-bubble.is-right { right: -0.5rem; }
+
+.hint:hover .hint-bubble,
+.hint:focus-within .hint-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint-bubble { transition: none; transform: none; }
+}

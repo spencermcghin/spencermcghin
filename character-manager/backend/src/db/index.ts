@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { eldritch } from '../../../shared/rulesets/eldritch';
+import { demoRuleset } from '../../../shared/rulesets/demo';
 import { MemoryStore } from './memory-store';
 import { PostgresStore } from './postgres-store';
 import type { Store } from './store';
@@ -61,17 +61,21 @@ export async function closeStore(): Promise<void> {
 }
 
 /**
- * Gives a new account something real to open instead of an empty app: a
- * private copy of Eldritch, which doubles as a worked example of what a
- * ruleset can express.
+ * Gives a new account something to open instead of an empty app: a private
+ * copy of the demo ruleset, which is written to be taken apart.
+ *
+ * Deliberately a generic set rather than a real published game. Someone
+ * seeing this app for the first time needs to learn the tool, and a real
+ * game's ruleset teaches them the game instead -- along with a pile of rules
+ * they did not ask for and cannot check against their own book.
  *
  * A copy rather than a shared reference, so editing it cannot affect anyone
  * else. Ruleset ids are globally unique, hence the suffix.
  */
 export async function seedUserSpace(s: Store, ownerId: string): Promise<void> {
   const copy = {
-    ...structuredClone(eldritch),
-    id: `eldritch-${randomUUID().slice(0, 8)}`,
+    ...structuredClone(demoRuleset),
+    id: `demo-${randomUUID().slice(0, 8)}`,
   };
   await s.putRuleset(copy, ownerId);
   // The creator is a project admin; without this row they could not open the

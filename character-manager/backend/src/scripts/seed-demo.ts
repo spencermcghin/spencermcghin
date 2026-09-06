@@ -67,59 +67,64 @@ async function main() {
     traitLevels: {},
     trackPositions: {},
     qualityIds: [],
-    awarded: { cp: 4, influence: 0, coin: 0 },
+    awarded: { xp: 10, standing: 0, coin: 0 },
     fieldValues: { name },
     createdAt: now,
     updatedAt: now,
     ...over,
   });
 
+  // Four builds against the demo ruleset, each showing the engine doing
+  // something different. They are worth opening in order.
   const demoCharacters: Character[] = [
-    // Spends its whole budget legally: Gentry costs 4 and grants both skills.
-    character('Seraphine Vale', {
-      packageIds: ['gentry'],
-      traitLevels: { academics: 1, income: 1 },
+    // A quality gating a purchase, and a cost modifier that actually bites:
+    // the Healer's reduction takes the medicine skills from 2 XP to 1.
+    character('Lark Ferrow', {
+      packageIds: ['healer'],
+      qualityIds: ['healers-kit'],
+      traitLevels: { 'herb-lore': 3, 'first-aid': 1 },
       fieldValues: {
-        name: 'Seraphine Vale',
-        house: 'House Innis',
-        background:
-          'Sworn to the Thornwood after her order fell. Speaks little of the siege.',
+        name: 'Lark Ferrow',
+        origin: 'A fishing village that no longer has a name.',
+        concept: 'Keeps a ledger of everyone she has failed to save.',
       },
     }),
 
-    // Advanced archetype at Rank 2, which unlocks the signature skill.
+    // A position on a track unlocking a skill. Pathfinding needs Reputation
+    // 2, which is bought with Standing rather than Experience.
     character('Corvin Ashmoor', {
-      packageIds: ['knight'],
-      trackPositions: { rank: 2 },
-      traitLevels: { 'shield-wall': 1 },
-      awarded: { cp: 12, influence: 40, coin: 0 },
+      packageIds: ['scout'],
+      trackPositions: { reputation: 2 },
+      traitLevels: { tracking: 1, athletics: 1, pathfinding: 1 },
+      awarded: { xp: 10, standing: 16, coin: 0 },
       fieldValues: {
         name: 'Corvin Ashmoor',
-        house: 'House Richter',
-        background: 'Catalogues relics no one else will touch. Three fingers missing.',
+        origin: 'The garrison road, mostly.',
+        concept: 'Maps the country nobody has asked him to map.',
       },
     }),
 
-    // Mid-build with points still to spend.
+    // Mid-build, with points still to spend and a menu of what they buy.
     character('Wren Halloway', {
-      packageIds: ['apothecary'],
-      traitLevels: { alchemy: 1, herbalism: 1, academics: 1 },
-      awarded: { cp: 10, influence: 0, coin: 0 },
+      packageIds: ['merchant'],
+      traitLevels: { haggling: 2, stealth: 1 },
+      awarded: { xp: 12, standing: 0, coin: 0 },
       fieldValues: {
         name: 'Wren Halloway',
-        background: 'Trades in tinctures and rumours, in roughly equal measure.',
+        origin: 'Three streets behind the grain market.',
+        concept: 'Trades in tinctures and rumours, in roughly equal measure.',
       },
     }),
 
-    // Deliberately illegal: Bowyer requires Artificer 1, which this character
-    // does not have. Opening this sheet shows the rules check catching it.
+    // Deliberately illegal: Fletching 2 requires Smithing 2, and this
+    // character has only Smithing 1. Opening the sheet shows the rules check
+    // naming the problem rather than the app quietly allowing it.
     character('Thorin Ironforge', {
-      packageIds: ['commonfolk'],
-      traitLevels: { bowyer: 1 },
-      awarded: { cp: 4, influence: 0, coin: 0 },
+      traitLevels: { fletching: 2, smithing: 1 },
       fieldValues: {
         name: 'Thorin Ironforge',
-        background: 'Insists he learned bowyery on his own. The rules disagree.',
+        origin: 'A forge his brother now owns.',
+        concept: 'Insists he taught himself bowyery. The rules disagree.',
       },
     }),
   ];
