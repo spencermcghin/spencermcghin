@@ -700,3 +700,71 @@ test('groupings are offered from what the ruleset already contains', () => {
   plain = edit.addGroup(plain, { id: 'g', name: 'Skills' });
   assert.deepEqual(edit.groupingDimensions(plain).map((d) => d.label), ['Tree']);
 });
+
+/* ------------------------------------------------------------------ *
+ * Conditions as a clause list
+ * ------------------------------------------------------------------ */
+
+test('a compound condition reads as its clauses and writes back unchanged', () => {
+  const tier = eldritch.traits
+    .find((t) => t.id === 'bowyer')!
+    .tiers.find((t) => t.level === 2)!;
+  const clauses = edit.clausesOf(tier.requires);
+  assert.equal(clauses.length, 2);
+  assert.equal(edit.operatorOf(tier.requires), 'all');
+  // Round-trip must be identity, or opening a skill would rewrite it.
+  assert.deepEqual(edit.conditionFrom('all', clauses), tier.requires);
+});
+
+test('an unconditional level has no clauses, and empties back to unconditional', () => {
+  const tier = eldritch.traits.find((t) => t.id === 'shield-wall')!.tiers[0];
+  assert.deepEqual(edit.clausesOf(tier.requires), []);
+  assert.deepEqual(edit.conditionFrom('all', []), { kind: 'always' });
+});
+
+test('a single clause is stored bare, not wrapped', () => {
+  // So a hand-written ruleset and an editor-built one are indistinguishable.
+  const one = edit.conditionFrom('all', [
+    { kind: 'track', trackId: 'rank', minStep: 2 },
+  ]);
+  assert.deepEqual(one, { kind: 'track', trackId: 'rank', minStep: 2 });
+});
+
+test('clauses of every gate kind survive a round trip', () => {
+  const clauses: Parameters<typeof edit.conditionFrom>[1] = [
+    { kind: 'trait', traitId: 'artificer', minLevel: 2 },
+    { kind: 'track', trackId: 'rank', minStep: 1 },
+    { kind: 'package', packageId: 'knight' },
+    { kind: 'packageTier', tier: 'advanced' },
+  ];
+  const built = edit.conditionFrom('all', clauses);
+  assert.deepEqual(edit.clausesOf(built), clauses);
+});
+
+test('a nested clause is kept opaque rather than flattened', () => {
+  // Flattening "A and (B or C)" into "A and B and C" would change what the
+  // rule means. The editor shows it as one clause it will not touch.
+  const nested = edit.conditionFrom('all', [
+    { kind: 'trait', traitId: 'academics', minLevel: 1 },
+    { kind: 'any', of: [
+      { kind: 'trait', traitId: 'hunting', minLevel: 1 },
+      { kind: 'trait', traitId: 'farming', minLevel: 1 },
+    ] },
+  ]);
+  const clauses = edit.clausesOf(nested);
+  assert.equal(clauses.length, 2);
+  assert.equal(edit.isOpaqueClause(clauses[0]), false);
+  assert.equal(edit.isOpaqueClause(clauses[1]), true);
+  assert.deepEqual(edit.conditionFrom('all', clauses), nested);
+});
+
+test('editing one level does not disturb the others', () => {
+  const r = edit.setTierCondition(eldritch, 'bowyer', 1, { kind: 'always' });
+  const bowyer = r.traits.find((t) => t.id === 'bowyer')!;
+  assert.deepEqual(bowyer.tiers[0].requires, { kind: 'always' });
+  // Level 2's compound prerequisite is untouched.
+  assert.deepEqual(
+    bowyer.tiers[1].requires,
+    eldritch.traits.find((t) => t.id === 'bowyer')!.tiers[1].requires
+  );
+});

@@ -1,0 +1,426 @@
+/* Ruleset editor. Dense by design: authoring 192 skills means every row
+   should be scannable and every control reachable without a dialog. */
+
+.ed-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ed-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-weight: 500;
+  font-variant-caps: small-caps;
+}
+
+.ed-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ---------------- grouping ---------------- */
+
+.ed-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+
+.ed-bar-label {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.ed-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ed-seg button {
+  padding: 0.32rem 0.95rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.ed-seg button:hover { color: var(--text); }
+
+.ed-seg button.is-on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.ed-hint {
+  font-size: 0.75rem;
+  color: var(--text-mute);
+}
+
+/* ---------------- validation ---------------- */
+
+.ed-issues {
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.75rem;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.ed-issues-head {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--danger);
+  margin-bottom: 0.6rem;
+}
+
+.ed-issues ul { list-style: none; margin: 0; padding: 0; }
+
+.ed-issues li {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  padding: 0.2rem 0;
+}
+
+.ed-issues li.is-warning { color: var(--text-mute); }
+
+/* ---------------- groups ---------------- */
+
+.ed-group { margin-bottom: 2rem; }
+
+.ed-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.25rem;
+}
+
+.ed-group-name {
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.ed-group-count {
+  font-size: 0.7rem;
+  color: var(--text-mute);
+}
+
+.ed-add {
+  margin-left: auto;
+  padding: 0.25rem 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ed-add:hover { background: var(--accent-wash); }
+
+.ed-empty {
+  font-size: 0.8rem;
+  color: var(--text-mute);
+  padding: 0.6rem 0;
+}
+
+/* ---------------- skills ---------------- */
+
+.ed-skill { border-bottom: 1px solid var(--border); }
+.ed-skill:last-child { border-bottom: none; }
+
+.ed-skill-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+
+.ed-caret {
+  display: inline-flex;
+  padding: 0.2rem;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.ed-caret svg { transition: transform 0.25s var(--ease); }
+.ed-caret:hover { color: var(--accent); }
+
+.ed-skill-name {
+  flex: 1;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.ed-skill-name:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-solid);
+}
+
+.ed-skill-name.is-static { border-color: transparent; }
+
+.ed-skill-meta {
+  font-size: 0.72rem;
+  color: var(--text-mute);
+  white-space: nowrap;
+}
+
+.ed-del {
+  padding: 0 0.4rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.ed-del:hover { color: var(--danger); }
+
+/* ---------------- skill body ---------------- */
+
+.ed-skill-body {
+  padding: 0.5rem 0 1.25rem 1.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ed-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ed-field > span {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.ed-field input,
+.ed-field textarea,
+.ed-tier-desc {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.ed-field input:focus,
+.ed-field textarea:focus,
+.ed-tier-desc:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ---------------- levels ---------------- */
+
+.ed-tier {
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ed-tier-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.ed-tier-lv {
+  font-family: var(--font-heading);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ed-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.ed-cost input {
+  width: 4rem;
+  padding: 0.28rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  text-align: right;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.ed-cost span {
+  font-size: 0.7rem;
+  color: var(--text-mute);
+}
+
+/* ---------------- clauses ---------------- */
+
+.cl {
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+
+.cl-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.5rem;
+}
+
+.cl-label {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.cl-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cl-seg button {
+  padding: 0.12rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.cl-seg button.is-on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cl-none {
+  font-size: 0.8rem;
+  color: var(--text-mute);
+}
+
+.cl-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+}
+
+.cl-kind {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  min-width: 5.5rem;
+}
+
+.cl-row select,
+.cl-row input {
+  padding: 0.28rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.cl-row input[type='number'] { width: 3.6rem; text-align: right; }
+
+.cl-row.is-opaque { opacity: 0.75; }
+
+.cl-opaque {
+  font-size: 0.78rem;
+  color: var(--text-mute);
+  font-style: italic;
+}
+
+.cl-add {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.cl-add button {
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-mute);
+  background: none;
+  border: 1px dashed var(--border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.cl-add button:hover {
+  color: var(--accent);
+  border-style: solid;
+}

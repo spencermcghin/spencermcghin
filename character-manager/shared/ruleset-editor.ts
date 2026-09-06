@@ -484,3 +484,56 @@ export function groupingDimensions(
   if (tags.size > 0) dims.push({ id: 'tag', label: 'Tag', buckets: tags.size });
   return dims;
 }
+
+/* ------------------------------------------------------------------ *
+ * Conditions as a flat clause list
+ *
+ * A condition is a tree, but the overwhelming majority written in practice
+ * are one level deep: a handful of requirements joined by "and". These read a
+ * condition as a flat list and write one back, which is what a clause editor
+ * needs. Anything genuinely nested survives untouched as a single opaque
+ * clause rather than being flattened and silently changed in meaning.
+ * ------------------------------------------------------------------ */
+
+export type ClauseOperator = 'all' | 'any';
+
+/** The top-level clauses of a condition. An unconditional one has none. */
+export function clausesOf(condition: Condition): Condition[] {
+  if (condition.kind === 'always') return [];
+  if (condition.kind === 'all' || condition.kind === 'any') return condition.of;
+  return [condition];
+}
+
+export function operatorOf(condition: Condition): ClauseOperator {
+  return condition.kind === 'any' ? 'any' : 'all';
+}
+
+/**
+ * Rebuilds a condition from clauses.
+ *
+ * A single clause is stored bare rather than wrapped, so a condition written
+ * by hand and one built here are indistinguishable -- which is what lets the
+ * editor round-trip an existing ruleset without rewriting it.
+ */
+export function conditionFrom(
+  operator: ClauseOperator,
+  clauses: Condition[]
+): Condition {
+  if (clauses.length === 0) return { kind: 'always' };
+  if (clauses.length === 1) return clauses[0];
+  return { kind: operator, of: clauses };
+}
+
+export function setTierCondition(
+  r: Ruleset,
+  traitId: Id,
+  level: number,
+  condition: Condition
+): Ruleset {
+  return updateTier(r, traitId, level, { requires: condition });
+}
+
+/** True when a clause is nested deeply enough that the flat editor cannot show it. */
+export function isOpaqueClause(clause: Condition): boolean {
+  return clause.kind === 'all' || clause.kind === 'any' || clause.kind === 'not';
+}

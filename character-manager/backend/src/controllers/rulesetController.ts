@@ -7,6 +7,7 @@ import {
   canViewProject,
 } from '../auth/permissions';
 import { viewerFor } from '../auth/viewer';
+import { normalizeRuleset } from '../../../shared/normalize';
 import { getStore } from '../db';
 
 function slugify(name: string): string {
@@ -156,7 +157,7 @@ export async function importRuleset(req: Request, res: Response) {
 
   const store = getStore();
   const saved = await store.putRuleset(
-    { ...incoming, id: newRulesetId(incoming.name) },
+    normalizeRuleset({ ...incoming, id: newRulesetId(incoming.name) }),
     req.user!.id
   );
   await store.addMember(saved.id, req.user!.id, 'admin');

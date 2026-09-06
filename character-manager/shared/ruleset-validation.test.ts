@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { eldritch } from './rulesets/eldritch';
 import { findCycles, prerequisiteGraph, validateRuleset } from './ruleset-validation';
+import { normalizeRuleset } from './normalize';
 import type { Ruleset, Trait } from './rules-schema';
 
 /** A minimal but valid ruleset to mutate per test. */
@@ -228,4 +229,34 @@ test('a deep dependency chain does not exhaust the stack', () => {
     )
   );
   assert.deepEqual(validateRuleset(r), []);
+});
+
+/* ---------------- documents written before a field existed ---------------- */
+
+test('a ruleset stored before a field was added does not crash the validator', () => {
+  // Exactly what happened: a copy of Eldritch persisted before
+  // traitAttributes existed, read back, and validated.
+  const legacy = { ...eldritch } as Record<string, unknown>;
+  delete legacy.traitAttributes;
+  assert.doesNotThrow(() => validateRuleset(legacy as unknown as Ruleset));
+
+  const issues = validateRuleset(legacy as unknown as Ruleset);
+  // Nothing is broken -- but values whose declaration went missing are
+  // reported, which is how an author learns the document needs the field back
+  // rather than quietly losing the data.
+  assert.equal(issues.filter((i) => i.severity === 'error').length, 0);
+  assert.ok(issues.every((i) => i.code === 'undeclared-attribute'));
+});
+
+test('every array field can be missing at once', () => {
+  const bare = { id: 'x', name: 'X', version: '1' } as unknown as Ruleset;
+  assert.doesNotThrow(() => validateRuleset(bare));
+});
+
+test('normalizing keeps values it does not recognise', () => {
+  // Discarding an unknown field would destroy data written by a newer version.
+  const withExtra = { ...eldritch, futureField: 42 } as unknown as Ruleset;
+  const out = normalizeRuleset(withExtra) as unknown as Record<string, unknown>;
+  assert.equal(out.futureField, 42);
+  assert.deepEqual(out.traits, eldritch.traits);
 });

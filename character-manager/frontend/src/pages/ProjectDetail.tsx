@@ -112,9 +112,14 @@ export default function ProjectDetail() {
             Builder options
           </Link>
           {isStaff && (
-            <Link to={`/projects/${id}/design`} className="button button-primary">
-              Open Designer
-            </Link>
+            <>
+              <Link to={`/projects/${id}/design`} className="button">
+                Graph view
+              </Link>
+              <Link to={`/projects/${id}/edit`} className="button button-primary">
+                Edit rules
+              </Link>
+            </>
           )}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Pool } from 'pg';
+import { normalizeRuleset } from '../../../shared/normalize';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
 import type { AppRole, ProjectRole } from '../auth/permissions';
 import type {
@@ -261,7 +262,9 @@ export class PostgresStore implements Store {
       `SELECT data, owner_id FROM rulesets WHERE id = $1;`,
       [id]
     );
-    return rows[0] ? { value: rows[0].data, ownerId: rows[0].owner_id } : null;
+    return rows[0]
+      ? { value: normalizeRuleset(rows[0].data), ownerId: rows[0].owner_id }
+      : null;
   }
 
   async putRuleset(ruleset: Ruleset, ownerId: string): Promise<Ruleset> {

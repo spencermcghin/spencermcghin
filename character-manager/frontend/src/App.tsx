@@ -7,6 +7,7 @@ import SignIn from './pages/SignIn';
 import JoinProject from './pages/JoinProject';
 import AdminUsers from './pages/AdminUsers';
 import DesignOptions from './pages/DesignOptions';
+import RulesetEditor from './pages/RulesetEditor';
 import RulesetDesigner from './pages/RulesetDesigner';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { AuthProvider } from './auth/AuthProvider';
@@ -90,6 +91,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <DesignOptions />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/projects/:id/edit"
+            element={
+              <RequireAuth>
+                <RulesetEditor />
               </RequireAuth>
             }
           />
