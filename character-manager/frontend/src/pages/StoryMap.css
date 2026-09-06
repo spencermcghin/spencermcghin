@@ -246,3 +246,88 @@
 }
 
 .story-sources a { color: var(--accent); }
+
+/* ---------------- editing ---------------- */
+
+.story-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.2rem 0.4rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--text);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.story-name-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-solid);
+}
+
+.story-meta-row,
+.story-connect {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+
+.story-connect { margin-top: 0.85rem; margin-bottom: 0; }
+
+.story-meta-row select,
+.story-meta-row input,
+.story-connect select {
+  padding: 0.28rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.story-connect select { max-width: 12rem; }
+.story-when { width: 7rem; }
+
+.story-meta-row select:focus,
+.story-meta-row input:focus,
+.story-connect select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.story-kinds {
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.story-kind-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+}
+
+.story-kind-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.28rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.story-kind-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}

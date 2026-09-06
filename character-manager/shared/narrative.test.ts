@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { eldritch } from './rulesets/eldritch';
 import { emptyNarrativeMap, type NarrativeMap } from './narrative-schema';
 import { connectionsOf, hubs, indexMap, orphans, validateMap } from './narrative';
+import * as nedit from './narrative-editor';
 
 /**
  * Tested against the real extracted map rather than a toy, for the same
@@ -121,4 +122,115 @@ test('an entity of an undeclared kind is reported', () => {
 test('an empty map is valid, not broken', () => {
   assert.deepEqual(validateMap(emptyNarrativeMap('anything')), []);
   assert.deepEqual(orphans(indexMap(emptyNarrativeMap('anything'))), []);
+});
+
+/* ------------------------------------------------------------------ *
+ * Editing
+ * ------------------------------------------------------------------ */
+
+test('ids are readable, and stay unique', () => {
+  const taken = ['obeah', 'the-rite'];
+  assert.equal(nedit.freshId('Obeah', taken), 'obeah-2');
+  assert.equal(nedit.freshId('The Grand Librarian', taken), 'the-grand-librarian');
+  // A name with nothing usable in it still yields something.
+  assert.equal(nedit.freshId('***', []), 'entry');
+});
+
+test('deleting an entry takes its connections with it', () => {
+  // A relation naming an entry gone from one end cannot be repaired by hand,
+  // only deleted, so leaving it would be litter rather than information.
+  const after = nedit.removeEntity(eldritchMap, 'obeah');
+  assert.ok(!after.entities.some((e) => e.id === 'obeah'));
+  assert.ok(!after.relations.some((r) => r.fromId === 'obeah' || r.toId === 'obeah'));
+  assert.deepEqual(validateMap(after, eldritch), []);
+});
+
+test('deleting a kind keeps what was filed under it, and reports it', () => {
+  const after = nedit.removeEntityKind(eldritchMap, 'power');
+  assert.ok(after.entities.some((e) => e.kindId === 'power'), 'entries must survive');
+  assert.ok(validateMap(after).some((i) => i.code === 'unknown-kind'));
+});
+
+test('the same connection cannot be made twice', () => {
+  const once = nedit.connect(eldritchMap, {
+    fromId: 'obeah',
+    toId: 'hyperion',
+    kindId: 'concerns',
+  });
+  const twice = nedit.connect(once, {
+    fromId: 'obeah',
+    toId: 'hyperion',
+    kindId: 'concerns',
+  });
+  assert.equal(twice.relations.length, once.relations.length);
+});
+
+test('a symmetric connection is the same fact either way round', () => {
+  const forward = nedit.connect(eldritchMap, {
+    fromId: 'obeah',
+    toId: 'crixos',
+    kindId: 'opposes',
+  });
+  const backward = nedit.connect(forward, {
+    fromId: 'crixos',
+    toId: 'obeah',
+    kindId: 'opposes',
+  });
+  assert.equal(backward.relations.length, forward.relations.length);
+});
+
+test('importing merges rather than replacing, and keeps local edits', () => {
+  // The case that matters: a second extraction is imported into a map someone
+  // has been editing. Their edits to the shared entries must survive.
+  const edited = nedit.updateEntity(eldritchMap, 'obeah', {
+    summary: 'Edited by hand after the import.',
+  });
+  const report = nedit.mergeMap(edited, eldritchMap);
+
+  assert.equal(report.addedEntities, 0);
+  assert.equal(report.addedRelations, 0);
+  assert.ok(report.skipped.includes('Obeah'));
+  assert.equal(
+    report.map.entities.find((e) => e.id === 'obeah')!.summary,
+    'Edited by hand after the import.'
+  );
+});
+
+test('importing brings in what is genuinely new', () => {
+  const trimmed: NarrativeMap = {
+    ...eldritchMap,
+    entities: eldritchMap.entities.filter((e) => e.id !== 'obeah'),
+    relations: eldritchMap.relations.filter(
+      (r) => r.fromId !== 'obeah' && r.toId !== 'obeah'
+    ),
+  };
+  const report = nedit.mergeMap(trimmed, eldritchMap);
+  assert.equal(report.addedEntities, 1);
+  assert.ok(report.addedRelations > 0);
+  assert.deepEqual(validateMap(report.map, eldritch), []);
+});
+
+test('an entry matched by name is not duplicated under a new id', () => {
+  const report = nedit.mergeMap(eldritchMap, {
+    entities: [
+      {
+        id: 'some-other-id',
+        kindId: 'power',
+        name: 'Obeah',
+        aliases: [],
+        tags: [],
+        status: 'draft',
+        sources: [],
+      },
+    ],
+  });
+  assert.equal(report.addedEntities, 0);
+  assert.equal(report.map.entities.filter((e) => e.name === 'Obeah').length, 1);
+});
+
+test('a starter vocabulary is coherent on its own', () => {
+  const v = nedit.starterVocabulary();
+  const map: NarrativeMap = { ...emptyNarrativeMap('x'), ...v };
+  assert.deepEqual(validateMap(map), []);
+  assert.ok(v.entityKinds.length > 0 && v.relationKinds.length > 0);
 });
