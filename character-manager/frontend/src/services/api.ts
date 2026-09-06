@@ -142,8 +142,11 @@ export const rulesetApi = {
 
   get: async (id: string): Promise<Ruleset> => (await api.get(`/rulesets/${id}`)).data,
 
-  create: async (name: string, description?: string): Promise<Ruleset> =>
-    (await api.post('/rulesets', { name, description })).data,
+  /** `template: 'demo'` starts from a copy of the worked example. */
+  create: async (
+    name: string,
+    options: { description?: string; template?: 'blank' | 'demo' } = {}
+  ): Promise<Ruleset> => (await api.post('/rulesets', { name, ...options })).data,
 
   save: async (ruleset: Ruleset): Promise<Ruleset> =>
     (await api.put(`/rulesets/${ruleset.id}`, ruleset)).data,

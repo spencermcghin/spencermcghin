@@ -8,6 +8,7 @@ import {
 } from '../auth/permissions';
 import { viewerFor } from '../auth/viewer';
 import { normalizeRuleset } from '../../../shared/normalize';
+import { demoRuleset } from '../../../shared/rulesets/demo';
 import { getStore } from '../db';
 
 function slugify(name: string): string {
@@ -111,7 +112,16 @@ export async function createRuleset(req: Request, res: Response) {
   const name = String(req.body?.name ?? '').trim();
   if (!name) return res.status(400).json({ message: 'A name is required' });
 
-  const ruleset = blankRuleset(newRulesetId(name), name);
+  const id = newRulesetId(name);
+
+  // Starting from the demo is how someone gets a worked example back after
+  // deleting theirs, or gets one at all if their account predates it. A copy,
+  // so editing it affects nothing else.
+  const ruleset: Ruleset =
+    req.body?.template === 'demo'
+      ? { ...structuredClone(demoRuleset), id, name }
+      : blankRuleset(id, name);
+
   if (typeof req.body?.description === 'string') {
     ruleset.description = req.body.description;
   }

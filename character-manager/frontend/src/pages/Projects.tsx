@@ -8,6 +8,7 @@ export default function Projects() {
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [template, setTemplate] = useState<'blank' | 'demo'>('blank');
 
   const load = async () => {
     try {
@@ -29,11 +30,24 @@ export default function Projects() {
     if (!name.trim()) return;
     setCreating(true);
     try {
-      await rulesetApi.create(name.trim());
+      await rulesetApi.create(name.trim(), { template });
       setName('');
       await load();
     } catch {
       setError('Could not create the project.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  /** One click to get the worked example, without having to name it first. */
+  const addDemo = async () => {
+    setCreating(true);
+    try {
+      await rulesetApi.create('Demo Rules Set', { template: 'demo' });
+      await load();
+    } catch {
+      setError('Could not add the demo project.');
     } finally {
       setCreating(false);
     }
@@ -46,6 +60,13 @@ export default function Projects() {
   };
 
   if (loading) return <p className="muted">Loading…</p>;
+
+  // The nudge is for accounts with no worked example: one seeded before the
+  // demo existed, or one where it was deleted. Matching on the name is a
+  // guess -- renaming your copy brings the nudge back -- but the alternative
+  // is storing which template a project came from, and the offer reads
+  // harmlessly either way.
+  const hasDemo = projects.some((p) => p.name === 'Demo Rules Set');
 
   return (
     <div className="projects">
@@ -65,10 +86,29 @@ export default function Projects() {
           placeholder="New ruleset name…"
           aria-label="New ruleset name"
         />
+        <select
+          value={template}
+          aria-label="What the new project starts from"
+          onChange={(e) => setTemplate(e.target.value as 'blank' | 'demo')}
+        >
+          <option value="blank">Start empty</option>
+          <option value="demo">Start from the demo</option>
+        </select>
         <button className="button button-primary" disabled={creating || !name.trim()}>
           {creating ? 'Creating…' : 'New Project'}
         </button>
       </form>
+
+      {!hasDemo && (
+        <p className="projects-nudge">
+          Not sure where to start?{' '}
+          <button className="link-button" onClick={addDemo} disabled={creating}>
+            Add the Demo Rules Set
+          </button>{' '}
+          — a small worked example that explains each part of the editor as you
+          read it.
+        </p>
+      )}
 
       {projects.length === 0 ? (
         <div className="empty-state">

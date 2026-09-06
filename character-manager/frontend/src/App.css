@@ -1351,3 +1351,43 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
+/* ---------------- Project creation ---------------- */
+
+.inline-form select {
+  padding: 0.7rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.inline-form select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.projects-nudge {
+  max-width: 62ch;
+  margin: -0.5rem 0 2rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-mute);
+}
+
+/* A button that reads as a link: the action is inline in a sentence, and a
+   pill here would compete with the real controls above it. */
+.link-button {
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--accent);
+  cursor: pointer;
+}
+
+.link-button:hover { color: var(--text); border-color: var(--text); }
+.link-button:disabled { opacity: 0.5; cursor: default; }

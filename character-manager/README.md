@@ -13,7 +13,7 @@ whatever rules that ruleset defines.
   why anything is unavailable
 - Characters validated continuously against their ruleset
 - Import and export rulesets as JSON
-- **4 Visual Themes**: Modern Clean, Dark Fantasy, Parchment, Forest Realm
+- **4 Visual Themes**: Gothic (default), Clean, Parchment, Forest
 
 ## Tech Stack
 
@@ -37,7 +37,7 @@ character-manager/
 │   ├── rules-schema.ts
 │   ├── engine.ts
 │   ├── engine.test.ts
-│   └── rulesets/eldritch.ts
+│   └── rulesets/       # demo.ts (seeded), eldritch.ts (acceptance fixture)
 ├── backend/          # Express API
 │   ├── src/
 │   │   ├── controllers/
@@ -139,8 +139,15 @@ that created them, and one account cannot read, edit or delete another's --
 cross-account requests return 404 rather than 403, since a 403 would confirm
 that an id exists.
 
-New accounts are seeded with a private copy of Eldritch, so the app opens on a
-worked example rather than an empty list.
+New accounts are seeded with a private copy of the **Demo Rules Set**, so the
+app opens on a worked example rather than an empty list. It is deliberately a
+generic set rather than a real published game: a new user needs to learn the
+tool, and a real game's rules teach them the game instead. Every editor
+feature appears in it at least once, and each entry explains what it
+demonstrates.
+
+If your account predates it, or you deleted it, the Projects page offers to
+add a fresh copy.
 
 How it works:
 
@@ -230,8 +237,8 @@ DATABASE_URL=postgres://user:pass@host:5432/dbname
 ```
 
 Any Postgres works -- Render, Neon, Supabase, or a local instance. Tables are
-created on boot, and an empty database is seeded with Eldritch as a starter
-ruleset.
+created on boot. Rulesets are seeded per account on registration, not into
+the database as a whole.
 
 If `DATABASE_URL` is unset the API falls back to in-memory storage so `npm run
 dev` needs no database. It logs a warning at startup; data is lost on restart.
@@ -275,10 +282,10 @@ npm run test:engine
 
 The app includes 4 visual themes optimized for different LARP aesthetics:
 
-- **Modern Clean** - Contemporary card-based design (default)
-- **Dark Fantasy** - Gothic medieval with gold accents
-- **Parchment** - Classic D&D aged paper look
-- **Forest Realm** - Nature-inspired earthy tones
+- **Gothic** - Dark, gold-accented, with a blackletter display face (default)
+- **Clean** - Contemporary and high-contrast
+- **Parchment** - Aged paper
+- **Forest** - Muted greens
 
 Switch themes using the Theme button in the bottom-right corner. See [THEMES.md](./THEMES.md) for details.
 
@@ -328,8 +335,8 @@ exists, and never runs on boot: seeding a known account automatically would put
 predictable credentials on every deployment.
 
 You do not strictly need it. The **first account to register becomes the app
-admin**, so signing up on a fresh install gets you in with a copy of Eldritch
-already in your space.
+admin**, so signing up on a fresh install gets you in with a copy of the Demo
+Rules Set already in your space.
 
 ### Anywhere else
 
@@ -353,11 +360,19 @@ Express over the shared rules engine, with Postgres for storage. See
 React with React Router. It imports the same schema and engine the API uses, so
 rule logic is never duplicated between the two.
 
+## Decisions
+
+**Rules are authored in an outline, not on a canvas.** A drag-and-drop graph
+was the obvious design and it was built and then removed. Measured against a
+real published ruleset, of 544 prerequisite clauses only 68 name a different
+skill; 292 are rank gates and 184 are tier ladders. Neither of those is an
+edge between two skills, so a canvas would have drawn about an eighth of the
+rules and hidden the rest. The editor groups skills by tree, by track
+position or by tag instead, and every grouping is derived from what the
+skills already require rather than maintained alongside them.
+
 ## Roadmap
 
-- Visual rules designer: drag-and-drop canvas with traits as nodes and
-  prerequisites as edges
-- User accounts and per-project permissions
 - Session timeline, so progression and rule gates can be anchored to events
 - Relationships between characters (patron/retainer style links)
 - Items and crafting

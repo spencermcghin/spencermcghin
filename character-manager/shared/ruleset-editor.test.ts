@@ -529,15 +529,6 @@ test('deleting a skill keeps its dependents and reports the break', () => {
   );
 });
 
-test('node positions are recorded without touching the rules', () => {
-  const before = buildEldritchThroughTheEditor();
-  const after = edit.setNodePosition(before, 'academics', { x: 120, y: 40 });
-  assert.deepEqual(after.layout, { academics: { x: 120, y: 40 } });
-  // Layout is presentation: the rules are byte-identical either way.
-  assert.deepEqual({ ...after, layout: undefined }, { ...before, layout: undefined });
-  assert.deepEqual(validateRuleset(after), []);
-});
-
 /* ------------------------------------------------------------------ *
  * Prerequisites as canvas edges
  * ------------------------------------------------------------------ */

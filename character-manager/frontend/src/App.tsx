@@ -6,9 +6,7 @@ import CharacterSheet from './pages/CharacterSheet';
 import SignIn from './pages/SignIn';
 import JoinProject from './pages/JoinProject';
 import AdminUsers from './pages/AdminUsers';
-import DesignOptions from './pages/DesignOptions';
 import RulesetEditor from './pages/RulesetEditor';
-import RulesetDesigner from './pages/RulesetDesigner';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { AuthProvider } from './auth/AuthProvider';
 import { RequireAuth } from './auth/RequireAuth';
@@ -87,26 +85,10 @@ function Shell() {
             }
           />
           <Route
-            path="/design-options"
-            element={
-              <RequireAuth>
-                <DesignOptions />
-              </RequireAuth>
-            }
-          />
-          <Route
             path="/projects/:id/edit"
             element={
               <RequireAuth>
                 <RulesetEditor />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/projects/:id/design"
-            element={
-              <RequireAuth>
-                <RulesetDesigner />
               </RequireAuth>
             }
           />
@@ -132,6 +114,19 @@ function Shell() {
               <RequireAuth>
                 <CharacterSheet />
               </RequireAuth>
+            }
+          />
+          {/* Without this, an unknown path renders the chrome around nothing
+              and looks like the app broke. Bookmarks outlive pages. */}
+          <Route
+            path="*"
+            element={
+              <div className="empty-state">
+                <p>There is nothing at this address.</p>
+                <Link to="/projects" className="button button-primary">
+                  Go to Projects
+                </Link>
+              </div>
             }
           />
         </Routes>

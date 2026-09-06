@@ -350,18 +350,6 @@ export function addSheetField(r: Ruleset, sectionId: Id, field: SheetField): Rul
 }
 
 /* ------------------------------------------------------------------ *
- * Layout
- * ------------------------------------------------------------------ */
-
-export function setNodePosition(
-  r: Ruleset,
-  nodeId: Id,
-  position: { x: number; y: number }
-): Ruleset {
-  return { ...r, layout: { ...(r.layout ?? {}), [nodeId]: position } };
-}
-
-/* ------------------------------------------------------------------ *
  * Prerequisites
  *
  * On the canvas a prerequisite is an edge, but in the schema it is a clause
