@@ -9,6 +9,33 @@ import type { TraitOption, Violation } from '../../../shared/engine';
  */
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
+/**
+ * True when the API lives on a different origin than the page.
+ *
+ * Only a split deploy should be cross-origin. If this is true on a
+ * single-service deploy, VITE_API_URL was set at build time and baked a
+ * foreign origin into the bundle -- which produces CORS failures that look
+ * like the API being down.
+ */
+export const apiIsCrossOrigin = (() => {
+  if (!API_BASE_URL.startsWith('http')) return false;
+  try {
+    return new URL(API_BASE_URL).origin !== window.location.origin;
+  } catch {
+    return false;
+  }
+})();
+
+export const apiBaseUrl = API_BASE_URL;
+
+if (apiIsCrossOrigin) {
+  console.warn(
+    `[api] Calling ${API_BASE_URL} from ${window.location.origin}. ` +
+      'These are different origins, so the API must set CORS_ORIGIN to this ' +
+      'page\'s URL. On a single-service deploy, unset VITE_API_URL instead.'
+  );
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../auth/useAuth';
+import { apiBaseUrl, apiIsCrossOrigin } from '../services/api';
 
 type Mode = 'signin' | 'register';
 
@@ -34,7 +35,22 @@ export default function SignIn() {
       const message = axios.isAxiosError(err)
         ? (err.response?.data as { message?: string } | undefined)?.message
         : undefined;
-      setError(message ?? 'Something went wrong. Try again.');
+
+      // No response at all, against a cross-origin API, is almost always the
+      // browser refusing the response rather than the server being down.
+      // Saying so beats a generic failure the reader cannot act on.
+      const blocked =
+        !message && axios.isAxiosError(err) && !err.response && apiIsCrossOrigin;
+
+      setError(
+        message ??
+          (blocked
+            ? `The browser blocked the request to ${apiBaseUrl}, which is on a ` +
+              'different origin than this page. On a single-service deploy, ' +
+              'unset VITE_API_URL and redeploy; on a split deploy, set ' +
+              "CORS_ORIGIN on the API to this page's URL."
+            : 'Something went wrong. Try again.')
+      );
     } finally {
       setBusy(false);
     }
