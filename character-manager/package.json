@@ -11,7 +11,8 @@
     "build:frontend": "cd frontend && npm run build",
     "build:all": "npm run build:backend && npm run build:frontend",
     "test:engine": "rm -rf .engine-build && ./backend/node_modules/.bin/tsc -p shared/tsconfig.json && node --test '.engine-build/**/*.test.js'",
-    "start": "cd backend && npm start"
+    "start": "cd backend && npm start",
+    "guard:narrative": "node --test tools/ingest-guard.test.mjs && node tools/ingest-guard.mjs tools/eldritch-narrative.json"
   },
   "keywords": [
     "larp",

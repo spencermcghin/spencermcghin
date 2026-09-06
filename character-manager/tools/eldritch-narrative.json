@@ -4,7 +4,8 @@
    "Event 9 Synopsis & Definitions (Google Doc 10dQnPyWhcBgCxxWlLL-8IIQvi2jLwqwkX5azNJqlRwU)",
    "Event 10 - The End Design Doc (Google Doc 1CVxS_L4USnnj3QaJXVRNZSQzKK5-TaeqlkCnEmNowxg)",
    "Eldritch Dev Team > Events (Google Drive folder 1ebzJARVkm29E8wJk2KmQOPMPvOyEwkja)",
-   "Eldritch Retro and Plot Meeting — 2026-07-19 (Google Doc 1yG4izUPHvISCAL9pfEM0voXzhTB-pblscgE5O_tu7MI)"
+   "Eldritch Retro and Plot Meeting — 2026-07-19 (Google Doc 1yG4izUPHvISCAL9pfEM0voXzhTB-pblscgE5O_tu7MI)",
+   "Eldritch Plot Meeting — 2026-08-30 (Google Doc 1qoolPIwLlgf1kfaJmVgAzLYXoCKjBswbx8PRsBZeOCo)"
   ],
   "extracted": "2026-09-06",
   "note": "Extracted from the Player's Guide, two event design documents and one plot meeting. Everything here is traceable to a source; nothing is invented. Meeting notes are read for canon decisions only -- staffing, personnel and safety matters discussed in the same meetings are deliberately excluded, because this map is readable by everyone in the project. The campaign shape names 'event' as the spine and 'track' as the lanes; both are this project's own declared kinds, nominated on the map rather than assumed by the app."
@@ -756,13 +757,18 @@
     "asset"
    ],
    "status": "draft",
-   "summary": "Unlocked at Event 8. Its fire must be tended, and holds Oblivion back from whatever it stands over.",
+   "summary": "A beacon that holds the darkness off whatever it stands over, and has to be tended.",
    "sources": [
     {
      "label": "Event 10 — The End Design Doc",
      "locator": "PC Assets"
+    },
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
     }
-   ]
+   ],
+   "body": "The Empyrean is a sacred realm bound up with the Eldrin; its light is what keeps Oblivion out of the ground around it, making a safe place in a site otherwise divided into grey and nether zones.\n\nRealised as a glowing fibre-optic plant that players tend — collaborative upkeep rather than a chore."
   },
   {
    "id": "aetheric-conduits",
@@ -1035,17 +1041,22 @@
    "kindId": "artifact",
    "name": "Auranium",
    "aliases": [
-    "uranium"
+    "uranium",
+    "aetherite"
    ],
    "tags": [
     "material"
    ],
-   "status": "draft",
-   "summary": "The metal the ritual components and the cannon are made from, and the constraint the finale turns on.",
-   "body": "Players spent much of the supply on armour, leaving none for the cannon. Ritual components are a sunk cost; what is left forces a choice between cannon ammunition and other items. Crafting converts one-to-one with iron.",
+   "status": "canon",
+   "summary": "A rare metal that works as a magical capacitor. The only thing that harms what is otherwise invulnerable, and the constraint the finale turns on.",
+   "body": "Stores energy, and must be made into items through an intentional ritual rather than ordinary forging. Weapons of it can wound a god, but over many strikes rather than one. They are indestructible and cannot be sundered, and carry a coloured wristband at the pommel so an NPC struck in the dark knows what hit them.\n\nDeliberately scarce: four to six weapons in the whole game, counting those already in play. Ritual components come out of the same supply, so what is left forces a choice between ammunition and everything else.",
    "sources": [
     {
      "label": "Eldritch Retro and Plot Meeting — 2026-07-19",
+     "locator": "Decisions"
+    },
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
      "locator": "Decisions"
     }
    ]
@@ -1061,11 +1072,15 @@
     "asset"
    ],
    "status": "draft",
-   "summary": "One only, governed by a lost art card, to be spent breaking a rule inside defined bounds.",
-   "body": "Settled as a boon that offsets a deliberately unfair fight rather than as a plot device. Exactly one is produced, with no separate mechanics for NPC cannons; expensive ammunition is the limiting factor.",
+   "summary": "One cannon, three shots for the whole game. Staggers and wounds; it does not kill outright.",
+   "body": "Settled as a boon that offsets a deliberately unfair fight. A shot clears a swath of lesser monsters, wounds a mini-boss, or staggers an avatar. There is one god-killing bullet, which likewise staggers rather than kills.\n\nThree shots is meant to be spent across the weekend, not hoarded for the last fight, so an early target worth firing at should exist.",
    "sources": [
     {
      "label": "Eldritch Retro and Plot Meeting — 2026-07-19",
+     "locator": "Decisions"
+    },
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
      "locator": "Decisions"
     }
    ]
@@ -1292,6 +1307,140 @@
     }
    ],
    "occursAt": "Event 9"
+  },
+  {
+   "id": "hammond",
+   "kindId": "npc",
+   "name": "Hammond",
+   "aliases": [
+    "Giles III"
+   ],
+   "tags": [],
+   "status": "draft",
+   "summary": "Returns as an undead thrall of Morgos, allied with Emil.",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ],
+   "body": "Players believe he is still alive. The reveal is held for Friday night, on the understanding that the truth will travel fast once it is out.",
+   "occursAt": "Event 10 · Friday"
+  },
+  {
+   "id": "morgos",
+   "kindId": "power",
+   "name": "Morgos",
+   "aliases": [
+    "Morghost"
+   ],
+   "tags": [],
+   "status": "draft",
+   "summary": "Turned Hammond after his duel with Volgrim.",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "emil",
+   "kindId": "npc",
+   "name": "Emil",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Craxen Champion, leading the Core Army of the Dead. Hammond's ally once turned.",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "charles-cheesemonger",
+   "kindId": "npc",
+   "name": "Charles the Cheesemonger",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Mastermind of the opening duels, working through two thralls so he can taunt and leave.",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ],
+   "body": "Not a fighter himself. The point is that players want to find him later at the circus."
+  },
+  {
+   "id": "nether-tracker",
+   "kindId": "artifact",
+   "name": "The Nether Tracker",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Marshals watch the nexus points and report interference back to the tavern.",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ],
+   "body": "Advance warning instead of standing guard, so holding the nexus points does not become an evening of sentry duty."
+  },
+  {
+   "id": "telstones",
+   "kindId": "artifact",
+   "name": "Telstones",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "A tactile, visual mental game, about five minutes a round.",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ],
+   "body": "The alternative to a duel in the opening encounter, so a player who does not want to fight still has a way through it."
+  },
+  {
+   "id": "enc-1v1-intro",
+   "kindId": "encounter",
+   "name": "The Duels",
+   "aliases": [],
+   "tags": [],
+   "status": "draft",
+   "summary": "Forced one-to-one encounters: mirror-match combat, or Telstones against a challenger.",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ],
+   "body": "An exercise in hopelessness, run first to three touches rather than to the death so players cycle through quickly. Players are paired, and falling transfers the mortal wound to your partner — the roleplaying fodder is the point. Deliberately high stakes: losing is a narrative catalyst, not a failure state.",
+   "occursAt": "Event 10 · Friday"
+  },
+  {
+   "id": "enc-hammerson",
+   "kindId": "encounter",
+   "name": "Mama Hammerson's Ambush",
+   "aliases": [
+    "Servar ambush"
+   ],
+   "tags": [],
+   "status": "draft",
+   "summary": "She and the Sabersons lure Ser Var and Ser Thomas somewhere secluded, and settle up for eight dead brothers.",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ],
+   "occursAt": "Event 10 · Saturday morning"
   }
  ],
  "relations": [
@@ -2517,6 +2666,200 @@
      "locator": "Event Outline"
     }
    ]
+  },
+  {
+   "id": "g1",
+   "kindId": "appears-in",
+   "fromId": "hammond",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g2",
+   "kindId": "concerns",
+   "fromId": "morgos",
+   "toId": "hammond",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ],
+   "note": "Turned him after his duel with Volgrim."
+  },
+  {
+   "id": "g3",
+   "kindId": "member-of",
+   "fromId": "hammond",
+   "toId": "oblivion",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g4",
+   "kindId": "member-of",
+   "fromId": "emil",
+   "toId": "core-army-dead",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g5",
+   "kindId": "concerns",
+   "fromId": "emil",
+   "toId": "hammond",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g6",
+   "kindId": "appears-in",
+   "fromId": "charles-cheesemonger",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g7",
+   "kindId": "member-of",
+   "fromId": "charles-cheesemonger",
+   "toId": "oblivion",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g8",
+   "kindId": "appears-in",
+   "fromId": "enc-1v1-intro",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g9",
+   "kindId": "member-of",
+   "fromId": "enc-1v1-intro",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g10",
+   "kindId": "concerns",
+   "fromId": "enc-1v1-intro",
+   "toId": "charles-cheesemonger",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g11",
+   "kindId": "concerns",
+   "fromId": "enc-1v1-intro",
+   "toId": "telstones",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g12",
+   "kindId": "appears-in",
+   "fromId": "enc-hammerson",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g13",
+   "kindId": "member-of",
+   "fromId": "enc-hammerson",
+   "toId": "track-general",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g14",
+   "kindId": "concerns",
+   "fromId": "nether-tracker",
+   "toId": "thread-nexus-points",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g15",
+   "kindId": "appears-in",
+   "fromId": "nether-tracker",
+   "toId": "event-10",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ]
+  },
+  {
+   "id": "g16",
+   "kindId": "concerns",
+   "fromId": "auranium",
+   "toId": "eldritch-cannon",
+   "sources": [
+    {
+     "label": "Eldritch Plot Meeting — 2026-08-30",
+     "locator": "Decisions"
+    }
+   ],
+   "note": "Three shots, and one bullet."
   }
  ],
  "campaign": {
