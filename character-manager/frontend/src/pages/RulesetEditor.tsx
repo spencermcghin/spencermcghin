@@ -5,6 +5,7 @@ import type { Condition, Ruleset, Trait } from '../../../shared/rules-schema';
 import { validateRuleset } from '../../../shared/ruleset-validation';
 import * as edit from '../../../shared/ruleset-editor';
 import { useAuth } from '../auth/useAuth';
+import TagInput from '../components/TagInput';
 import './RulesetEditor.css';
 
 /**
@@ -40,10 +41,13 @@ export default function RulesetEditor() {
   }, [id, user]);
 
   const apply = useCallback((next: (r: Ruleset) => Ruleset) => {
+    // An updater must be pure -- React may call it more than once, and
+    // setting other state from inside one is not supported. History and the
+    // dirty flag are handled outside it.
+    setDirty(true);
     setRuleset((current) => {
       if (!current) return current;
       history.current.push(current);
-      setDirty(true);
       return next(current);
     });
   }, []);
@@ -360,21 +364,15 @@ function SkillRow({
             />
           </label>
 
-          <label className="ed-field">
+          <div className="ed-field">
             <span>Tags</span>
-            <input
-              value={trait.tags.join(', ')}
+            <TagInput
+              tags={trait.tags}
+              suggestions={[...new Set(ruleset.traits.flatMap((t) => t.tags))].sort()}
               readOnly={!canEdit}
-              placeholder="crafting, signature"
-              onChange={(e) =>
-                apply((r) =>
-                  edit.updateTrait(r, trait.id, {
-                    tags: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
-                  })
-                )
-              }
+              onChange={(tags) => apply((r) => edit.updateTrait(r, trait.id, { tags }))}
             />
-          </label>
+          </div>
 
           {trait.tiers
             .slice()

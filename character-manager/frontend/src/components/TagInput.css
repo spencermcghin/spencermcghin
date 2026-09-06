@@ -1,0 +1,66 @@
+.tags {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  padding: 0.4rem 0.5rem;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  min-height: 2.3rem;
+  transition: border-color 0.2s var(--ease);
+}
+
+.tags:focus-within {
+  border-color: var(--accent);
+}
+
+.tags.is-readonly {
+  background: transparent;
+  border-color: transparent;
+  padding-left: 0;
+}
+
+.tags-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.3rem 0.15rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-wash);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+}
+
+.tags-chip button {
+  padding: 0 0.15rem;
+  font-size: 0.85rem;
+  line-height: 1;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.tags-chip button:hover {
+  color: var(--danger);
+}
+
+.tags-input {
+  flex: 1;
+  min-width: 7rem;
+  padding: 0.15rem 0.2rem;
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  color: var(--text);
+  background: none;
+  border: none;
+}
+
+.tags-input:focus {
+  outline: none;
+}
