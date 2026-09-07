@@ -336,7 +336,7 @@ export const cellKey = (laneId: Id, spineId: Id) => `${laneId}|${spineId}`;
  * "Event 9" otherwise and a campaign board that puts the finale in the middle
  * is worse than no board.
  */
-function naturally(a: string, b: string): number {
+export function naturally(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }
 
