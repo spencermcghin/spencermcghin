@@ -338,6 +338,27 @@ You do not strictly need it. The **first account to register becomes the app
 admin**, so signing up on a fresh install gets you in with a copy of the Demo
 Rules Set already in your space.
 
+### Loading Eldritch
+
+The Eldritch project -- 201 skills across 401 levels, and a story map of 75
+entries and 123 connections -- is checked in but is not given to anyone
+automatically. It is one group's game rather than an example, so it is opt-in
+and goes to the account you name:
+
+```bash
+DATABASE_URL=postgres://... ELDRITCH_EMAIL=you@example.com npm run seed:eldritch
+```
+
+Both halves come from files the tests already run against: the rules from
+`shared/rulesets/eldritch.ts`, the map from `tools/eldritch-narrative.json`.
+The script re-checks the map against the ruleset before writing anything, so a
+gate pointing at a skill that has been renamed stops the seed instead of
+producing content nobody can open.
+
+Re-running updates the project in place rather than making a second copy, which
+is how to push a corrected transcription to a running deployment. If the account
+does not exist it is created, and its password is generated and printed once.
+
 ### Anywhere else
 
 Build both, then run the API with `DATABASE_URL` set:
