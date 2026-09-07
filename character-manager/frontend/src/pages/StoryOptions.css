@@ -603,3 +603,83 @@
   padding-left: 0;
   font-style: italic;
 }
+
+/* --- worked examples: a rule shown against the entry that motivated it --- */
+
+.opts-workedset {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+}
+
+.opts-worked {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.opts-worked h4 {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin: 0 0 0.4rem;
+}
+
+.opts-worked p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: var(--text-soft);
+  max-width: 78ch;
+}
+
+.opts-worked p + p { margin-top: 0.6rem; }
+
+/* An entry named in prose, so a claim can be checked against the list above. */
+.opts-cite { font-style: normal; color: var(--text); font-weight: 500; }
+
+/* Two orderings of the same entries, side by side. */
+.opts-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 0.7rem;
+}
+
+.opts-compare > div > span {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 0.3rem;
+}
+
+.opts-compare ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+}
+
+.opts-compare div:first-child ol { color: var(--text-mute); text-decoration: line-through; }
+
+/* The grammar sample: each row captioned with the case it stands for. */
+.opts-cased { border-bottom: 1px solid var(--border); }
+.opts-cased:last-child { border-bottom: none; }
+.opts-cased .opts-row { border-bottom: none; padding-bottom: 0.15rem; }
+
+.opts-shows {
+  margin: 0 0 0.45rem;
+  padding-left: 0.9rem;
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--text-mute);
+}

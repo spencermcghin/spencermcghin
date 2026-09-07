@@ -23,6 +23,12 @@ import {
   type OrderBy,
   type RowFacts,
 } from '../../../shared/narrative-view';
+import { describeCondition, indexRuleset } from '../../../shared/engine';
+import {
+  findCases,
+  wordingOf,
+  type StoryCases,
+} from '../../../shared/narrative-cases';
 import './StoryOptions.css';
 
 /**
@@ -64,9 +70,10 @@ export default function StoryOptions() {
   }, [id]);
 
   const idx = useMemo(() => (map ? indexMap(map) : null), [map]);
+  const cases = useMemo(() => (idx ? findCases(idx) : null), [idx]);
 
   if (error) return <div className="error">{error}</div>;
-  if (!map || !idx || !ruleset) return <p className="muted">Loading…</p>;
+  if (!map || !idx || !ruleset || !cases) return <p className="muted">Loading…</p>;
 
   return (
     <div className="opts">
@@ -83,7 +90,7 @@ export default function StoryOptions() {
         <Link to={`/projects/${id}`} className="button button-small">Back</Link>
       </header>
 
-      <Grammar map={map} idx={idx} />
+      <Grammar map={map} idx={idx} cases={cases} />
 
       <nav className="opts-tabs">
         {OPTIONS.map((o) => (
@@ -98,9 +105,11 @@ export default function StoryOptions() {
         ))}
       </nav>
 
-      {option === 'views' && <ViewsOption map={map} idx={idx} projectId={id} />}
-      {option === 'campaign' && <CampaignFirst idx={idx} />}
-      {option === 'workbench' && <Workbench map={map} idx={idx} ruleset={ruleset} />}
+      {option === 'views' && <ViewsOption map={map} idx={idx} cases={cases} projectId={id} />}
+      {option === 'campaign' && <CampaignFirst idx={idx} cases={cases} />}
+      {option === 'workbench' && (
+        <Workbench map={map} idx={idx} ruleset={ruleset} cases={cases} />
+      )}
       {option === 'attention' && <Attention map={map} idx={idx} ruleset={ruleset} />}
     </div>
   );
@@ -129,6 +138,26 @@ function Verdict({ good, bad }: { good: string; bad: string }) {
   );
 }
 
+/**
+ * A rule shown against the entry that motivated it.
+ *
+ * Every case here is found in the map rather than named in code, so the
+ * examples belong to whoever is reading.
+ */
+function Worked({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="opts-worked">
+      <h4>{title}</h4>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+/** An entry named inline, with what a list would show beside it. */
+function Cite({ of }: { of: NarrativeEntity }) {
+  return <em className="opts-cite">{of.name}</em>;
+}
+
 /** How a given view sorts and files things, stated rather than inferred. */
 function Mechanics({ rows }: { rows: [string, React.ReactNode][] }) {
   return (
@@ -147,15 +176,25 @@ function Mechanics({ rows }: { rows: [string, React.ReactNode][] }) {
  * The row, and the rules behind it. Stated once at the top: all four options
  * use the same row, and only the arrangement around it differs.
  */
-function Grammar({ map, idx }: { map: NarrativeMap; idx: MapIndex }) {
+function Grammar({ map, idx, cases }: { map: NarrativeMap; idx: MapIndex; cases: StoryCases }) {
   const [open, setOpen] = useState(true);
+
+  /** One entry per awkward case, each labelled with the case it stands for. */
   const sample = useMemo(() => {
-    const dated = map.entities.find((e) => e.occursAt?.includes('·'));
-    const inferred = map.entities.find((e) => !e.occursAt && rowFacts(e, idx).where);
-    const gated = map.entities.find((e) => e.requires);
-    const loose = orphans(idx)[0];
-    return [dated, inferred, gated, loose].filter(Boolean) as NarrativeEntity[];
-  }, [map, idx]);
+    const pick: { entity?: NarrativeEntity; shows: string }[] = [
+      {
+        entity: map.entities.find((e) => e.occursAt?.includes('·')),
+        shows: 'a date and a slot, both written down',
+      },
+      { entity: cases.inferred[0], shows: 'no date; placed by what it links to' },
+      { entity: cases.aliased[0], shows: 'known by several names in the documents' },
+      { entity: cases.gated[0], shows: 'gated behind a skill' },
+      { entity: cases.unplaced.find((e) => (idx.byEntity.get(e.id) ?? []).length === 0),
+        shows: 'nothing links to it at all' },
+      { entity: cases.multiSpine[0]?.entity, shows: 'linked to two events, so it is listed twice' },
+    ];
+    return pick.filter((p): p is { entity: NarrativeEntity; shows: string } => Boolean(p.entity));
+  }, [map, idx, cases]);
 
   const undated = map.entities.filter((e) => !e.occursAt).length;
 
@@ -169,18 +208,39 @@ function Grammar({ map, idx }: { map: NarrativeMap; idx: MapIndex }) {
       {open && (
         <div className="opts-grammar-body">
           <p className="opts-note">
-            Every list below uses this row and these ordering rules. Four
-            entries from your map, picked for the awkward cases:
+            Every list below uses this row and these ordering rules. These{' '}
+            {sample.length} entries are from your map, picked because each one
+            breaks a rule that a tidier project would never test:
           </p>
 
           <div className="opts-frame">
             <RowHead />
             <ul className="opts-list">
-              {sample.map((e) => (
-                <Row key={e.id} facts={rowFacts(e, idx)} />
+              {sample.map(({ entity, shows }) => (
+                <li key={entity.id} className="opts-cased">
+                  <Row facts={rowFacts(entity, idx)} />
+                  <p className="opts-shows">{shows}</p>
+                </li>
               ))}
             </ul>
           </div>
+
+          {cases.aliased.length > 0 && (
+            <Worked title={`${cases.aliased.length} entries go by more than one name`}>
+              <p>
+                {cases.aliased.slice(0, 4).map((e, i) => (
+                  <span key={e.id}>
+                    {i > 0 && '; '}
+                    <Cite of={e} /> is also {e.aliases.map((a) => `“${a}”`).join(' and ')}
+                  </span>
+                ))}
+                . Searching any of those names finds the one entry. Without the
+                aliases recorded, an import that met{' '}
+                “{cases.aliased[0].aliases[0]}” in one document and{' '}
+                “{cases.aliased[0].name}” in another would create two.
+              </p>
+            </Worked>
+          )}
 
           <div className="opts-grammar-notes">
             <Mechanics
@@ -247,25 +307,23 @@ function Row({
 }) {
   const { entity, kindLabel, where, whereInferred, degree, sourced, gated } = facts;
   return (
-    <li>
-      <button
-        className={`opts-row ${selected ? 'is-selected' : ''}`}
-        onClick={() => onSelect?.(entity.id)}
-        title={entity.summary}
-      >
-        <span className="opts-row-name">{entity.name}</span>
-        <span className="opts-row-kind">{kindLabel}</span>
-        <span className={`opts-row-when ${whereInferred ? 'is-inferred' : ''}`}>
-          {where ?? '—'}
-        </span>
-        <span className={`opts-pill is-${entity.status}`}>{entity.status}</span>
-        <span className={`opts-num ${degree === 0 ? 'is-zero' : ''}`}>{degree}</span>
-        <span className="opts-row-flags">
-          {!sourced && <em className="opts-flag is-warn">no source</em>}
-          {gated && <em className="opts-flag">gated</em>}
-        </span>
-      </button>
-    </li>
+    <button
+      className={`opts-row ${selected ? 'is-selected' : ''}`}
+      onClick={() => onSelect?.(entity.id)}
+      title={entity.summary}
+    >
+      <span className="opts-row-name">{entity.name}</span>
+      <span className="opts-row-kind">{kindLabel}</span>
+      <span className={`opts-row-when ${whereInferred ? 'is-inferred' : ''}`}>
+        {where ?? '—'}
+      </span>
+      <span className={`opts-pill is-${entity.status}`}>{entity.status}</span>
+      <span className={`opts-num ${degree === 0 ? 'is-zero' : ''}`}>{degree}</span>
+      <span className="opts-row-flags">
+        {!sourced && <em className="opts-flag is-warn">no source</em>}
+        {gated && <em className="opts-flag">gated</em>}
+      </span>
+    </button>
   );
 }
 
@@ -276,10 +334,12 @@ function Row({
 function ViewsOption({
   map,
   idx,
+  cases,
   projectId,
 }: {
   map: NarrativeMap;
   idx: MapIndex;
+  cases: StoryCases;
   projectId: string;
 }) {
   const [group, setGroup] = useState<GroupBy>('sequence');
@@ -298,6 +358,8 @@ function ViewsOption({
   const groupRule = GROUPINGS.find((g) => g.id === group)!;
   const orderRule = ORDERINGS.find((o) => o.id === order)!;
   const shown = groups.reduce((n, g) => n + g.entities.length, 0);
+  // Rows can exceed entries, since one entry may sit in several groups.
+  const distinct = new Set(groups.flatMap((g) => g.entities.map((e) => e.id))).size;
 
   return (
     <section className="opts-body">
@@ -369,7 +431,9 @@ function ViewsOption({
               </div>
               <ul className="opts-list">
                 {g.entities.map((e) => (
-                  <Row key={`${g.key}:${e.id}`} facts={rowFacts(e, idx)} />
+                  <li key={`${g.key}:${e.id}`}>
+                    <Row facts={rowFacts(e, idx)} />
+                  </li>
                 ))}
               </ul>
             </div>
@@ -389,6 +453,63 @@ function ViewsOption({
         ]}
       />
 
+      <div className="opts-workedset">
+        {cases.spineNaive.join('|') !== cases.spineNatural.join('|') && (
+          <Worked title="Why digits are compared as numbers">
+            <div className="opts-compare">
+              <div>
+                <span>Plain alphabetical</span>
+                <ol>
+                  {cases.spineNaive.map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ol>
+              </div>
+              <div>
+                <span>What the app does</span>
+                <ol>
+                  {cases.spineNatural.map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+            <p>
+              Your campaign is the case that shows it: alphabetically, “Event
+              10” precedes “Event 9”, which puts the finale in the middle.
+            </p>
+          </Worked>
+        )}
+
+        {cases.multiSpine.length > 0 && (
+          <Worked title="An entry that belongs in two places">
+            <p>
+              <Cite of={cases.multiSpine[0].entity} /> is linked to{' '}
+              {cases.multiSpine[0].on.map((e) => e.name).join(' and ')}, so
+              filing by the campaign lists it under both. That is why the list
+              above shows {shown} rows for {distinct} entries. Picking one of the
+              two and hiding the other would be a guess presented as a fact.
+            </p>
+          </Worked>
+        )}
+
+        {cases.inferred.length > 0 && (
+          <Worked title={`${cases.inferred.length} entries are placed by their links, not by a date`}>
+            <p>
+              {cases.inferred.slice(0, 3).map((e, i) => (
+                <span key={e.id}>
+                  {i > 0 && ', '}
+                  <Cite of={e} /> under {rowFacts(e, idx).where}
+                </span>
+              ))}
+              . None of them carries a date. Filing on the date field alone
+              would drop all {cases.inferred.length} into the leftovers, which
+              is the state most projects are actually in.
+            </p>
+          </Worked>
+        )}
+      </div>
+
       <Verdict
         good="You know what you are after and want it filed the way you happen to be thinking about it."
         bad="You do not know what you are after. Six ways to slice a list does not tell you what to do next, and a newcomer opens the page onto a control panel."
@@ -404,7 +525,7 @@ function ViewsOption({
  * B. Campaign first
  * ------------------------------------------------------------------ */
 
-function CampaignFirst({ idx }: { idx: MapIndex }) {
+function CampaignFirst({ idx, cases }: { idx: MapIndex; cases: StoryCases }) {
   const board = useMemo(() => campaignBoard(idx), [idx]);
   const [eventId, setEventId] = useState<string | null>(null);
 
@@ -573,6 +694,48 @@ function CampaignFirst({ idx }: { idx: MapIndex }) {
         ]}
       />
 
+      <div className="opts-workedset">
+        {cases.slots.length > 1 && (
+          <Worked title="Where the slot ordering is wrong">
+            <p>
+              Your map uses {cases.slots.length} slot names, and the app sorts
+              them alphabetically: {cases.slots.map((x) => `“${x}”`).join(', ')}.
+              That is right by accident for Friday before Saturday and wrong for{' '}
+              {(() => {
+                const odd = cases.slots.find((x) => x.includes(' '));
+                return odd ? `“${odd}”, which sorts after the slot it is part of` : 'compound names';
+              })()}
+              . The app cannot know the shape of your day until you tell it,
+              and there is nowhere to tell it yet.
+            </p>
+          </Worked>
+        )}
+
+        {cases.multiLane.length > 0 && (
+          <Worked title="One thing that happens once, in two tracks">
+            <p>
+              <Cite of={cases.multiLane[0].entity} /> belongs to{' '}
+              {cases.multiLane[0].on.map((e) => e.name).join(' and ')}. On the
+              board it occupies a cell in each, which is correct: both tracks
+              own a share of it. In this running order it appears once, because
+              it is one thing that happens at one time. The same entry, two
+              questions, two right answers.
+            </p>
+          </Worked>
+        )}
+
+        <Worked title="What the sequence itself carries">
+          <p>
+            {current.name} links to {(idx.byEntity.get(current.id) ?? []).length}{' '}
+            entries, worded as{' '}
+            {wordingOf(current.id, idx).map((w) => `“${w}”`).join(', ')}. The page
+            above is built entirely from those, sorted and grouped — nothing on
+            it was entered twice, and nothing about “events” is written into the
+            app.
+          </p>
+        </Worked>
+      </div>
+
       <Verdict
         good="You are running a campaign and the next event is what you think about. Everything for it is on one page, in the order it happens."
         bad="You need something that spans events — a character across nine of them — and have to assemble it from nine separate pages."
@@ -589,14 +752,17 @@ function Workbench({
   map,
   idx,
   ruleset,
+  cases,
 }: {
   map: NarrativeMap;
   idx: MapIndex;
   ruleset: Ruleset;
+  cases: StoryCases;
 }) {
   const [kindId, setKindId] = useState<string>('encounter');
   const [order, setOrder] = useState<OrderBy>('sequence');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const rules = useMemo(() => indexRuleset(ruleset), [ruleset]);
 
   const listed = useMemo(
     () => orderEntities(map.entities.filter((e) => e.kindId === kindId), order, idx),
@@ -768,6 +934,46 @@ function Workbench({
           ],
         ]}
       />
+
+      <div className="opts-workedset">
+        {cases.directed && (
+          <Worked title="One connection, worded from each end">
+            <p>
+              The link between <Cite of={cases.directed.from} /> and{' '}
+              <Cite of={cases.directed.to} /> is stored once. On the first it
+              reads “{cases.directed.forward} {cases.directed.to.name}”; open the
+              second and the same link reads “{cases.directed.back}{' '}
+              {cases.directed.from.name}”. Neither page makes you invert an
+              arrow in your head.
+              {cases.symmetric && (
+                <>
+                  {' '}Where both directions mean the same thing —{' '}
+                  <Cite of={cases.symmetric.a} /> {cases.symmetric.label}{' '}
+                  <Cite of={cases.symmetric.b} /> — it is worded identically from
+                  either side rather than inventing an asymmetry.
+                </>
+              )}
+            </p>
+          </Worked>
+        )}
+
+        {cases.gated.length > 0 && (
+          <Worked title="Where the story points at the rules">
+            <p>
+              {cases.gated.map((e, i) => (
+                <span key={e.id}>
+                  {i > 0 && ' '}
+                  <Cite of={e} /> is gated on{' '}
+                  {describeCondition(e.requires!, rules)}.
+                </span>
+              ))}{' '}
+              Both are ordinary rules conditions, so the app can answer a
+              question neither document can: whether anyone on the roster can
+              open them, and whether the skill they name still exists.
+            </p>
+          </Worked>
+        )}
+      </div>
 
       <Verdict
         good="You move across the whole project in one sitting — writing, then rules, then a character sheet — and want it all in reach."
