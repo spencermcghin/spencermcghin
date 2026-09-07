@@ -76,9 +76,9 @@ export interface RelationKind {
 /**
  * Where a claim came from.
  *
- * Every entity and every relation carries these, because the first question
- * anyone asks of a canon claim is "says who". A map that cannot answer that
- * is a rumour mill, and staff will not trust it enough to use it.
+ * Every entity and every relation carries these. The first question anyone
+ * asks of a canon claim is which document it came from, and a map that cannot
+ * answer that will not be trusted enough to be used.
  */
 export interface SourceRef {
   /** How a person would name it: "Event 7 · The Unraveling". */

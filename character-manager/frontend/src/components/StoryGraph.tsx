@@ -46,7 +46,7 @@ interface Placed {
 }
 
 /**
- * Size carries how connected a thing is, so the load-bearing parts of a story
+ * Size carries how connected a thing is, so the busiest parts of a story
  * are the ones the eye lands on first. Square-rooted because degree has a
  * long tail: linear scaling lets one hub swallow the frame.
  */

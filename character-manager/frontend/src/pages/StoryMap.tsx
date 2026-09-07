@@ -16,14 +16,14 @@ import './StoryMap.css';
 /**
  * The story map.
  *
- * A LARP's canon lives across hundreds of documents and nobody holds the
- * connections but the people who wrote them. This is where they get written
- * down: pick a thing, say what it touches, and see what has been written and
- * then forgotten.
+ * A LARP's canon lives across hundreds of documents, and nobody holds the
+ * connections between them except the people who wrote them. This is where
+ * those get recorded: pick an entry, say what it touches, and see what has
+ * been written and then forgotten.
  *
- * Deliberately not a canvas. The questions staff actually have are "what does
- * this connect to" and "what is still unresolved", and both are lists; a
- * graph of two hundred nodes answers neither.
+ * Three views over the same data, because the questions differ. The list
+ * answers "what is there"; the graph answers "what does this connect to"; the
+ * board answers "what is running where, and what is still a draft".
  */
 export default function StoryMap() {
   const { id = '' } = useParams();
@@ -39,11 +39,7 @@ export default function StoryMap() {
   const [query, setQuery] = useState('');
   const [showKinds, setShowKinds] = useState(false);
   const [view, setView] = useState<'list' | 'graph' | 'campaign'>('list');
-  /**
-   * Where you have walked, so you can get back. Exploring a graph without a
-   * way back is a maze: every click is a commitment and the way you came is
-   * gone.
-   */
+  /** Where you have been, so you can walk back out of the graph. */
   const [trail, setTrail] = useState<string[]>([]);
   const history = useRef<NarrativeMap[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -237,8 +233,8 @@ export default function StoryMap() {
             NPC touch, what is unresolved, and what got written and forgotten.
           </p>
           <p className="muted">
-            Every project names its own kinds of thing. Start from a common set
-            and rename what does not fit, or build your own from nothing.
+            Every project defines its own kinds. Start from a common set and
+            rename what does not fit, or build your own from nothing.
           </p>
           {canEdit && (
             <div className="chip-row">
@@ -366,7 +362,7 @@ export default function StoryMap() {
                 <div className="graph-hint">
                   <p className="muted">
                     Pick something to stand in the middle. Its connections fan
-                    out around it, and clicking any of them moves you there.
+                    out around it, and clicking one moves you to it.
                   </p>
                   <div className="chip-row">
                     {map.entities
@@ -453,8 +449,8 @@ function Overview({
         <h2>
           Most connected
           <Hint align="right">
-            What the story actually turns on. A thread everything touches is
-            load-bearing: changing it changes more than its own document says.
+            The entries most of the canon hangs off. Changing one of these
+            changes more than its own document records.
           </Hint>
         </h2>
         {ranked.length === 0 ? (
@@ -475,9 +471,8 @@ function Overview({
         <h2>
           Nothing connects to these
           <Hint align="right">
-            Written, and then left. Not necessarily wrong — it may be waiting
-            for a future event — but nobody can decide that until they can see
-            the list.
+            Written and then left. Some of this is waiting for a future event
+            and some was abandoned; the list is here so someone can tell which.
           </Hint>
         </h2>
         {loose.length === 0 ? (
@@ -616,9 +611,10 @@ function EntityPanel({
               <span>
                 Also called
                 <Hint align="right">
-                  Canon drifts. The same character is "the Grey Warden",
-                  "Warden Aldous" and "Aldous" across three events; recording
-                  the aliases is what stops an import making three people.
+                  Canon drifts: the same character appears as "the Grey
+                  Warden", "Warden Aldous" and "Aldous" across three events.
+                  Recording the aliases keeps an import from creating three
+                  people.
                 </Hint>
               </span>
               <TagInput
@@ -660,7 +656,7 @@ function EntityPanel({
             Gated on the rules
             <Hint align="right">
               This content points at a skill in the same project's rules, so
-              the app can tell you whether anyone could actually open it.
+              the app can report whether anyone on the roster could open it.
             </Hint>
           </h2>
           <p className="story-gate">{describeRequirement(entity.requires)}</p>
@@ -671,9 +667,8 @@ function EntityPanel({
         <h2>
           Connections
           <Hint align="right">
-            How connected something is, and to what kinds of thing, is the
-            quickest read on how load-bearing it is. Something with one
-            connection can be changed freely; something with fifteen cannot.
+            How much else depends on this entry. One connection can be changed
+            freely; fifteen cannot.
           </Hint>
         </h2>
         {links.length > 0 && (
@@ -761,9 +756,8 @@ function EntityPanel({
           <h2>
             Says who
             <Hint align="right">
-              Every entry names where it came from. A canon claim nobody can
-              trace is a rumour, and staff will not trust the map enough to
-              use it.
+              Every entry records where it came from, so a claim can be
+              checked against the document it was taken from.
             </Hint>
           </h2>
           <ul className="story-sources">

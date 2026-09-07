@@ -70,9 +70,9 @@ export interface Connection {
  * Everything connected to one entity, worded from its side.
  *
  * A relation is stored once and read from both ends, so "Aldous appears in
- * The Rending" and "The Rending features Aldous" are the same row. Wording
- * it per side is what lets an entity page read as prose rather than as a
- * table of arrows the reader has to invert in their head.
+ * The Rending" and "The Rending features Aldous" are the same row. Wording it
+ * per side lets an entity page read as prose instead of as a table of arrows
+ * the reader has to invert.
  */
 export function connectionsOf(entityId: Id, idx: MapIndex): Connection[] {
   const out: Connection[] = [];
@@ -107,10 +107,9 @@ export function hubs(idx: MapIndex): { entity: NarrativeEntity; degree: number }
 /**
  * Entities nothing connects to.
  *
- * The governance question this exists for: a LARP accumulates content that
- * was written, half-used, and then forgotten. An orphan is not necessarily
- * wrong -- it may be waiting for a future event -- but nobody can decide
- * that until they can see the list.
+ * A LARP accumulates content that was written, half-used and then forgotten.
+ * An orphan is not necessarily wrong, since it may be waiting for a future
+ * event, but the list has to exist before anyone can judge.
  */
 export function orphans(idx: MapIndex): NarrativeEntity[] {
   return idx.map.entities.filter((e) => (idx.byEntity.get(e.id) ?? []).length === 0);
@@ -137,9 +136,9 @@ export interface MapIssue {
  * Checks the map holds together, and -- when given the ruleset -- that the
  * rules it points at still exist.
  *
- * The cross-check is the point. A lore prop gated on a skill that was
- * renamed in the ruleset is content nobody can ever open, and neither
- * document knows it on its own.
+ * The cross-check is the point: a lore prop gated on a skill that has since
+ * been renamed can never be opened, and neither document can detect that
+ * alone.
  */
 export function validateMap(map: NarrativeMap, ruleset?: Ruleset): MapIssue[] {
   const issues: MapIssue[] = [];
@@ -329,12 +328,9 @@ export interface CampaignBoard {
 export const cellKey = (laneId: Id, spineId: Id) => `${laneId}|${spineId}`;
 
 /**
- * Orders the spine.
- *
- * By `occursAt` where a project fills it in, else by name -- and comparing
- * numbers inside the string as numbers, because "Event 10" sorts before
- * "Event 9" otherwise and a campaign board that puts the finale in the middle
- * is worse than no board.
+ * Compares as a person reads: case- and accent-insensitive, with runs of
+ * digits compared as numbers. Without the numeric pass "Event 10" sorts before
+ * "Event 9", which puts a campaign's finale in the middle of its board.
  */
 export function naturally(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });

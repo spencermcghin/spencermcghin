@@ -299,7 +299,8 @@ export const demoRuleset: Ruleset = {
       groupId: 'general',
       summary:
         'Talking a price down, or talking a stranger into an introduction. ' +
-        'Two levels rather than three: a skill is as deep as it needs to be.',
+        'Two levels, to show that a skill need not have the same depth as ' +
+        'its neighbours.',
       tags: [],
       tiers: [
         {

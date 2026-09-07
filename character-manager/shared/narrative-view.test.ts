@@ -41,10 +41,10 @@ test('entries with no date sort after every entry that has one', () => {
   const ordered = orderEntities(all, 'sequence', idx);
   const lastDated = ordered.map((e) => Boolean(e.occursAt)).lastIndexOf(true);
   const firstUndated = ordered.map((e) => Boolean(e.occursAt)).indexOf(false);
-  assert.ok(lastDated < firstUndated, 'undated entries must not colonise the top');
+  assert.ok(lastDated < firstUndated, 'undated entries must sort last');
 });
 
-test('most-connected order puts the load-bearing entries first', () => {
+test('most-connected order puts the busiest entries first', () => {
   const ordered = orderEntities(all, 'connections', idx);
   assert.equal(ordered[0].name, 'Event 10 — The End');
   assert.equal(ordered[1].name, 'The Rite of Aeons');
@@ -72,9 +72,8 @@ test('grouping by the sequence uses connections, not the date field', () => {
   const groups = groupEntities(all, 'sequence', idx);
   const ten = groups.find((g) => g.label === 'Event 10 — The End')!;
 
-  // Written with no `occursAt` of its own; filed under Event 10 because it is
-  // connected to it. This is the case that makes the field-free rule earn its
-  // keep -- most projects fill in a date for almost nothing.
+  // Written with no `occursAt` of its own, and filed under Event 10 because
+  // it is connected to it. Most entries in a real project are like this.
   const undated = ten.entities.filter((e) => !e.occursAt);
   assert.ok(undated.length > 0);
 });
@@ -131,7 +130,7 @@ test('a row prefers the stated date over the inferred one', () => {
   assert.equal(facts.whereInferred, false);
 });
 
-test('a row reports the absences worth seeing', () => {
+test('a row reports a missing source and a skill requirement', () => {
   const gated = map.entities.find((e) => e.requires)!;
   assert.equal(rowFacts(gated, idx).gated, true);
   assert.ok(map.entities.every((e) => rowFacts(e, idx).sourced));
@@ -154,6 +153,6 @@ test('connections are gathered under their wording, biggest first', () => {
   for (let i = 1; i < groups.length; i += 1) {
     assert.ok(groups[i - 1].others.length >= groups[i].others.length);
   }
-  // Thirty-odd edges become a handful of readable headings.
+  // Thirty-odd edges reduce to a handful of headings.
   assert.ok(groups.length <= 6);
 });

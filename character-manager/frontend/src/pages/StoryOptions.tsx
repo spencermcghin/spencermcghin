@@ -29,14 +29,13 @@ import './StoryOptions.css';
  * Four ways the pieces could hang together, each shown with the project's own
  * content in it.
  *
- * The question is not how any one screen looks -- it is how content gets
- * ordered, what it gets filed under, and what a reader sees on a row. So the
- * sorting and grouping here is not mocked: every list on this page runs the
- * real functions in shared/narrative-view.ts, over the real map. If an
- * ordering looks wrong here it is wrong in the app.
+ * The open question is how content gets ordered, what it gets filed under,
+ * and what a reader sees on a row, so none of that is mocked: every list here
+ * calls the real functions in shared/narrative-view.ts over the real map. An
+ * ordering that looks wrong on this page is wrong in the app.
  *
- * This page is a decision aid and is meant to be deleted once a decision is
- * made. The module it exercises is not.
+ * The page itself is a decision aid, to be deleted once a decision is made.
+ * The module it exercises stays.
  */
 
 type Option = 'views' | 'campaign' | 'workbench' | 'attention';
@@ -77,8 +76,8 @@ export default function StoryOptions() {
           <p className="muted">
             Four arrangements of the same pieces, drawn with {map.entities.length}{' '}
             real entries, {map.relations.length} real connections and{' '}
-            {ruleset.traits.length} real skills. The sorting is live, not
-            drawn. Pick one and this page goes away.
+            {ruleset.traits.length} real skills. The sorting runs the same code
+            the app would. Pick one and this page goes away.
           </p>
         </div>
         <Link to={`/projects/${id}`} className="button button-small">Back</Link>
@@ -145,10 +144,8 @@ function Mechanics({ rows }: { rows: [string, React.ReactNode][] }) {
 }
 
 /**
- * The row, and the ladder behind it.
- *
- * Stated once at the top because it is the same row in all four options --
- * the arrangements differ, the grammar of a line does not.
+ * The row, and the rules behind it. Stated once at the top: all four options
+ * use the same row, and only the arrangement around it differs.
  */
 function Grammar({ map, idx }: { map: NarrativeMap; idx: MapIndex }) {
   const [open, setOpen] = useState(true);
@@ -172,9 +169,8 @@ function Grammar({ map, idx }: { map: NarrativeMap; idx: MapIndex }) {
       {open && (
         <div className="opts-grammar-body">
           <p className="opts-note">
-            Every list in every option below is the same row, ordered by the
-            same ladder and filed by the same rule. Four examples from your map,
-            chosen to show the awkward cases rather than the tidy ones:
+            Every list below uses this row and these ordering rules. Four
+            entries from your map, picked for the awkward cases:
           </p>
 
           <div className="opts-frame">
@@ -191,33 +187,32 @@ function Grammar({ map, idx }: { map: NarrativeMap; idx: MapIndex }) {
               rows={[
                 [
                   'Name',
-                  'The name as written, not truncated. If canon calls the same person three things, the other two are aliases on the entry and search finds all three.',
+                  'Shown in full. Where canon uses several names for the same thing, the others are stored on the entry as aliases and search matches them too.',
                 ],
                 [
                   'Kind',
-                  'Your kind, not ours. This project declares ten; a different game declares its own and nothing in the app knows what an “event” is.',
+                  'Defined by the project. This one declares ten. Another game defines its own set, and the app has no built-in idea of an “event”.',
                 ],
                 [
                   'When',
                   <>
                     The <code>occurs at</code> field where someone filled it in.
-                    Where nobody did — {undated} of {map.entities.length} entries
-                    here — it falls back to the point in the sequence the entry
-                    is connected to, shown dimmed to mark it as derived. A row
-                    reading <em>—</em> is genuinely unplaced.
+                    For the {undated} of {map.entities.length} entries without
+                    one, the app substitutes the point in the sequence the entry
+                    links to, shown dimmed. A dash means it links to nothing.
                   </>,
                 ],
                 [
                   'Status',
-                  'Draft, canon or retired. Draft is the only one that is coloured, because draft is the only one that is work.',
+                  'Draft, canon or retired. Only draft is coloured.',
                 ],
                 [
                   'Links',
-                  'How many entries touch this one, counted from both ends. Zero is worth seeing: it means nothing in the canon refers to this.',
+                  'The number of entries linked to this one, counted in both directions. Zero is highlighted, since nothing in the canon refers to it.',
                 ],
                 [
                   'Flags',
-                  'Only the absences and the constraints — no source recorded, gated behind a skill. A row with no flags is a row with nothing to answer for.',
+                  'Shown only for a missing source or a skill requirement. Most rows have none.',
                 ],
               ]}
             />
@@ -307,10 +302,9 @@ function ViewsOption({
   return (
     <section className="opts-body">
       <Note>
-        One list of everything, with the slicing exposed rather than fixed:
-        choose what to file it under, what to sort it by, and which kinds to
-        keep. The controls below are live — change them and the {map.entities.length}{' '}
-        real entries below re-file themselves.
+        One list of everything, with the filing exposed: choose the grouping,
+        the sort order, and which kinds to include. The controls are live, and
+        the {map.entities.length} entries below re-file as you change them.
       </Note>
 
       <div className="opts-frame">
@@ -390,14 +384,14 @@ function ViewsOption({
           [`Sorted by ${orderRule.label.toLowerCase()}`, orderRule.ladder],
           [
             'Duplicates',
-            'An entry belonging to two groups is listed in both. The counts therefore sum to more than the total, which is honest; collapsing it to one arbitrary group is not.',
+            'An entry that belongs to two groups is listed under both, so the group counts add up to more than the total.',
           ],
         ]}
       />
 
       <Verdict
-        good="You know what you are looking for and want it filed the way you happen to think about it today. Nothing is buried under one imposed hierarchy."
-        bad="You do not yet know what you are looking for. Six ways to slice a list is not an answer to “what should I do next”, and a newcomer meets a control panel."
+        good="You know what you are after and want it filed the way you happen to be thinking about it."
+        bad="You do not know what you are after. Six ways to slice a list does not tell you what to do next, and a newcomer opens the page onto a control panel."
       />
       <Link to={`/projects/${projectId}/story`} className="button button-small">
         This one is closest to what exists — open it
@@ -420,8 +414,8 @@ function CampaignFirst({ idx }: { idx: MapIndex }) {
 
   const current = board.spine.find((e) => e.id === eventId) ?? board.spine[board.spine.length - 1];
 
-  // Content in two tracks sits in two cells, which is right on a board and
-  // wrong on a running order -- it is still one thing that happens once.
+  // Content in two tracks occupies two cells on the board, but it is one
+  // thing that happens once, so a running order lists it once.
   const inEvent = [
     ...new Map(
       [
@@ -458,10 +452,10 @@ function CampaignFirst({ idx }: { idx: MapIndex }) {
   return (
     <section className="opts-body">
       <Note>
-        The campaign is the spine of the project, and one entry on it is a page:
-        the running order inside it, what track each piece belongs to, who and
-        what appears, and what is still open. The map becomes the reference
-        behind the plan rather than the front door.
+        The campaign is the spine of the project, and each entry on it gets a
+        page: what runs inside it and in what order, which track each piece
+        belongs to, who appears, and what is unresolved. The map becomes
+        reference material behind the plan.
       </Note>
 
       <div className="opts-frame">
@@ -510,8 +504,8 @@ function CampaignFirst({ idx }: { idx: MapIndex }) {
                 </h4>
                 <p className="opts-slot-note">
                   {slotNames.length > 0
-                    ? 'In the event, but nobody has said when. This is the list a production meeting actually works from.'
-                    : 'Nothing here carries a slot, so there is nothing to order it by. An event that has already run often looks like this, and that is fine — the running order mattered on the day.'}
+                    ? 'In the event, with no slot recorded.'
+                    : 'Nothing here carries a slot, so there is no order to show. Events that have already run usually look like this.'}
                 </p>
                 <ul>
                   {unslotted.map((e) => (
@@ -562,26 +556,26 @@ function CampaignFirst({ idx }: { idx: MapIndex }) {
         rows={[
           [
             'Which entries are pages',
-            'The kind the project nominated as its sequence — Events here, Sessions or Chapters elsewhere. A game with no sequence never sees this view.',
+            'The kind nominated as the sequence: Events here, Sessions or Chapters in another game. A project with no sequence does not get this view.',
           ],
           [
             'What appears on one',
-            'Anything connected to it, whichever way the connection was written, filtered to the kinds the project called content. A monster that appears at the event is true but is not work.',
+            'Anything linked to it, in either direction, restricted to the kinds the project marked as content. A monster that appears at the event is linked to it, but it is not something anyone has to write.',
           ],
           [
             'The running order',
-            'Grouped by the part of “occurs at” after the separator — “Event 10 · Saturday” puts it under Saturday. Slots are ordered alphabetically for now, which is why “Saturday morning” lands after “Saturday”. Ordering slots properly means letting a project name its own day structure, and that is unbuilt.',
+            'Taken from the part of “occurs at” after the separator, so “Event 10 · Saturday” files under Saturday. Slots currently sort alphabetically, which puts “Saturday morning” after “Saturday”. Sorting them correctly needs a project to define its own day structure, which is not built.',
           ],
           [
             'The unscheduled tail',
-            'Everything in the event with no slot is listed at the end rather than dropped or guessed at. It is usually the largest group and it is the one worth looking at.',
+            'Entries in the event carrying no slot are listed at the end. On Event 10 that is the largest group.',
           ],
         ]}
       />
 
       <Verdict
-        good="You are running a campaign and the next event is the thing you think about. Everything needed for it is on one page, in the order it will happen."
-        bad="You want something that crosses events — a character across nine of them — and now you are assembling it by hopping between event pages."
+        good="You are running a campaign and the next event is what you think about. Everything for it is on one page, in the order it happens."
+        bad="You need something that spans events — a character across nine of them — and have to assemble it from nine separate pages."
       />
     </section>
   );
@@ -612,8 +606,7 @@ function Workbench({
   const selected =
     (selectedId && idx.entities.get(selectedId)) || listed[0] || map.entities[0];
 
-  /** Following a link moves the sidebar too, so the shell never lies about
-   *  where you are. */
+  /** Following a link moves the sidebar too, so it always shows where you are. */
   const follow = (id: string) => {
     setSelectedId(id);
     const kind = idx.entities.get(id)?.kindId;
@@ -634,10 +627,10 @@ function Workbench({
   return (
     <section className="opts-body">
       <Note>
-        One shell for the whole project. A permanent sidebar of everything it
+        One shell for the whole project: a sidebar listing everything it
         contains — story kinds, rules, roster — a table in the middle that sorts
-        on its columns, and an inspector that always shows whatever is selected.
-        Nothing is a separate page, so nothing needs finding twice.
+        on its columns, and an inspector showing the current selection. Nothing
+        lives on a separate page.
       </Note>
 
       <div className="opts-frame">
@@ -753,32 +746,32 @@ function Workbench({
         rows={[
           [
             'The sidebar',
-            'The project’s own vocabulary with live counts, so the shape of the corpus is visible before you open anything. A kind with two members in it is a question; a kind with sixty is a place you will spend the afternoon.',
+            'The project’s own vocabulary with live counts, so the shape of the corpus is visible before you open anything.',
           ],
           [
             'The table',
-            'Sorts on a column, not on a hidden preference. Same four orderings as everywhere else — click a heading here and it is the ladder described at the top of the page.',
+            'Sorts on whichever column you click, using the same four orderings as the rest of the app.',
           ],
           [
             'The inspector',
             <>
-              Connections are gathered under their wording rather than listed
-              flat. {selected?.name} has {(idx.byEntity.get(selected?.id ?? '') ?? []).length}{' '}
-              of them, which as a flat list is a wall and under headings is{' '}
+              Connections are grouped by their wording. {selected?.name} has{' '}
+              {(idx.byEntity.get(selected?.id ?? '') ?? []).length}; grouped,
+              that reads as{' '}
               {groups.slice(0, 3).map((g) => `${g.label} ${g.others.length}`).join(', ')}.
-              Largest group first, because it is usually what the entry is for.
+              Largest group first.
             </>,
           ],
           [
             'Following a link',
-            'Clicking a name in the inspector selects it and the sidebar follows to its kind. Navigation is one motion; you never lose the shell.',
+            'Selecting a name in the inspector moves the table and the sidebar to its kind.',
           ],
         ]}
       />
 
       <Verdict
-        good="You work across the whole project in a sitting — writing, then rules, then checking a character — and want one place with everything in reach."
-        bad="You only ever do one job. A writer who touches encounters and nothing else meets a sidebar that is mostly other people’s work, and three panes where one would do."
+        good="You move across the whole project in one sitting — writing, then rules, then a character sheet — and want it all in reach."
+        bad="You only do one job. A writer who touches encounters gets a sidebar mostly full of other people’s work, and three panes where one would do."
       />
     </section>
   );
@@ -818,7 +811,7 @@ function BenchRow({
 interface Finding {
   label: string;
   count: number;
-  /** Ranked above count, so one broken thing outranks forty unfinished ones. */
+  /** Ranked above count, so one broken entry outranks forty unfinished ones. */
   weight: number;
   why: string;
   fix: string;
@@ -852,8 +845,8 @@ function Attention({
   const drafts = inNext.filter((e) => e.status === 'draft');
 
   // Only kinds that are scheduled at all can be missing a slot. Encounters
-  // carry a day and a plot thread never will, so the check reads the project's
-  // own habit off the content instead of deciding that everything needs a time.
+  // carry a day and plot threads never do, so the check reads the project's
+  // own convention off the content rather than requiring a time on everything.
   const scheduledKinds = new Set(inNext.filter((e) => slotOf(e)).map((e) => e.kindId));
   const noSlot = inNext.filter((e) => scheduledKinds.has(e.kindId) && !slotOf(e));
   const loose = orphans(idx);
@@ -865,9 +858,8 @@ function Attention({
   const noTrack = board
     ? [...(board.untracked.values() as Iterable<NarrativeEntity[]>)].flat()
     : [];
-  // The spine and lane kinds are structure, not categories. A campaign with
-  // two tracks is not a project that mis-sorted its content, and telling it to
-  // merge them would dismantle the board.
+  // The spine and lane kinds are structural. A campaign with two tracks has
+  // not mis-sorted anything, and merging them would dismantle its board.
   const structural = new Set([map.campaign?.spineKindId, map.campaign?.laneKindId]);
   const thinKinds = map.entityKinds
     .filter((k) => !structural.has(k.id))
@@ -879,64 +871,64 @@ function Attention({
       label: 'Gated on a skill that no longer exists',
       count: brokenGate.length,
       weight: 100,
-      why: 'The rules were edited and the story was not. Nothing can ever open this.',
-      fix: 'Repoint the gate at a skill that exists, or take the gate off.',
+      why: 'The rules were edited and the story was not, so nothing can open this.',
+      fix: 'Point the requirement at a skill that exists, or remove it.',
       sample: brokenGate,
     },
     {
       label: `Not scheduled inside ${next?.name.replace(/ —.*$/, '') ?? 'the next event'}`,
       count: noSlot.length,
       weight: 60,
-      why: 'Everything else of the same kind carries a day, so these are omissions rather than a project that does not schedule.',
-      fix: 'Give each one a slot, or accept it as a floater and say so.',
+      why: 'Everything else of the same kind carries a day, so these look like omissions.',
+      fix: 'Give each one a slot, or record it as a floater.',
       sample: noSlot,
     },
     {
       label: `Still draft going into ${next?.name.replace(/ —.*$/, '') ?? 'the next event'}`,
       count: drafts.length,
       weight: 50,
-      why: 'Written but not settled. The list that decides whether the event is ready.',
-      fix: 'Settle them, or move them to the event after.',
+      why: 'Written but not signed off. This is the list that decides whether the event is ready.',
+      fix: 'Settle them, or move them to a later event.',
       sample: drafts,
     },
     {
       label: 'In the sequence but in no track',
       count: noTrack.length,
       weight: 30,
-      why: 'Attached to an event and to no strand of content. Not wrong, but this is where work goes missing between meetings.',
-      fix: 'Put each in a track, or add the track it belongs to.',
+      why: 'Linked to an event but to no strand of content, so it belongs to nobody in particular.',
+      fix: 'Assign a track, or add the track it belongs to.',
       sample: noTrack,
     },
     {
       label: 'Nothing connects to these',
       count: loose.length,
       weight: 25,
-      why: 'Written, then left. Some of it is next year’s work and some was forgotten; nobody can tell which without seeing the list.',
-      fix: 'Connect it to something, retire it, or leave it and stop wondering.',
+      why: 'Written and then left. Some is scheduled for later and some was abandoned.',
+      fix: 'Link it to something, retire it, or leave it as it is.',
       sample: loose,
     },
     {
       label: 'No source recorded',
       count: unsourced.length,
       weight: 20,
-      why: 'A canon claim nobody can trace back is a rumour, and staff will not trust the map enough to use it.',
-      fix: 'Add the document and the heading it came from.',
+      why: 'A canon claim with no document behind it cannot be checked by anyone else.',
+      fix: 'Record the document and the heading it came from.',
       sample: unsourced,
     },
     {
       label: 'Kinds with almost nothing in them',
       count: thinKinds.length,
       weight: 10,
-      why: `A kind holding one or two entries is usually a category that wanted merging: ${thinKinds
+      why: `A kind holding one or two entries is often a category that should be merged: ${thinKinds
         .map((x) => `${x.k.plural} (${x.n})`)
         .join(', ')}.`,
-      fix: 'Merge it into a neighbouring kind, or accept that it is deliberately small.',
+      fix: 'Merge it into a neighbouring kind, or keep it if it is deliberately small.',
       sample: [],
     },
   ];
 
-  // Ranked by weight, then by count. A single broken gate outranks forty
-  // drafts because one is a defect and the other is a Tuesday.
+  // Ranked by weight, then by count: a broken requirement is a defect, while
+  // a pile of drafts is the normal state of a project mid-cycle.
   const ranked = [...findings].sort((a, b) => b.weight - a.weight || b.count - a.count);
   const live = ranked.filter((f) => f.count > 0);
   const clear = ranked.filter((f) => f.count === 0);
@@ -945,9 +937,8 @@ function Attention({
     <section className="opts-body">
       <Note>
         The project opens on the work rather than the content: what is broken,
-        what is unscheduled, what is unfinished, what is unmoored, and what
-        cannot be traced. Each row states what it found, why it matters and what
-        to do about it, because a count with no reason attached is a nag.
+        unscheduled, unfinished, unlinked or untraceable. Each row gives the
+        count, the reason it matters, and what to do about it.
       </Note>
 
       <div className="opts-frame">
@@ -1000,26 +991,26 @@ function Attention({
         rows={[
           [
             'What is checked',
-            'Seven questions a document cannot ask about itself, run over the whole map every time the page opens. Nothing is cached and nothing needs a person to remember to run it.',
+            'Seven questions about the map, re-run in full every time the page opens.',
           ],
           [
             'The order',
-            'By severity first and count second, so one gate pointing at a deleted skill sits above forty ordinary drafts. A list ranked purely by count would bury the only real defect under the normal state of a working project.',
+            'By severity first, then count, so a requirement pointing at a deleted skill sits above forty ordinary drafts.',
           ],
           [
             'Empty checks',
-            'Rolled into one “clear” row rather than hidden, so you can tell the difference between a check that passed and a check nobody wrote.',
+            'Collected into a single “clear” row, so a check that passed is distinguishable from one nobody wrote.',
           ],
           [
             'Wording',
-            'Every row carries a reason and a remedy. These are suggestions about shape, not errors — a project is allowed to have orphans and drafts, and the app’s job is to make that a decision rather than an accident.',
+            'Each row states a reason and a remedy. These are observations, not errors: a project is entitled to orphans and drafts.',
           ],
         ]}
       />
 
       <Verdict
-        good="A team with a deadline and a corpus nobody has read end to end. It tells you where the holes are instead of waiting to be asked."
-        bad="A project young enough that everything is a draft and nothing is connected, where every row reads “you have not finished yet” and the page is noise."
+        good="A team with a deadline and a corpus nobody has read end to end."
+        bad="A project young enough that everything is a draft and nothing is linked, where all seven rows say the same thing."
       />
     </section>
   );

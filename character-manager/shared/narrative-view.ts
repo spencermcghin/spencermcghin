@@ -5,18 +5,16 @@
  * answers a different one: given several hundred entries written by different
  * people over years, what order do they go in and what do you put them under?
  *
- * Two rules run through everything here, and both exist because real projects
- * are untidy:
+ * Two rules run through everything here, both of them concessions to the state
+ * real projects are in:
  *
- *   1. Ordering falls back rather than failing. An entry with no `occursAt`
- *      still has to sit somewhere sensible, so each ordering names a ladder --
- *      the field, then a derived stand-in, then the name -- and the last rung
- *      always works.
+ *   1. Every ordering has a fallback. Most entries have no `occursAt`, so each
+ *      ordering defines what to use when its field is missing, ending at the
+ *      name, which every entry has.
  *
- *   2. Grouping never drops anything. Every grouping ends with a catch-all
- *      for the entries that lack the field, and that group is shown, not
- *      hidden. A view that quietly omits the unfiled entries teaches a project
- *      that it is tidier than it is, which is the opposite of useful.
+ *   2. Every grouping ends with a catch-all for entries that lack the field,
+ *      and displays it. Omitting unfiled entries would misrepresent how
+ *      organised a project is.
  */
 
 import { naturally, type MapIndex } from './narrative';
@@ -36,29 +34,25 @@ export const ORDERINGS: { id: OrderBy; label: string; ladder: string }[] = [
     id: 'sequence',
     label: 'When it happens',
     ladder:
-      'By the "occurs at" field, read with numbers as numbers so Event 9 comes ' +
-      'before Event 10. Entries without one fall to the end, in name order.',
+      'Uses the "occurs at" field, comparing digits as numbers so that Event 9 ' +
+      'precedes Event 10. Entries without one go to the end, alphabetically.',
   },
   {
     id: 'name',
     label: 'Name',
-    ladder:
-      'Alphabetical, ignoring case and accents, with numbers read as numbers. ' +
-      'The ordering that never surprises anyone.',
+    ladder: 'Alphabetical, ignoring case and accents, with digits compared as numbers.',
   },
   {
     id: 'connections',
     label: 'Most connected',
     ladder:
-      'By how many other entries touch it, from either end. Ties break on ' +
-      'name. This surfaces the load-bearing parts of the canon first.',
+      'By the number of entries linked to it, counted in both directions. ' +
+      'Ties break alphabetically.',
   },
   {
     id: 'status',
     label: 'Unfinished first',
-    ladder:
-      'Draft, then canon, then retired — work before reference. Ties break on ' +
-      'the sequence, so the drafts for the nearest event come first.',
+    ladder: 'Draft, then canon, then retired. Ties break on the sequence.',
   },
 ];
 
@@ -72,8 +66,8 @@ export function orderEntities(
   const degree = (e: NarrativeEntity) => (idx.byEntity.get(e.id) ?? []).length;
   const byName = (a: NarrativeEntity, b: NarrativeEntity) => naturally(a.name, b.name);
 
-  // Entries with no `occursAt` sort after every entry that has one, rather
-  // than sorting as an empty string and colonising the top of the list.
+  // Entries with no `occursAt` sort after every entry that has one. Comparing
+  // a missing value as an empty string would put them all at the top.
   const bySequence = (a: NarrativeEntity, b: NarrativeEntity) => {
     if (a.occursAt && b.occursAt) return naturally(a.occursAt, b.occursAt) || byName(a, b);
     if (a.occursAt) return -1;
@@ -104,11 +98,11 @@ export function orderEntities(
 /**
  * The part of `occursAt` after the separator: "Event 10 · Saturday" -> "Saturday".
  *
- * A convention rather than a schema field, on purpose. Games slice an event
- * differently -- days, shifts, acts, mod blocks -- and asking every project to
- * declare that before they can write anything down is a tax on the ninety per
- * cent who never needed it. Anything before the separator is the point in the
- * sequence; anything after it is where inside.
+ * A convention rather than a schema field. Games divide an event differently --
+ * days, shifts, acts, mod blocks -- and requiring every project to declare that
+ * up front would burden the majority who never need it. Anything before the
+ * separator names the point in the sequence, anything after it the position
+ * within.
  */
 export function slotOf(entity: NarrativeEntity): string | undefined {
   const at = entity.occursAt;
@@ -138,43 +132,40 @@ export const GROUPINGS: { id: GroupBy; label: string; rule: string; leftover: st
   {
     id: 'kind',
     label: 'Kind',
-    rule: 'One group per kind the project declared, in the order the project listed them.',
-    leftover: 'An entry of a kind the project has since deleted lands in "Kind no longer declared".',
+    rule: 'One group per kind, in the order the project lists them.',
+    leftover: 'An entry whose kind has since been deleted appears under "Kind no longer declared".',
   },
   {
     id: 'sequence',
     label: 'Where in the campaign',
     rule:
-      'One group per entry on the spine, in sequence order. Membership comes from ' +
-      'connections, not from a field, so an encounter written before anyone filled ' +
-      'in a date still lands under its event.',
-    leftover: 'Everything connected to no point in the sequence gathers in "Not placed yet".',
+      'One group per entry on the spine, in sequence order. Membership is taken ' +
+      'from connections rather than from the date field, so an encounter nobody ' +
+      'dated still appears under its event.',
+    leftover: 'Entries linked to no point in the sequence appear under "Not placed yet".',
   },
   {
     id: 'lane',
     label: 'Track',
-    rule: 'One group per track, again from connections rather than a field.',
-    leftover: 'Content in no track gathers in "No track", which is where forgotten work hides.',
+    rule: 'One group per track, also taken from connections.',
+    leftover: 'Content assigned to no track appears under "No track".',
   },
   {
     id: 'status',
     label: 'Status',
-    rule: 'Draft, canon, retired — in that order, because the drafts are the work.',
-    leftover: 'None: every entry has a status.',
+    rule: 'Draft, then canon, then retired.',
+    leftover: 'None. Every entry has a status.',
   },
   {
     id: 'tag',
     label: 'Tag',
-    rule:
-      'One group per tag. An entry with three tags appears in three groups, ' +
-      'because it genuinely is in all three and showing it once would make two ' +
-      'of the groups lie.',
-    leftover: 'Untagged entries gather in "No tags".',
+    rule: 'One group per tag. An entry carrying three tags appears under all three.',
+    leftover: 'Untagged entries appear under "No tags".',
   },
   {
     id: 'none',
     label: 'Nothing',
-    rule: 'One flat list.',
+    rule: 'A single flat list.',
     leftover: 'Not applicable.',
   },
 ];
@@ -190,10 +181,9 @@ function connectedOfKind(entity: NarrativeEntity, kindId: Id | undefined, idx: M
 /**
  * Groups a set of entries, always ending with the leftovers.
  *
- * `axisKindId` is the kind whose entries form the groups for the connection-
- * based groupings — the spine kind for 'sequence', the lane kind for 'lane'.
- * Those come from the project's own CampaignShape, so nothing here decides
- * that an "event" is special.
+ * The connection-based groupings take their groups from a kind named in the
+ * project's CampaignShape: the spine kind for 'sequence', the lane kind for
+ * 'lane'. No kind is special to this code.
  */
 export function groupEntities(
   entities: NarrativeEntity[],
@@ -220,7 +210,7 @@ export function groupEntities(
       groups.push({
         key: '_stray',
         label: 'Kind no longer declared',
-        note: 'The project used to have this kind and does not any more.',
+        note: 'The project defined this kind at some point and no longer does.',
         leftover: true,
         entities: sorted(stray),
       });
@@ -285,7 +275,7 @@ export function groupEntities(
       leftover.push(entity);
       continue;
     }
-    // Something spanning two events appears under both, because it does.
+    // Something spanning two events is listed under both.
     for (const id of on) byKey.get(id)?.entities.push(entity);
   }
 
@@ -299,8 +289,8 @@ export function groupEntities(
       label: by === 'sequence' ? 'Not placed yet' : 'No track',
       note:
         by === 'sequence'
-          ? 'Connected to nothing on the sequence. Some of this is next year’s work and some of it was forgotten.'
-          : 'In no track. Not wrong, but this is where work goes missing.',
+          ? 'Linked to no point in the sequence. Some of this is scheduled for later and some was abandoned.'
+          : 'Not assigned to a track.',
       leftover: true,
       entities: sorted(leftover),
     });
@@ -315,11 +305,9 @@ export function groupEntities(
 /**
  * What one entry shows in a list, wherever a list appears.
  *
- * Deliberately the same everywhere. A reader learns a row once -- name, what
- * it is, when, how settled, how connected, whether it can be traced -- and
- * then reads every list in the app without relearning. The two dimmed facts
- * at the end are absences worth seeing: an entry nothing links to, and a
- * claim with no source behind it.
+ * The same six facts in every list, so the row only has to be learned once:
+ * name, kind, when, status, how many entries link to it, and whether it is
+ * missing a source or carries a skill requirement.
  */
 export interface RowFacts {
   entity: NarrativeEntity;
@@ -363,12 +351,10 @@ export function rowFacts(entity: NarrativeEntity, idx: MapIndex): RowFacts {
  * ------------------------------------------------------------------ */
 
 /**
- * An entity's connections gathered under the wording, rather than listed flat.
+ * An entity's connections gathered under their wording.
  *
- * Event 10 has thirty-two connections. As a flat list that is a wall; under
- * headings it is "features 12, contains 5, is the subject of 8" and a reader
- * can go to the part they wanted. Groups are ordered largest first, since the
- * biggest group is usually what the entry is for.
+ * Event 10 has thirty-two of them. Grouped, that reads as "features 23, must
+ * resolve 7, follows from 2", which can be scanned. Largest group first.
  */
 export interface ConnectionGroup {
   label: string;

@@ -24,11 +24,11 @@
  * is where the real filtering happens; this is the net underneath it, so that
  * a slip lands in a failing check rather than in front of the whole project.
  *
- * It is a review gate, not a censor. It flags and stops the build; a person
- * decides. It will sometimes flag something harmless -- an in-game apology, a
- * character with a grievance -- and that is the right way round, because the
- * cost of a false positive is a moment's reading and the cost of a false
- * negative is publishing something about a real colleague.
+ * It is a review gate, not a censor: it flags and stops the build, and a
+ * person decides. It is tuned to over-flag -- an in-game apology or a
+ * character with a grievance will trip it -- because a false positive costs a
+ * moment's reading and a false negative publishes something about a real
+ * colleague.
  */
 
 import { readFileSync } from 'node:fs';

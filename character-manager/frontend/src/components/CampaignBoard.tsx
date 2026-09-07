@@ -13,14 +13,12 @@ import './CampaignBoard.css';
  * The campaign as a board: the sequence along the top, the strands of content
  * down the side, and the work in the cells.
  *
- * Which kinds do that is the project's choice, nominated on the map. Nothing
- * here asks whether something is an "event" -- a tabletop chronicle nominates
- * Session and Arc and gets the same board, and a game with no sequence never
- * sees the view at all.
+ * Which kinds play those parts is nominated on the map, so nothing here asks
+ * whether something is an "event". A tabletop chronicle nominates Session and
+ * Arc and gets the same board; a game with no sequence never sees the view.
  *
- * This is the planning view rather than the reference one: the question is
- * not "what is this" but "what is running where, and what is still a draft
- * going into the next one".
+ * This is the planning view rather than the reference one. It answers what is
+ * running where, and what is still a draft going into the next one.
  */
 export default function CampaignBoard({
   map,
@@ -43,14 +41,14 @@ export default function CampaignBoard({
     return (
       <div className="board-setup">
         <p>
-          Most games run as a sequence of somethings — events, sessions,
-          chapters — with several strands of content running across them. Name
-          those two and this becomes a board: the sequence along the top, the
-          strands down the side, and your content in between.
+          Most games run as a sequence — events, sessions, chapters — with
+          several strands of content running across it. Name those two kinds and
+          this becomes a board: the sequence along the top, the strands down the
+          side, and your content in the cells.
         </p>
         <p className="muted">
-          These are your own kinds, not ours. A campaign that is not a sequence
-          can leave this alone.
+          Both come from the kinds you have defined. A campaign that does not
+          run as a sequence can leave this alone.
         </p>
         {canEdit ? (
           <div className="board-setup-row">
@@ -78,7 +76,7 @@ export default function CampaignBoard({
   const kindLabel = (id?: string) =>
     map.entityKinds.find((k) => k.id === id)?.plural ?? '—';
 
-  /** Drafts are the thing a planning view is actually for. */
+  /** The count a planning view is read for. */
   const draftsAt = (spineId: string) => {
     const all = [
       ...lanes.flatMap((l) => cells.get(cellKey(l.id, spineId)) ?? []),
@@ -122,11 +120,11 @@ export default function CampaignBoard({
             </select>
           </label>
           <Hint>
-            The board is built from your own kinds, nominated here. Content
-            appears in a cell when it is connected to both a{' '}
+            The board is built from the kinds nominated here. Content appears
+            in a cell when it links to both a{' '}
             {kindLabel(map.campaign?.spineKindId)} entry and a{' '}
-            {kindLabel(map.campaign?.laneKindId)} entry — however that
-            connection was worded, and whichever way round it was made.
+            {kindLabel(map.campaign?.laneKindId)} entry, in either direction and
+            however the link was worded.
           </Hint>
         </div>
 
@@ -171,9 +169,9 @@ export default function CampaignBoard({
               );
             })}
           <Hint align="right">
-            Which kinds are the work being planned. Everything else stays out
-            of the board and stays in the map — a monster that appears at an
-            event is true, but it is not a thing anyone has to write.
+            Which kinds count as the work being planned. Everything else stays
+            in the map but off the board: a monster that appears at an event is
+            linked to it, but it is not something anyone has to write.
           </Hint>
         </div>
       </div>
@@ -230,16 +228,15 @@ export default function CampaignBoard({
               ))}
 
               {/* Content at a point in the sequence but in no track. Shown
-                  rather than dropped: a planning view that quietly hides work
-                  is worse than no planning view. */}
+                  rather than dropped, so the board accounts for everything. */}
               <tr className="board-rest">
                 <th className="board-lane">
                   <span>
                     No track
                     <Hint>
-                      Connected to something on the sequence but not to any
-                      track. Not wrong — plenty of content belongs to an event
-                      and nothing else — but this is where it would hide.
+                      Linked to a point in the sequence but to no track.
+                      Plenty of content legitimately belongs to an event and
+                      nothing else.
                     </Hint>
                   </span>
                 </th>
@@ -262,8 +259,8 @@ export default function CampaignBoard({
           <h3>
             In a track, not yet placed
             <Hint>
-              Written and assigned to a strand, but not yet attached to
-              anywhere in the sequence. The backlog, in other words.
+              Assigned to a strand but not yet placed anywhere in the
+              sequence.
             </Hint>
           </h3>
           {lanes.map((lane) => {
