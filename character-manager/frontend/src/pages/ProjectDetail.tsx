@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   characterApi,
@@ -130,19 +130,30 @@ export default function ProjectDetail() {
     }
   };
 
-  // Toggling one role at a time and re-sending the whole set keeps the UI
-  // simple; the server replaces the assignment wholesale and hands back the
-  // fresh roster, so members stay in sync without a reload.
-  const toggleMemberAccessRole = async (member: Member, roleId: string) => {
-    const next = member.accessRoles.includes(roleId)
-      ? member.accessRoles.filter((r) => r !== roleId)
-      : [...member.accessRoles, roleId];
-    try {
-      setMembers(await memberApi.setAccessRoles(id, member.userId, next));
-      setError(null);
-    } catch {
-      setError('Could not update access roles.');
-    }
+  // The server replaces a member's assignment wholesale and hands back the
+  // fresh roster. Saves are chained through one queue and each computes its
+  // set from the newest roster it can see: two quick ticks would otherwise
+  // both start from the same stale copy, and the second would silently undo
+  // the first.
+  const membersRef = useRef<Member[]>([]);
+  membersRef.current = members;
+  const roleSaveQueue = useRef(Promise.resolve());
+  const toggleMemberAccessRole = (userId: string, roleId: string) => {
+    roleSaveQueue.current = roleSaveQueue.current.then(async () => {
+      const current =
+        membersRef.current.find((m) => m.userId === userId)?.accessRoles ?? [];
+      const next = current.includes(roleId)
+        ? current.filter((r) => r !== roleId)
+        : [...current, roleId];
+      try {
+        const fresh = await memberApi.setAccessRoles(id, userId, next);
+        membersRef.current = fresh;
+        setMembers(fresh);
+        setError(null);
+      } catch {
+        setError('Could not update access roles.');
+      }
+    });
   };
 
   const exportJson = () => {
@@ -270,9 +281,9 @@ export default function ProjectDetail() {
                         <input
                           type="checkbox"
                           checked={m.accessRoles.includes(role.id)}
-                          onChange={() => toggleMemberAccessRole(m, role.id)}
+                          onChange={() => toggleMemberAccessRole(m.userId, role.id)}
                         />
-                        <span>{role.name}</span>
+                        <span>{role.name || role.id}</span>
                       </label>
                     ))}
                   </div>

@@ -640,7 +640,9 @@ function AccessRolePanel({
   const addRole = () => {
     let n = 1;
     while (roles.some((a) => a.id === `role-${n}`)) n++;
-    apply((r) => edit.addAccessRole(r, { id: `role-${n}`, name: 'New role' }));
+    // Starts unnamed: a prefilled "New role" reads as a label rather than a
+    // field, and the name ends up typed into the description below it.
+    apply((r) => edit.addAccessRole(r, { id: `role-${n}`, name: '' }));
     setOpen(true);
   };
 
@@ -692,6 +694,8 @@ function AccessRolePanel({
                 className="ed-skill-name"
                 value={role.name}
                 readOnly={!canEdit}
+                placeholder="Role name, e.g. Magister"
+                aria-label="Role name"
                 onChange={(e) =>
                   apply((r) => edit.updateAccessRole(r, role.id, { name: e.target.value }))
                 }
@@ -703,7 +707,7 @@ function AccessRolePanel({
                   onClick={() => {
                     if (
                       confirm(
-                        `Delete "${role.name}"? Skills restricted to it become ` +
+                        `Delete "${role.name || role.id}"? Skills restricted to it become ` +
                           'visible to everyone, and it is removed from any player who had it.'
                       )
                     ) {
@@ -720,7 +724,7 @@ function AccessRolePanel({
               rows={2}
               value={role.description ?? ''}
               readOnly={!canEdit}
-              placeholder="What this role is for (optional)."
+              placeholder="Optional note for staff. The role's name goes in the field above."
               onChange={(e) =>
                 apply((r) =>
                   edit.updateAccessRole(r, role.id, { description: e.target.value })
@@ -761,7 +765,7 @@ function SkillRow({
   const accessRoles = ruleset.accessRoles ?? [];
   const gate = trait.visibleTo ?? [];
   const roleName = (rid: string) =>
-    accessRoles.find((a) => a.id === rid)?.name ?? rid;
+    accessRoles.find((a) => a.id === rid)?.name || rid;
   const toggleRole = (rid: string) => {
     const next = gate.includes(rid)
       ? gate.filter((x) => x !== rid)
@@ -921,7 +925,7 @@ function SkillRow({
                       checked={gate.includes(role.id)}
                       onChange={() => toggleRole(role.id)}
                     />
-                    <span>{role.name}</span>
+                    <span>{role.name || role.id}</span>
                   </label>
                 ))}
                 {gate.length === 0 && (
