@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
+  accessRoleApi,
   characterApi,
   memberApi,
   rulesetApi,
+  type AccessRole,
   type Invite,
   type Member,
   type ProjectRole,
@@ -22,6 +24,8 @@ export default function ProjectDetail() {
   const [ruleset, setRuleset] = useState<Ruleset | null>(null);
   const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
+  const [accessRoles, setAccessRoles] = useState<AccessRole[]>([]);
+  const [newRoleName, setNewRoleName] = useState('');
   const [invites, setInvites] = useState<Invite[]>([]);
   const [newLink, setNewLink] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -41,14 +45,16 @@ export default function ProjectDetail() {
 
   const load = useCallback(async () => {
     try {
-      const [r, cs, ms] = await Promise.all([
+      const [r, cs, ms, roles] = await Promise.all([
         rulesetApi.get(id),
         characterApi.listForRuleset(id),
         memberApi.list(id),
+        accessRoleApi.list(id).catch(() => []),
       ]);
       setRuleset(r);
       setRoster(cs);
       setMembers(ms);
+      setAccessRoles(roles);
       setError(null);
     } catch {
       setError('Could not load this project.');
@@ -156,6 +162,56 @@ export default function ProjectDetail() {
     });
   };
 
+  // Role definitions save instantly, one action at a time -- governance has
+  // no draft state to forget.
+  const addAccessRole = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const roleName = newRoleName.trim();
+    if (!roleName) return;
+    try {
+      await accessRoleApi.create(id, roleName);
+      setNewRoleName('');
+      setAccessRoles(await accessRoleApi.list(id));
+      setError(null);
+    } catch {
+      setError('Could not add that role.');
+    }
+  };
+
+  const renameAccessRole = async (roleId: string, roleName: string) => {
+    const trimmed = roleName.trim();
+    const current = accessRoles.find((r) => r.id === roleId);
+    if (!current || !trimmed || trimmed === current.name) return;
+    try {
+      await accessRoleApi.update(id, roleId, { name: trimmed });
+      setAccessRoles(await accessRoleApi.list(id));
+      setError(null);
+    } catch {
+      setError('Could not rename that role.');
+    }
+  };
+
+  const removeAccessRole = async (role: AccessRole) => {
+    if (
+      !confirm(
+        `Delete "${role.name || role.id}"? Skills restricted to it become visible ` +
+          'to everyone, and it is removed from any player who had it.'
+      )
+    )
+      return;
+    try {
+      await accessRoleApi.remove(id, role.id);
+      // Assignments were scrubbed server-side; refresh both lists.
+      const [roles, ms] = await Promise.all([accessRoleApi.list(id), memberApi.list(id)]);
+      setAccessRoles(roles);
+      setMembers(ms);
+      membersRef.current = ms;
+      setError(null);
+    } catch {
+      setError('Could not delete that role.');
+    }
+  };
+
   const exportJson = () => {
     if (!ruleset) return;
     const blob = new Blob([JSON.stringify(ruleset, null, 2)], {
@@ -172,8 +228,6 @@ export default function ProjectDetail() {
   if (loading) return <p className="muted">Loading…</p>;
   if (error) return <div className="error">{error}</div>;
   if (!ruleset) return <p className="muted">Not found.</p>;
-
-  const accessRoles = ruleset.accessRoles ?? [];
 
   const stat = (label: string, value: number) => (
     <div key={label} className="attribute-item">
@@ -220,7 +274,14 @@ export default function ProjectDetail() {
         <div className="info-card">
           <h2>Members</h2>
           <ul className="member-list">
-            {members.map((m) => (
+            {members.map((m) => {
+              // The server refuses to demote or remove the last admin; the
+              // controls go grey here too so nobody discovers that rule as
+              // an error message after clicking.
+              const lastAdmin =
+                m.role === 'admin' &&
+                members.filter((x) => x.role === 'admin').length <= 1;
+              return (
               <li key={m.userId} className="member-row">
                 <div className="member-top">
                   <span className="member-name">
@@ -232,6 +293,12 @@ export default function ProjectDetail() {
                       <select
                         value={m.role}
                         aria-label={`Role for ${m.displayName}`}
+                        disabled={lastAdmin}
+                        title={
+                          lastAdmin
+                            ? 'A project must keep at least one admin.'
+                            : undefined
+                        }
                         onChange={async (e) => {
                           try {
                             setMembers(
@@ -251,6 +318,12 @@ export default function ProjectDetail() {
                       </select>
                       <button
                         className="button button-small button-danger"
+                        disabled={lastAdmin}
+                        title={
+                          lastAdmin
+                            ? 'A project must keep at least one admin.'
+                            : undefined
+                        }
                         onClick={async () => {
                           if (!confirm(`Remove ${m.displayName} from this project?`)) return;
                           try {
@@ -272,26 +345,85 @@ export default function ProjectDetail() {
                 {/* Access roles gate what a player sees. Staff assign them;
                     the checkboxes are the "view all roles" surface too, since
                     each shows whether this member holds it. Only staff, so a
-                    player never sees who else was given what. */}
+                    player never sees who else was given what. Admins hold
+                    every role by right, so theirs is a statement, not a
+                    checklist. */}
                 {isStaff && accessRoles.length > 0 && (
                   <div className="member-roles">
                     <span className="member-roles-label">Access</span>
-                    {accessRoles.map((role) => (
-                      <label key={role.id} className="member-role-check">
-                        <input
-                          type="checkbox"
-                          checked={m.accessRoles.includes(role.id)}
-                          onChange={() => toggleMemberAccessRole(m.userId, role.id)}
-                        />
-                        <span>{role.name || role.id}</span>
-                      </label>
-                    ))}
+                    {m.role === 'admin' ? (
+                      <span className="member-roles-all">
+                        Sees everything (admin)
+                      </span>
+                    ) : (
+                      accessRoles.map((role) => (
+                        <label key={role.id} className="member-role-check">
+                          <input
+                            type="checkbox"
+                            checked={m.accessRoles.includes(role.id)}
+                            onChange={() => toggleMemberAccessRole(m.userId, role.id)}
+                          />
+                          <span>{role.name || role.id}</span>
+                        </label>
+                      ))
+                    )}
                   </div>
                 )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
+
+        {/* Role definitions are governance, so they live here with the
+            members rather than inside the rules. Each action saves at once. */}
+        {isStaff && (
+          <div className="info-card">
+            <h2>Access Roles</h2>
+            <p className="muted">
+              Roles gate who can see restricted skills. Define them here, tick
+              them on members above, and mark skills “Visible to” a role in the
+              rules editor.
+            </p>
+            {accessRoles.length > 0 && (
+              <ul className="role-list">
+                {accessRoles.map((role) => (
+                  <li key={role.id}>
+                    <input
+                      className="role-name-input"
+                      defaultValue={role.name}
+                      placeholder="Role name"
+                      aria-label={`Name of role ${role.name || role.id}`}
+                      // Saved when you leave the field or press Enter; the
+                      // server is the source of truth, no draft to lose.
+                      onBlur={(e) => void renameAccessRole(role.id, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                      }}
+                    />
+                    <button
+                      className="button button-small button-danger"
+                      onClick={() => void removeAccessRole(role)}
+                    >
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <form className="inline-form" onSubmit={addAccessRole}>
+              <input
+                value={newRoleName}
+                onChange={(e) => setNewRoleName(e.target.value)}
+                placeholder="New role name, e.g. Magister"
+                aria-label="New role name"
+              />
+              <button className="button button-small" disabled={!newRoleName.trim()}>
+                Add Role
+              </button>
+            </form>
+          </div>
+        )}
       </div>
 
       {isStaff && (

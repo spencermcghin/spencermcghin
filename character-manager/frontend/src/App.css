@@ -1104,8 +1104,51 @@
   cursor: pointer;
 }
 
+.member-roles-all {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  font-style: italic;
+}
+
 .member-name {
   font-weight: 500;
+}
+
+/* The project's role definitions, edited in place with instant saves. */
+.role-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.role-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.role-list li:last-child {
+  border-bottom: none;
+}
+
+.role-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.role-name-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .you-tag {

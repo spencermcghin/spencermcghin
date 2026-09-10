@@ -37,6 +37,11 @@ const ARRAY_FIELDS = [
 export function normalizeRuleset(raw: unknown): Ruleset {
   const r = { ...(raw as Record<string, unknown>) };
 
+  // Role definitions once lived inside the document; they are project
+  // governance now (see shared/visibility.ts), so a stray copy in an old
+  // export is dropped rather than resurrected.
+  delete r.accessRoles;
+
   for (const field of ARRAY_FIELDS) {
     if (!Array.isArray(r[field])) r[field] = [];
   }

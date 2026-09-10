@@ -1,5 +1,6 @@
 import type { NarrativeMap } from '../../../shared/narrative-schema';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
+import type { AccessRole } from '../../../shared/visibility';
 import type { AppRole, ProjectRole } from '../auth/permissions';
 
 export interface RulesetSummary {
@@ -106,6 +107,22 @@ export interface Store {
     userId: string,
     accessRoles: string[]
   ): Promise<boolean>;
+
+  /* --- access roles (definitions) --- */
+  /**
+   * The visibility roles a project defines. Part of the project's
+   * governance, stored beside its membership rather than inside the ruleset
+   * document -- exporting the rules must not export the org chart.
+   */
+  listAccessRoles(rulesetId: string): Promise<AccessRole[]>;
+  /** Insert or update by (rulesetId, role.id). */
+  putAccessRole(rulesetId: string, role: AccessRole): Promise<AccessRole>;
+  /**
+   * Deletes a role definition and removes the id from every member's
+   * assignment. Gates inside the ruleset document are the caller's to
+   * clean (see ruleset-editor.stripAccessRole). False when no such role.
+   */
+  deleteAccessRole(rulesetId: string, roleId: string): Promise<boolean>;
 
   /* --- invites --- */
   createInvite(input: {

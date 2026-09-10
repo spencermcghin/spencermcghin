@@ -312,9 +312,16 @@ export async function getCharacterSheet(req: Request, res: Response) {
   // gated skill to buy. Skills the character already holds are kept regardless:
   // a build must not break because staff granted a skill the player's roles
   // would otherwise hide. Staff see the ruleset whole.
+  const definedRoleIds = (
+    await getStore().listAccessRoles(character.rulesetId)
+  ).map((r) => r.id);
   const ruleset = filterRulesetForViewer(
     owned.value,
-    { isStaff: isProjectStaff(loaded.viewer), roleIds: loaded.viewer.accessRoles },
+    {
+      isStaff: isProjectStaff(loaded.viewer),
+      roleIds: loaded.viewer.accessRoles,
+      definedRoleIds,
+    },
     { alsoKeepTraitIds: Object.keys(character.traitLevels ?? {}) }
   );
   const idx = indexRuleset(ruleset);

@@ -241,6 +241,12 @@ export interface Trait {
    * player is shown it at all. Empty or omitted means every project member
    * sees it. Project staff always see every skill regardless.
    *
+   * The roles these ids name are defined by the *project's membership*, not
+   * in this document -- who holds what is governance, and only the gate is
+   * content. An id naming a role the project does not define is ignored (see
+   * shared/visibility.ts), which is what makes a ruleset exported to another
+   * group carry its gates without locking anything to nobody.
+   *
    * Deliberately not the same field as `tags`. Tags are mechanical
    * classifiers that conditions and purchase rules target; overloading them
    * for visibility would mean tagging a skill "crafting" could hide it.
@@ -362,23 +368,12 @@ export interface SheetSection {
 }
 
 /* ------------------------------------------------------------------ *
- * Access roles
- *
- * A project-defined label that gates who may *see* certain content. Staff
- * assign roles to players; a skill can then name the roles allowed to see it
- * (Trait.visibleTo). This is access control, not a game mechanic -- the engine
- * never reads it, so a character's build is unaffected by which roles its
- * player holds. It only decides what the catalogue shows them.
- * ------------------------------------------------------------------ */
-
-export interface AccessRole {
-  id: Id;
-  name: string;
-  description?: string;
-}
-
-/* ------------------------------------------------------------------ *
  * Ruleset
+ *
+ * Note what is absent: the access roles that Trait.visibleTo names are not
+ * part of this document. They are defined per project alongside its
+ * membership (see shared/visibility.ts), so exporting a ruleset shares the
+ * game, not the group's governance.
  * ------------------------------------------------------------------ */
 
 export interface Ruleset {
@@ -386,11 +381,6 @@ export interface Ruleset {
   name: string;
   version: string;
   description?: string;
-  /**
-   * Visibility roles this project defines. Optional so every ruleset written
-   * before the feature stays valid and simply gates nothing.
-   */
-  accessRoles?: AccessRole[];
   /** Progression currency a new character starts with. */
   startingBudget: Cost[];
   currencies: Currency[];

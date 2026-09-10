@@ -117,11 +117,16 @@ export async function getRuleset(req: Request, res: Response) {
   // second code path to drift out of sync. Read-only by nature: it changes
   // only this response, never who is acting.
   const viewAs = typeof req.query.viewAs === 'string' ? req.query.viewAs : null;
+  const store = getStore();
+  // Gates naming roles this project does not define are void rather than
+  // binding (an imported ruleset must not lock skills to nobody), so the
+  // filter needs to know what is actually defined.
+  const definedRoleIds = (await store.listAccessRoles(req.params.id)).map((r) => r.id);
+
   if (viewAs) {
     if (!isProjectStaff(loaded.viewer)) {
       return res.status(403).json({ message: 'Only project staff can view as a member.' });
     }
-    const store = getStore();
     const [membership, roleIds] = await Promise.all([
       store.getMembership(req.params.id, viewAs),
       store.getMemberAccessRoles(req.params.id, viewAs),
@@ -135,6 +140,7 @@ export async function getRuleset(req: Request, res: Response) {
         // that rather than pretend their view is gated.
         isStaff: membership === 'admin',
         roleIds,
+        definedRoleIds,
       })
     );
   }
@@ -146,6 +152,7 @@ export async function getRuleset(req: Request, res: Response) {
     filterRulesetForViewer(loaded.ruleset, {
       isStaff: isProjectStaff(loaded.viewer),
       roleIds: loaded.viewer.accessRoles,
+      definedRoleIds,
     })
   );
 }
@@ -252,26 +259,10 @@ function validateRulesetShape(r: unknown): string[] {
     }
   }
 
-  // Optional, so only checked when present: a malformed accessRoles or a
-  // visibleTo naming a role that does not exist would silently mis-gate skills.
-  if (x.accessRoles !== undefined) {
-    if (!Array.isArray(x.accessRoles)) {
-      problems.push('accessRoles must be an array');
-    } else {
-      const roleIds = new Set(x.accessRoles.map((a) => a.id));
-      if (Array.isArray(x.traits)) {
-        for (const trait of x.traits) {
-          for (const rid of trait.visibleTo ?? []) {
-            if (!roleIds.has(rid)) {
-              problems.push(
-                `Trait "${trait.id}" is visible to unknown access role "${rid}"`
-              );
-            }
-          }
-        }
-      }
-    }
-  }
+  // Note: Trait.visibleTo is not cross-checked here. The roles it names are
+  // defined outside the document, and unknown ids are void at read time
+  // rather than errors -- an imported ruleset legitimately carries gates
+  // from its previous home.
 
   return problems;
 }

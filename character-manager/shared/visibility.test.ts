@@ -2,11 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import type { Ruleset, Trait } from './rules-schema';
-import {
-  addAccessRole,
-  emptyRuleset,
-  removeAccessRole,
-} from './ruleset-editor';
+import { emptyRuleset, stripAccessRole } from './ruleset-editor';
 import {
   activeRoleIds,
   filterRulesetForViewer,
@@ -22,10 +18,6 @@ function fixture(): Ruleset {
   const r = emptyRuleset('game', 'Game');
   return {
     ...r,
-    accessRoles: [
-      { id: 'magister', name: 'Magister' },
-      { id: 'initiate', name: 'Initiate' },
-    ],
     traits: [trait('swordplay'), trait('forbidden-rite', ['magister'])],
   };
 }
@@ -56,6 +48,27 @@ test('a gated skill is visible to a member holding one of its roles', () => {
 
 test('staff see every skill regardless of gate', () => {
   assert.equal(traitVisibleTo(trait('rite', ['magister']), staff), true);
+});
+
+test('gate ids the project does not define are ignored', () => {
+  const t = trait('rite', ['magister', 'ghost']);
+  const ctx = { isStaff: false, roleIds: ['magister'], definedRoleIds: ['magister'] };
+  assert.equal(traitVisibleTo(t, ctx), true);
+  // Without the role, the surviving gate entry still binds.
+  assert.equal(
+    traitVisibleTo(t, { ...ctx, roleIds: [] }),
+    false
+  );
+});
+
+test('a gate naming only unknown roles is void, and the skill visible', () => {
+  // The imported-ruleset case: gates from another group's roles must not
+  // lock a skill to nobody.
+  const t = trait('rite', ['someone-elses-role']);
+  assert.equal(
+    traitVisibleTo(t, { isStaff: false, roleIds: [], definedRoleIds: ['magister'] }),
+    true
+  );
 });
 
 test('filterRulesetForViewer drops hidden skills for a plain member', () => {
@@ -90,25 +103,15 @@ test('alsoKeepTraitIds preserves a held skill the member could not otherwise see
 });
 
 test('activeRoleIds discards ids that no longer name a defined role', () => {
-  const r = fixture();
-  assert.deepEqual(activeRoleIds(r, ['magister', 'ghost']), ['magister']);
-  assert.deepEqual(activeRoleIds({ accessRoles: undefined }, ['magister']), []);
+  assert.deepEqual(activeRoleIds(['magister'], ['magister', 'ghost']), ['magister']);
+  assert.deepEqual(activeRoleIds([], ['magister']), []);
 });
 
-test('addAccessRole appends without disturbing an undefined list', () => {
-  const r = addAccessRole(emptyRuleset('g', 'G'), { id: 'magister', name: 'Magister' });
-  assert.deepEqual(r.accessRoles, [{ id: 'magister', name: 'Magister' }]);
-});
-
-test('removeAccessRole deletes the role and strips it from every gate', () => {
-  const r = removeAccessRole(fixture(), 'magister');
-  assert.deepEqual(
-    (r.accessRoles ?? []).map((a) => a.id),
-    ['initiate']
-  );
-  // The forbidden rite was gated only to magister; with the role gone it must
-  // reopen to everyone rather than reference a role that no longer exists.
+test('stripAccessRole removes the id from every gate and nothing else', () => {
+  const r = stripAccessRole(fixture(), 'magister');
   const rite = r.traits.find((t) => t.id === 'forbidden-rite')!;
   assert.deepEqual(rite.visibleTo, []);
   assert.equal(traitVisibleTo(rite, member([])), true);
+  // Skills that never named the role are untouched.
+  assert.deepEqual(r.traits.find((t) => t.id === 'swordplay'), trait('swordplay'));
 });

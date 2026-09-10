@@ -3,6 +3,9 @@ import type { Character, Ruleset } from '../../../shared/rules-schema';
 import type { PendingCheck, TraitOption, Violation } from '../../../shared/engine';
 import type { NarrativeMap } from '../../../shared/narrative-schema';
 import type { MapIssue } from '../../../shared/narrative';
+import type { AccessRole } from '../../../shared/visibility';
+
+export type { AccessRole };
 
 /**
  * Same-origin by default, which is what a single-service deploy needs and
@@ -264,6 +267,29 @@ export const memberApi = {
 
   revokeInvite: async (rulesetId: string, inviteId: string): Promise<void> => {
     await api.delete(`/rulesets/${rulesetId}/invites/${inviteId}`);
+  },
+};
+
+/**
+ * Role definitions are project governance, managed beside the members and
+ * saved instantly per action -- no ruleset save involved.
+ */
+export const accessRoleApi = {
+  list: async (rulesetId: string): Promise<AccessRole[]> =>
+    (await api.get(`/rulesets/${rulesetId}/access-roles`)).data,
+
+  create: async (rulesetId: string, name: string): Promise<AccessRole> =>
+    (await api.post(`/rulesets/${rulesetId}/access-roles`, { name })).data,
+
+  update: async (
+    rulesetId: string,
+    roleId: string,
+    patch: { name?: string; description?: string }
+  ): Promise<AccessRole> =>
+    (await api.patch(`/rulesets/${rulesetId}/access-roles/${roleId}`, patch)).data,
+
+  remove: async (rulesetId: string, roleId: string): Promise<void> => {
+    await api.delete(`/rulesets/${rulesetId}/access-roles/${roleId}`);
   },
 };
 

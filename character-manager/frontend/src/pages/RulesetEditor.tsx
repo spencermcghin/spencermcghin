@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { memberApi, rulesetApi, type Member } from '../services/api';
+import {
+  accessRoleApi,
+  memberApi,
+  rulesetApi,
+  type AccessRole,
+  type Member,
+} from '../services/api';
 import type { Condition, Ruleset, Trait } from '../../../shared/rules-schema';
 import { validateRuleset } from '../../../shared/ruleset-validation';
 import * as edit from '../../../shared/ruleset-editor';
@@ -26,6 +32,7 @@ export default function RulesetEditor() {
   const [ruleset, setRuleset] = useState<Ruleset | null>(null);
   const [isStaff, setIsStaff] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
+  const [projectRoles, setProjectRoles] = useState<AccessRole[]>([]);
   /** Member id the catalogue is being previewed as, '' for yourself. */
   const [viewAs, setViewAs] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -49,10 +56,14 @@ export default function RulesetEditor() {
     Promise.all([
       rulesetApi.get(id, viewAs || undefined),
       memberApi.list(id).catch(() => []),
+      // Role definitions live with the project's membership, not in the
+      // document; the editor only reads them to offer "Visible to" choices.
+      accessRoleApi.list(id).catch(() => []),
     ])
-      .then(([r, ms]) => {
+      .then(([r, ms, roles]) => {
         setRuleset(r);
         setMembers(ms);
+        setProjectRoles(roles);
         const role = ms.find((m) => m.userId === user?.id)?.role;
         setIsStaff(role === 'admin' || user?.appRole === 'admin');
       })
@@ -329,8 +340,6 @@ export default function RulesetEditor() {
         </div>
       )}
 
-      <AccessRolePanel ruleset={ruleset} canEdit={canEdit} apply={apply} />
-
       <QualityPanel ruleset={ruleset} canEdit={canEdit} apply={apply} />
 
       {shown.length === 0 ? (
@@ -354,6 +363,7 @@ export default function RulesetEditor() {
             openSkills={open}
             toggleSkill={toggleSkill}
             addSkill={addSkill}
+            accessRoles={projectRoles}
             apply={apply}
           />
         ))
@@ -392,6 +402,7 @@ function BucketSection({
   openSkills,
   toggleSkill,
   addSkill,
+  accessRoles,
   apply,
 }: {
   bucket: edit.TraitBucket;
@@ -405,6 +416,7 @@ function BucketSection({
   openSkills: string[];
   toggleSkill: (id: string) => void;
   addSkill: (groupId: string) => void;
+  accessRoles: AccessRole[];
   apply: (next: (r: Ruleset) => Ruleset) => void;
 }) {
   const isOpen = forceOpen || openGroups.includes(bucket.key);
@@ -457,6 +469,7 @@ function BucketSection({
               canEdit={canEdit}
               open={openSkills.includes(trait.id)}
               onToggle={() => toggleSkill(trait.id)}
+              accessRoles={accessRoles}
               apply={apply}
             />
           ))}
@@ -475,6 +488,7 @@ function BucketSection({
               openSkills={openSkills}
               toggleSkill={toggleSkill}
               addSkill={addSkill}
+              accessRoles={accessRoles}
               apply={apply}
             />
           ))}
@@ -639,133 +653,6 @@ function QualityPanel({
 
 /* ------------------------------------------------------------------ */
 
-/**
- * The visibility roles a project defines.
- *
- * Above the skills, next to qualities, for the same reason: a role has to
- * exist before a skill's "Visible to" control can offer it, and before a
- * player can be assigned it on the project page.
- */
-function AccessRolePanel({
-  ruleset,
-  canEdit,
-  apply,
-}: {
-  ruleset: Ruleset;
-  canEdit: boolean;
-  apply: (next: (r: Ruleset) => Ruleset) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const roles = ruleset.accessRoles ?? [];
-
-  const addRole = () => {
-    let n = 1;
-    while (roles.some((a) => a.id === `role-${n}`)) n++;
-    // Starts unnamed: a prefilled "New role" reads as a label rather than a
-    // field, and the name ends up typed into the description below it.
-    apply((r) => edit.addAccessRole(r, { id: `role-${n}`, name: '' }));
-    setOpen(true);
-  };
-
-  // No roles and no way to add them: nothing to show a player on a project
-  // that does not use the feature.
-  if (roles.length === 0 && !canEdit) return null;
-
-  return (
-    <section className="ed-group ed-roles">
-      <div className="ed-group-head">
-        <button className="ed-caret" onClick={() => setOpen(!open)} aria-expanded={open}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" strokeWidth="3"
-               style={{ transform: open ? 'rotate(90deg)' : undefined }}>
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </button>
-        <span className="ed-group-name">Access roles</span>
-        <span className="ed-group-count">{roles.length}</span>
-        <span className="ed-hint">
-          Who may see gated skills. Assign them to players on the project page.
-        </span>
-        <Hint>
-          An access role gates who is shown a skill, not what a character can
-          buy. Define a role such as “Magister” here, mark a skill “Visible
-          to” that role, and only players you have given the role (and project
-          staff) will see it. Everything with no role marked stays visible to
-          everyone.
-        </Hint>
-        {canEdit && (
-          <button className="ed-add" onClick={addRole}>
-            + Role
-          </button>
-        )}
-      </div>
-
-      {open && roles.length === 0 && (
-        <p className="ed-empty">
-          None yet. Add one, then mark skills “Visible to” it and assign it to
-          players.
-        </p>
-      )}
-
-      {open &&
-        roles.map((role) => (
-          <div key={role.id} className="ed-quality">
-            <div className="ed-quality-head">
-              {/* A labelled, bordered input. The borderless heading-style
-                  field used elsewhere read as a title here, and names ended
-                  up typed into the note box below it. */}
-              <label className="ed-role-field">
-                <span>Name</span>
-                <input
-                  className="ed-role-name"
-                  value={role.name}
-                  readOnly={!canEdit}
-                  placeholder="e.g. Magister"
-                  onChange={(e) =>
-                    apply((r) => edit.updateAccessRole(r, role.id, { name: e.target.value }))
-                  }
-                />
-              </label>
-              {canEdit && (
-                <button
-                  className="ed-del"
-                  title="Delete role"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        `Delete "${role.name || role.id}"? Skills restricted to it become ` +
-                          'visible to everyone, and it is removed from any player who had it.'
-                      )
-                    ) {
-                      apply((r) => edit.removeAccessRole(r, role.id));
-                    }
-                  }}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-            <label className="ed-role-field">
-              <span>Note (optional)</span>
-              <textarea
-                className="ed-tier-desc"
-                rows={2}
-                value={role.description ?? ''}
-                readOnly={!canEdit}
-                placeholder="What this role is for. Shown only to staff."
-                onChange={(e) =>
-                  apply((r) =>
-                    edit.updateAccessRole(r, role.id, { description: e.target.value })
-                  )
-                }
-              />
-            </label>
-          </div>
-        ))}
-    </section>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 
 function SkillRow({
@@ -774,6 +661,7 @@ function SkillRow({
   canEdit,
   open,
   onToggle,
+  accessRoles,
   apply,
 }: {
   trait: Trait;
@@ -781,6 +669,8 @@ function SkillRow({
   canEdit: boolean;
   open: boolean;
   onToggle: () => void;
+  /** Defined by the project's membership, fetched rather than in the doc. */
+  accessRoles: AccessRole[];
   apply: (next: (r: Ruleset) => Ruleset) => void;
 }) {
   const currency = ruleset.currencies.find((c) => c.kind === 'progression');
@@ -791,7 +681,6 @@ function SkillRow({
     })
     .filter(Boolean) as string[];
 
-  const accessRoles = ruleset.accessRoles ?? [];
   const gate = trait.visibleTo ?? [];
   const roleName = (rid: string) =>
     accessRoles.find((a) => a.id === rid)?.name || rid;
@@ -936,13 +825,14 @@ function SkillRow({
                 one or more roles and only players holding one of them (and
                 project staff) can see it. This controls visibility, not whether a
                 character may buy it; that is what the prerequisites below do.
-                Define the roles themselves in “Access roles” above.
+                Define the roles themselves on the project page, next to
+                Members.
               </Hint>
             </span>
             {accessRoles.length === 0 ? (
               <p className="muted" style={{ margin: 0 }}>
                 {canEdit
-                  ? 'No access roles defined yet. Add some under “Access roles” above to gate this skill.'
+                  ? 'No access roles defined yet. Add some on the project page (next to Members) to gate this skill.'
                   : 'Visible to everyone.'}
               </p>
             ) : canEdit ? (

@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import type { Request, Response } from 'express';
 import { createSessionToken, hashSessionToken } from '../auth/credentials';
+import { stripAccessRole } from '../../../shared/ruleset-editor';
 import { canManageMembers, canViewProject, type ProjectRole } from '../auth/permissions';
 import { viewerFor } from '../auth/viewer';
 import { getStore } from '../db';
@@ -90,8 +91,7 @@ export async function setMemberAccessRoles(req: Request, res: Response) {
 
   // Every id must name a role this project actually defines: assigning a
   // phantom role would grant nothing and quietly mislead the admin who set it.
-  const owned = await store.getRuleset(rulesetId);
-  const defined = new Set((owned?.value.accessRoles ?? []).map((a) => a.id));
+  const defined = new Set((await store.listAccessRoles(rulesetId)).map((a) => a.id));
   const requested = [...new Set(incoming as string[])];
   const unknown = requested.filter((r) => !defined.has(r));
   if (unknown.length > 0) {
@@ -104,6 +104,92 @@ export async function setMemberAccessRoles(req: Request, res: Response) {
     return res.status(404).json({ message: 'Member not found' });
   }
   res.json(await store.listMembers(rulesetId));
+}
+
+/* ------------------------------------------------------------------ *
+ * Access role definitions
+ *
+ * Governance, not game content: they live beside the membership, and
+ * changing them never touches the ruleset document -- except deletion,
+ * which scrubs the deleted id out of every skill's gate so no gate keeps
+ * naming a role that no longer exists.
+ * ------------------------------------------------------------------ */
+
+function slugifyRole(name: string): string {
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'role'
+  );
+}
+
+export async function listAccessRoles(req: Request, res: Response) {
+  if (!(await authorize(req, res, 'view'))) return;
+  res.json(await getStore().listAccessRoles(req.params.id));
+}
+
+export async function createAccessRole(req: Request, res: Response) {
+  if (!(await authorize(req, res, 'manage'))) return;
+
+  const name = String(req.body?.name ?? '').trim();
+  if (!name) return res.status(400).json({ message: 'A name is required.' });
+
+  const store = getStore();
+  const existing = await store.listAccessRoles(req.params.id);
+
+  // The id is derived from the name once, at creation, and then never
+  // changes: skills' gates and members' assignments point at it.
+  const base = slugifyRole(name);
+  let id = base;
+  for (let n = 2; existing.some((r) => r.id === id); n++) id = `${base}-${n}`;
+
+  const description = String(req.body?.description ?? '').trim() || undefined;
+  const role = await store.putAccessRole(req.params.id, { id, name, description });
+  res.status(201).json(role);
+}
+
+export async function updateAccessRole(req: Request, res: Response) {
+  if (!(await authorize(req, res, 'manage'))) return;
+
+  const store = getStore();
+  const existing = (await store.listAccessRoles(req.params.id)).find(
+    (r) => r.id === req.params.roleId
+  );
+  if (!existing) return res.status(404).json({ message: 'Role not found' });
+
+  const name =
+    req.body?.name !== undefined ? String(req.body.name).trim() : existing.name;
+  if (!name) return res.status(400).json({ message: 'A name is required.' });
+  const description =
+    req.body?.description !== undefined
+      ? String(req.body.description).trim() || undefined
+      : existing.description;
+
+  res.json(await store.putAccessRole(req.params.id, { id: existing.id, name, description }));
+}
+
+export async function deleteAccessRole(req: Request, res: Response) {
+  if (!(await authorize(req, res, 'manage'))) return;
+
+  const store = getStore();
+  const { id: rulesetId, roleId } = req.params;
+
+  if (!(await store.deleteAccessRole(rulesetId, roleId))) {
+    return res.status(404).json({ message: 'Role not found' });
+  }
+
+  // Scrub the id from every gate, so no skill is left pointing at nothing.
+  // Read-time filtering would tolerate the dangling id, but a document that
+  // matches what its author sees is worth the write.
+  const owned = await store.getRuleset(rulesetId);
+  if (owned) {
+    const stripped = stripAccessRole(owned.value, roleId);
+    if (stripped !== owned.value) await store.putRuleset(stripped, owned.ownerId);
+  }
+
+  res.status(204).send();
 }
 
 export async function removeMember(req: Request, res: Response) {

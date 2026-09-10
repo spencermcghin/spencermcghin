@@ -7,6 +7,7 @@ import {
 } from '../../../shared/normalize';
 import type { NarrativeMap } from '../../../shared/narrative-schema';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
+import type { AccessRole } from '../../../shared/visibility';
 import type { AppRole, ProjectRole } from '../auth/permissions';
 import type {
   CharacterRow,
@@ -124,6 +125,34 @@ export class PostgresStore implements Store {
     await this.pool.query(
       `ALTER TABLE project_members
          ADD COLUMN IF NOT EXISTS access_roles TEXT[] NOT NULL DEFAULT '{}';`
+    );
+
+    // Role definitions live beside the membership, not inside the ruleset
+    // document: they are the project's governance, and exporting the rules
+    // must not export the org chart.
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS project_roles (
+        ruleset_id  TEXT NOT NULL REFERENCES rulesets(id) ON DELETE CASCADE,
+        id          TEXT NOT NULL,
+        name        TEXT NOT NULL,
+        description TEXT,
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+        PRIMARY KEY (ruleset_id, id)
+      );
+    `);
+
+    // Definitions written while roles still lived inside the document are
+    // lifted out once; the stray field is then dropped from the JSON so the
+    // document stops carrying governance.
+    await this.pool.query(`
+      INSERT INTO project_roles (ruleset_id, id, name, description)
+      SELECT r.id, a->>'id', coalesce(a->>'name', ''), a->>'description'
+        FROM rulesets r, jsonb_array_elements(r.data->'accessRoles') a
+       WHERE jsonb_typeof(r.data->'accessRoles') = 'array'
+      ON CONFLICT (ruleset_id, id) DO NOTHING;
+    `);
+    await this.pool.query(
+      `UPDATE rulesets SET data = data - 'accessRoles' WHERE data ? 'accessRoles';`
     );
 
     await this.pool.query(`
@@ -358,6 +387,48 @@ export class PostgresStore implements Store {
       [rulesetId, userId, accessRoles]
     );
     return (rowCount ?? 0) > 0;
+  }
+
+  /* ---------------- access roles ---------------- */
+
+  async listAccessRoles(rulesetId: string): Promise<AccessRole[]> {
+    const { rows } = await this.pool.query(
+      `SELECT id, name, description FROM project_roles
+        WHERE ruleset_id = $1 ORDER BY created_at, id;`,
+      [rulesetId]
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description ?? undefined,
+    }));
+  }
+
+  async putAccessRole(rulesetId: string, role: AccessRole): Promise<AccessRole> {
+    await this.pool.query(
+      `INSERT INTO project_roles (ruleset_id, id, name, description)
+            VALUES ($1, $2, $3, $4)
+       ON CONFLICT (ruleset_id, id) DO UPDATE
+               SET name = EXCLUDED.name,
+                   description = EXCLUDED.description;`,
+      [rulesetId, role.id, role.name, role.description ?? null]
+    );
+    return role;
+  }
+
+  async deleteAccessRole(rulesetId: string, roleId: string): Promise<boolean> {
+    const { rowCount } = await this.pool.query(
+      `DELETE FROM project_roles WHERE ruleset_id = $1 AND id = $2;`,
+      [rulesetId, roleId]
+    );
+    if ((rowCount ?? 0) === 0) return false;
+    // The role stops granting anything the moment it stops existing.
+    await this.pool.query(
+      `UPDATE project_members SET access_roles = array_remove(access_roles, $2)
+        WHERE ruleset_id = $1 AND $2 = ANY(access_roles);`,
+      [rulesetId, roleId]
+    );
+    return true;
   }
 
   async addMember(rulesetId: string, userId: string, role: ProjectRole): Promise<void> {
