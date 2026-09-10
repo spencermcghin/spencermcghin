@@ -1,0 +1,17 @@
+.corners {
+  color: var(--border-strong);
+  opacity: var(--ornament-opacity);
+  pointer-events: none;
+}
+
+.corners svg {
+  position: absolute;
+  stroke-width: var(--ornament-stroke);
+}
+
+/* One drawing, four orientations. Flips rather than rotations, so the spark
+   always points inward. */
+.corners svg:nth-child(1) { top: 5px; left: 5px; }
+.corners svg:nth-child(2) { top: 5px; right: 5px; transform: scaleX(-1); }
+.corners svg:nth-child(3) { bottom: 5px; left: 5px; transform: scaleY(-1); }
+.corners svg:nth-child(4) { bottom: 5px; right: 5px; transform: scale(-1, -1); }

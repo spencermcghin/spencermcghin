@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { rulesetApi, storyApi } from '../services/api';
+import ProjectNav from '../components/ProjectNav';
 import type { NarrativeEntity, NarrativeMap } from '../../../shared/narrative-schema';
 import type { Ruleset } from '../../../shared/rules-schema';
 import {
@@ -77,6 +78,7 @@ export default function StoryOptions() {
 
   return (
     <div className="opts">
+      <ProjectNav id={id} showOptions />
       <header className="story-head">
         <div>
           <h1>Ways this could work</h1>
@@ -87,7 +89,6 @@ export default function StoryOptions() {
             the app would. Pick one and this page goes away.
           </p>
         </div>
-        <Link to={`/projects/${id}`} className="button button-small">Back</Link>
       </header>
 
       <Grammar map={map} idx={idx} cases={cases} />

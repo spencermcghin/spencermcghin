@@ -3,6 +3,9 @@ import './ThemeSwitcher.css';
 
 export const THEMES = [
   { id: 'gothic', name: 'Gothic', swatch: 'linear-gradient(135deg,#0a0908,#c6a86d)' },
+  { id: 'grimdark', name: 'Blood & Iron', swatch: 'linear-gradient(135deg,#0c0e0f,#7c2b23)' },
+  { id: 'void', name: 'Void', swatch: 'linear-gradient(135deg,#06080a,#f0a52a)' },
+  { id: 'onyx', name: 'Onyx', swatch: 'linear-gradient(135deg,#0b0b0c,#cdf546)' },
   { id: 'parchment', name: 'Parchment', swatch: 'linear-gradient(135deg,#f0e4cc,#8c2f28)' },
   { id: 'forest', name: 'Forest Realm', swatch: 'linear-gradient(135deg,#0c1a12,#4fc98a)' },
   { id: 'clean', name: 'Daylight', swatch: 'linear-gradient(135deg,#eef0f6,#5b5bd6)' },

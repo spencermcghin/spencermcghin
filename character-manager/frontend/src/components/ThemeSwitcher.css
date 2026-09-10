@@ -24,8 +24,6 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
-  backdrop-filter: blur(24px) saturate(170%);
-  -webkit-backdrop-filter: blur(24px) saturate(170%);
   box-shadow: var(--shadow-lift);
 
   opacity: 0;
@@ -104,8 +102,6 @@
   text-transform: uppercase;
   color: var(--text-soft);
   background: var(--surface);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid var(--border-strong);
   border-radius: 100px;
   cursor: pointer;

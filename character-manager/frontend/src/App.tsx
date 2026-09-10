@@ -1,4 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  NavLink,
+  useNavigate,
+} from 'react-router-dom';
 import Home from './pages/Home';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
@@ -48,7 +55,7 @@ function NavAuth() {
 function NavAdmin() {
   const { user } = useAuth();
   if (user?.appRole !== 'admin') return null;
-  return <Link to="/admin">Accounts</Link>;
+  return <NavLink to="/admin">Accounts</NavLink>;
 }
 
 function Shell() {
@@ -56,10 +63,12 @@ function Shell() {
     <div className="app">
       <nav className="navbar">
         <div className="nav-container">
-          <Link to="/" className="nav-brand">LARP Character Manager</Link>
+          <Link to="/" className="nav-brand">Larpworks</Link>
           <div className="nav-links">
-            <Link to="/">Home</Link>
-            <Link to="/projects">Projects</Link>
+            <NavLink to="/" end>
+              Home
+            </NavLink>
+            <NavLink to="/projects">Projects</NavLink>
             <NavAdmin />
             <NavAuth />
           </div>
@@ -151,7 +160,7 @@ function Shell() {
       </main>
 
       <footer className="footer">
-        <p>&copy; 2026 LARP Character Manager</p>
+        <p>&copy; 2026 Larpworks</p>
       </footer>
 
       <ThemeSwitcher />

@@ -5,8 +5,11 @@ import {
   canDeleteProject,
   canEditRuleset,
   canViewProject,
+  isProjectStaff,
+  type Viewer,
 } from '../auth/permissions';
 import { viewerFor } from '../auth/viewer';
+import { filterRulesetForViewer } from '../../../shared/visibility';
 import { normalizeRuleset } from '../../../shared/normalize';
 import { demoRuleset } from '../../../shared/rulesets/demo';
 import { getStore } from '../db';
@@ -71,7 +74,7 @@ async function loadFor(
   req: Request,
   res: Response,
   level: 'view' | 'edit' | 'delete'
-): Promise<{ ruleset: Ruleset; ownerId: string } | null> {
+): Promise<{ ruleset: Ruleset; ownerId: string; viewer: Viewer } | null> {
   const id = req.params.id ?? req.params.rulesetId;
   const owned = await getStore().getRuleset(id);
   if (!owned) {
@@ -96,7 +99,7 @@ async function loadFor(
     res.status(403).json({ message: 'Only project admins can do that.' });
     return null;
   }
-  return { ruleset: owned.value, ownerId: owned.ownerId };
+  return { ruleset: owned.value, ownerId: owned.ownerId, viewer };
 }
 
 export async function listRulesets(req: Request, res: Response) {
@@ -105,7 +108,46 @@ export async function listRulesets(req: Request, res: Response) {
 
 export async function getRuleset(req: Request, res: Response) {
   const loaded = await loadFor(req, res, 'view');
-  if (loaded) res.json(loaded.ruleset);
+  if (!loaded) return;
+
+  // Staff may ask for the ruleset as a specific member receives it
+  // (?viewAs=<userId>). The filter runs with that member's roles and without
+  // staff privilege, so what comes back is byte-for-byte what that player's
+  // own request would get -- the point of the feature is that there is no
+  // second code path to drift out of sync. Read-only by nature: it changes
+  // only this response, never who is acting.
+  const viewAs = typeof req.query.viewAs === 'string' ? req.query.viewAs : null;
+  if (viewAs) {
+    if (!isProjectStaff(loaded.viewer)) {
+      return res.status(403).json({ message: 'Only project staff can view as a member.' });
+    }
+    const store = getStore();
+    const [membership, roleIds] = await Promise.all([
+      store.getMembership(req.params.id, viewAs),
+      store.getMemberAccessRoles(req.params.id, viewAs),
+    ]);
+    if (!membership) {
+      return res.status(404).json({ message: 'That member is not in this project.' });
+    }
+    return res.json(
+      filterRulesetForViewer(loaded.ruleset, {
+        // A member who is themselves project admin sees everything; honour
+        // that rather than pretend their view is gated.
+        isStaff: membership === 'admin',
+        roleIds,
+      })
+    );
+  }
+
+  // Gated skills are removed here, on the way out, rather than hidden in the
+  // client: a member must never receive a skill their roles do not allow, or
+  // the gate is cosmetic. Staff get the ruleset whole.
+  res.json(
+    filterRulesetForViewer(loaded.ruleset, {
+      isStaff: isProjectStaff(loaded.viewer),
+      roleIds: loaded.viewer.accessRoles,
+    })
+  );
 }
 
 export async function createRuleset(req: Request, res: Response) {
@@ -206,6 +248,27 @@ function validateRulesetShape(r: unknown): string[] {
     for (const trait of x.traits) {
       if (!groupIds.has(trait.groupId)) {
         problems.push(`Trait "${trait.id}" references unknown group "${trait.groupId}"`);
+      }
+    }
+  }
+
+  // Optional, so only checked when present: a malformed accessRoles or a
+  // visibleTo naming a role that does not exist would silently mis-gate skills.
+  if (x.accessRoles !== undefined) {
+    if (!Array.isArray(x.accessRoles)) {
+      problems.push('accessRoles must be an array');
+    } else {
+      const roleIds = new Set(x.accessRoles.map((a) => a.id));
+      if (Array.isArray(x.traits)) {
+        for (const trait of x.traits) {
+          for (const rid of trait.visibleTo ?? []) {
+            if (!roleIds.has(rid)) {
+              problems.push(
+                `Trait "${trait.id}" is visible to unknown access role "${rid}"`
+              );
+            }
+          }
+        }
       }
     }
   }

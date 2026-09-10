@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../auth/useAuth';
 import { apiBaseUrl, apiIsCrossOrigin } from '../services/api';
+import Corners from '../components/Corners';
 
 type Mode = 'signin' | 'register';
 
@@ -59,6 +60,7 @@ export default function SignIn() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <Corners />
         <h1>{mode === 'signin' ? 'Sign in' : 'Create an account'}</h1>
         <p className="muted">
           {mode === 'signin'

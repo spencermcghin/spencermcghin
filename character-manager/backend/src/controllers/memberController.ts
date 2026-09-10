@@ -72,6 +72,40 @@ export async function updateMemberRole(req: Request, res: Response) {
   res.json(await store.listMembers(rulesetId));
 }
 
+export async function setMemberAccessRoles(req: Request, res: Response) {
+  if (!(await authorize(req, res, 'manage'))) return;
+
+  const { id: rulesetId, userId } = req.params;
+  const incoming = req.body?.accessRoles;
+  if (
+    !Array.isArray(incoming) ||
+    incoming.some((r) => typeof r !== 'string')
+  ) {
+    return res
+      .status(400)
+      .json({ message: 'accessRoles must be an array of role ids.' });
+  }
+
+  const store = getStore();
+
+  // Every id must name a role this project actually defines: assigning a
+  // phantom role would grant nothing and quietly mislead the admin who set it.
+  const owned = await store.getRuleset(rulesetId);
+  const defined = new Set((owned?.value.accessRoles ?? []).map((a) => a.id));
+  const requested = [...new Set(incoming as string[])];
+  const unknown = requested.filter((r) => !defined.has(r));
+  if (unknown.length > 0) {
+    return res
+      .status(400)
+      .json({ message: `Unknown access role(s): ${unknown.join(', ')}` });
+  }
+
+  if (!(await store.setMemberAccessRoles(rulesetId, userId, requested))) {
+    return res.status(404).json({ message: 'Member not found' });
+  }
+  res.json(await store.listMembers(rulesetId));
+}
+
 export async function removeMember(req: Request, res: Response) {
   if (!(await authorize(req, res, 'manage'))) return;
 

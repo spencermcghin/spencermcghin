@@ -16,8 +16,6 @@
   z-index: 50;
   padding: 1.15rem 0;
   background: var(--surface);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--border);
 }
 
@@ -37,10 +35,7 @@
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  background: linear-gradient(100deg, var(--accent) 15%, var(--accent-2) 135%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent);
   white-space: nowrap;
 }
 
@@ -81,6 +76,15 @@
   transform: scaleX(1);
 }
 
+/* Where you are, said plainly: the underline holds on the current section. */
+.nav-links a.active {
+  color: var(--text);
+}
+
+.nav-links a.active::after {
+  transform: scaleX(1);
+}
+
 /* ---------------- Layout ---------------- */
 
 .main-content {
@@ -115,10 +119,7 @@
   font-size: clamp(3rem, 9vw, 6rem);
   font-weight: 500;
   letter-spacing: -0.02em;
-  background: linear-gradient(160deg, var(--text) 12%, var(--accent) 88%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text);
   margin-bottom: 1.5rem;
 }
 
@@ -186,8 +187,6 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -382,8 +381,6 @@
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
 }
 
 .empty-state p {
@@ -391,6 +388,10 @@
   font-size: 1.5rem;
   color: var(--text-soft);
   margin-bottom: 2rem;
+}
+
+.empty-state .sigil {
+  margin-bottom: 1.75rem;
 }
 
 /* ---------------- Forms ---------------- */
@@ -404,8 +405,6 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
   box-shadow: var(--shadow);
 }
 
@@ -523,9 +522,8 @@
   color: var(--text);
   background: var(--surface-solid);
   border: 1px solid var(--border-strong);
-  border-radius: 100px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  overflow: hidden;
   white-space: nowrap;
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease),
     border-color 0.3s var(--ease), color 0.3s var(--ease);
@@ -542,39 +540,19 @@
   transform: translateY(0);
 }
 
+/* Flat accent fill -- a solid struck control, not a glossy marketing CTA.
+   No gradient, no sheen sweep. */
 .button-primary {
   color: var(--accent-ink);
-  background: linear-gradient(115deg, var(--accent) 10%, var(--accent-2) 145%);
-  border-color: transparent;
-  box-shadow: 0 6px 20px var(--glow);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
 }
 
 .button-primary:hover {
   color: var(--accent-ink);
-  border-color: transparent;
-  box-shadow: 0 10px 30px var(--glow);
-}
-
-/* Sheen sweep across primary buttons on hover. */
-.button-primary::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -75%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(
-    100deg,
-    transparent,
-    rgba(255, 255, 255, 0.32),
-    transparent
-  );
-  transform: skewX(-20deg);
-  transition: left 0.7s var(--ease);
-}
-
-.button-primary:hover::after {
-  left: 130%;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lift);
 }
 
 .button-danger {
@@ -613,8 +591,6 @@
   color: var(--text-mute);
   border-top: 1px solid var(--border);
   background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
 }
 
 /* ---------------- Misc ---------------- */
@@ -906,14 +882,14 @@
 }
 
 .auth-card {
+  /* Anchors the corner brackets. */
+  position: relative;
   width: 100%;
   max-width: 420px;
   padding: 2.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
   box-shadow: var(--shadow);
 }
 
@@ -992,7 +968,18 @@
   font-size: 1.7rem;
   line-height: 1;
   color: var(--accent);
-  opacity: 0.85;
+  opacity: calc(0.85 * var(--ornament-opacity));
+}
+
+/* The diamond variant: a drawn rule tapering around a centre diamond. */
+.ornament-rule {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 2.75rem auto;
+  color: var(--border-strong);
+  opacity: var(--ornament-opacity);
+  stroke-width: var(--ornament-stroke);
 }
 
 .home-eyebrow {
@@ -1027,7 +1014,7 @@
   border-top: 1px solid var(--border-strong);
   border-right: 1px solid var(--border-strong);
   border-top-right-radius: var(--radius);
-  opacity: 0.7;
+  opacity: calc(0.7 * var(--ornament-opacity));
   pointer-events: none;
 }
 
@@ -1071,6 +1058,50 @@
 
 .member-list li:last-child {
   border-bottom: none;
+}
+
+/* A member row that also carries access-role toggles stacks the name row above
+   the toggles rather than trying to fit everything on one line. */
+.member-list li.member-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.member-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.member-roles {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.85rem;
+  margin-top: 0.55rem;
+}
+
+.member-roles-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.member-role-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.member-role-check input {
+  cursor: pointer;
 }
 
 .member-name {

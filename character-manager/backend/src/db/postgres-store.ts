@@ -119,6 +119,13 @@ export class PostgresStore implements Store {
       );
     `);
 
+    // Visibility access roles a member holds, added after the table shipped, so
+    // an existing deployment gains the column without losing its memberships.
+    await this.pool.query(
+      `ALTER TABLE project_members
+         ADD COLUMN IF NOT EXISTS access_roles TEXT[] NOT NULL DEFAULT '{}';`
+    );
+
     await this.pool.query(`
       CREATE TABLE IF NOT EXISTS project_invites (
         id         TEXT PRIMARY KEY,
@@ -315,7 +322,7 @@ export class PostgresStore implements Store {
 
   async listMembers(rulesetId: string): Promise<Member[]> {
     const { rows } = await this.pool.query(
-      `SELECT m.user_id, m.role, m.joined_at, u.display_name, u.email
+      `SELECT m.user_id, m.role, m.access_roles, m.joined_at, u.display_name, u.email
          FROM project_members m
          JOIN users u ON u.id = m.user_id
         WHERE m.ruleset_id = $1
@@ -327,8 +334,30 @@ export class PostgresStore implements Store {
       displayName: r.display_name,
       email: r.email,
       role: r.role as ProjectRole,
+      accessRoles: (r.access_roles as string[]) ?? [],
       joinedAt: new Date(r.joined_at).toISOString(),
     }));
+  }
+
+  async getMemberAccessRoles(rulesetId: string, userId: string): Promise<string[]> {
+    const { rows } = await this.pool.query(
+      `SELECT access_roles FROM project_members WHERE ruleset_id = $1 AND user_id = $2;`,
+      [rulesetId, userId]
+    );
+    return rows[0] ? ((rows[0].access_roles as string[]) ?? []) : [];
+  }
+
+  async setMemberAccessRoles(
+    rulesetId: string,
+    userId: string,
+    accessRoles: string[]
+  ): Promise<boolean> {
+    const { rowCount } = await this.pool.query(
+      `UPDATE project_members SET access_roles = $3
+        WHERE ruleset_id = $1 AND user_id = $2;`,
+      [rulesetId, userId, accessRoles]
+    );
+    return (rowCount ?? 0) > 0;
   }
 
   async addMember(rulesetId: string, userId: string, role: ProjectRole): Promise<void> {

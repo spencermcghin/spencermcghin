@@ -1,0 +1,17 @@
+.sigil {
+  color: var(--accent);
+  opacity: var(--ornament-opacity);
+  stroke-width: var(--ornament-stroke);
+}
+
+/* Loading use only. Inherits the global reduced-motion reset, which stops
+   the rotation for users who asked for stillness. */
+.sigil-spin {
+  animation: sigil-turn 9s linear infinite;
+}
+
+@keyframes sigil-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}

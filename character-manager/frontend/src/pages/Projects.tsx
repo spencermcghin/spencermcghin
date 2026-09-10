@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { rulesetApi, type RulesetSummary } from '../services/api';
+import Sigil from '../components/Sigil';
 
 export default function Projects() {
   const [projects, setProjects] = useState<RulesetSummary[]>([]);
@@ -104,14 +105,15 @@ export default function Projects() {
           Not sure where to start?{' '}
           <button className="link-button" onClick={addDemo} disabled={creating}>
             Add the Demo Rules Set
-          </button>{' '}
-          — a small worked example that explains each part of the editor as you
+          </button>
+          , a small worked example that explains each part of the editor as you
           read it.
         </p>
       )}
 
       {projects.length === 0 ? (
         <div className="empty-state">
+          <Sigil name="compass" />
           <p>No projects yet.</p>
         </div>
       ) : (

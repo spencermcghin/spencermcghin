@@ -96,6 +96,8 @@ export interface Member {
   displayName: string;
   email: string;
   role: ProjectRole;
+  /** Visibility access roles assigned to this member (ids into the ruleset). */
+  accessRoles: string[];
   joinedAt: string;
 }
 
@@ -142,7 +144,12 @@ export interface CharacterSheet {
 export const rulesetApi = {
   list: async (): Promise<RulesetSummary[]> => (await api.get('/rulesets')).data,
 
-  get: async (id: string): Promise<Ruleset> => (await api.get(`/rulesets/${id}`)).data,
+  /**
+   * `viewAs` (staff only) returns the ruleset exactly as that member
+   * receives it -- gated skills they cannot see are absent.
+   */
+  get: async (id: string, viewAs?: string): Promise<Ruleset> =>
+    (await api.get(`/rulesets/${id}`, { params: viewAs ? { viewAs } : undefined })).data,
 
   /** `template: 'demo'` starts from a copy of the worked example. */
   create: async (
@@ -229,6 +236,18 @@ export const memberApi = {
     role: ProjectRole
   ): Promise<Member[]> =>
     (await api.patch(`/rulesets/${rulesetId}/members/${userId}`, { role })).data,
+
+  /** Replaces a member's visibility access roles. Returns the fresh roster. */
+  setAccessRoles: async (
+    rulesetId: string,
+    userId: string,
+    accessRoles: string[]
+  ): Promise<Member[]> =>
+    (
+      await api.put(`/rulesets/${rulesetId}/members/${userId}/access-roles`, {
+        accessRoles,
+      })
+    ).data,
 
   remove: async (rulesetId: string, userId: string): Promise<void> => {
     await api.delete(`/rulesets/${rulesetId}/members/${userId}`);

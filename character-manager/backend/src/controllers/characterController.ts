@@ -16,10 +16,12 @@ import {
   canGrantStaffQualities,
   canViewCharacter,
   canViewProject,
+  isProjectStaff,
   type RosterEntry,
   type Viewer,
 } from '../auth/permissions';
 import { viewerFor } from '../auth/viewer';
+import { filterRulesetForViewer } from '../../../shared/visibility';
 import { getStore, type CharacterRow } from '../db';
 
 /** Projects the caller cannot see report 404, so ids cannot be probed. */
@@ -305,11 +307,21 @@ export async function getCharacterSheet(req: Request, res: Response) {
   }
 
   const phase: Phase = req.query.phase === 'creation' ? 'creation' : 'advancement';
-  const idx = indexRuleset(owned.value);
+
+  // The sheet is filtered like the catalogue, so a player is never offered a
+  // gated skill to buy. Skills the character already holds are kept regardless:
+  // a build must not break because staff granted a skill the player's roles
+  // would otherwise hide. Staff see the ruleset whole.
+  const ruleset = filterRulesetForViewer(
+    owned.value,
+    { isStaff: isProjectStaff(loaded.viewer), roleIds: loaded.viewer.accessRoles },
+    { alsoKeepTraitIds: Object.keys(character.traitLevels ?? {}) }
+  );
+  const idx = indexRuleset(ruleset);
 
   res.json({
     character,
-    ruleset: owned.value,
+    ruleset,
     balances: balances(character, idx),
     violations: validate(character, idx, phase),
     available: availableTraits(character, idx, phase),

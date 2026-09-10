@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { storyApi } from '../services/api';
 import type {
   NarrativeEntity,
@@ -8,6 +8,8 @@ import type {
 import { connectionsOf, indexMap, orphans, validateMap } from '../../../shared/narrative';
 import * as edit from '../../../shared/narrative-editor';
 import Hint from '../components/Hint';
+import ProjectNav from '../components/ProjectNav';
+import Sigil from '../components/Sigil';
 import TagInput from '../components/TagInput';
 import StoryGraph from '../components/StoryGraph';
 import CampaignBoard from '../components/CampaignBoard';
@@ -173,6 +175,7 @@ export default function StoryMap() {
 
   return (
     <div className="story">
+      <ProjectNav id={id} />
       <header className="story-head">
         <div>
           <h1>Story</h1>
@@ -184,7 +187,6 @@ export default function StoryMap() {
           </p>
         </div>
         <div className="ed-actions">
-          <Link to={`/projects/${id}`} className="button button-small">Back</Link>
           <button className="button button-small" onClick={exportJson}>Export</button>
           {canEdit && (
             <>
@@ -226,9 +228,10 @@ export default function StoryMap() {
 
       {!started ? (
         <div className="empty-state">
+          <Sigil name="ward" />
           <p>
-            A story map records what your game is made of — events, characters,
-            places, artifacts, and the threads still open — and how they
+            A story map records what your game is made of: events, characters,
+            places, artifacts, the threads still open, and how they all
             connect. It answers what a pile of documents cannot: what does this
             NPC touch, what is unresolved, and what got written and forgotten.
           </p>

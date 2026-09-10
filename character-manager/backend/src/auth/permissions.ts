@@ -13,11 +13,32 @@ export interface Viewer {
   appRole: AppRole;
   /** The viewer's role in the project under consideration, if any. */
   projectRole: ProjectRole | null;
+  /**
+   * The visibility access roles the viewer holds in this project (ids into
+   * Ruleset.accessRoles). Empty for a viewer with none, or for a check that
+   * does not concern a specific project. Ignored while the viewer is staff,
+   * who see everything.
+   */
+  accessRoles: string[];
 }
 
 /** App admins act with project-admin authority everywhere. */
 function isAdmin(v: Viewer): boolean {
   return v.appRole === 'admin' || v.projectRole === 'admin';
+}
+
+/**
+ * Project staff see every skill regardless of its visibility gate, and are the
+ * only ones who assign access roles. A single predicate so "staff" means the
+ * same thing for content visibility as it does for the management actions
+ * below.
+ */
+export function isProjectStaff(v: Viewer): boolean {
+  return isAdmin(v);
+}
+
+export function canManageAccessRoles(v: Viewer): boolean {
+  return isAdmin(v);
 }
 
 export function canViewProject(v: Viewer): boolean {

@@ -24,7 +24,9 @@
   /* Gothic — soot and candlelight, antique gold, a bruise of oxblood */
   --bg: #0a0908;
   --bg-deep: #040303;
-  --surface: rgba(26, 22, 19, 0.72);
+  /* Opaque: candlelight falls on solid wood, not smoked glass. Elevation now
+     comes from border + shadow, not translucency + blur. */
+  --surface: var(--surface-solid);
   --surface-solid: #16120f;
   --border: rgba(198, 168, 109, 0.15);
   --border-strong: rgba(198, 168, 109, 0.38);
@@ -53,13 +55,21 @@
   /* Light falls off toward the edges so the page reads as lit rather than
      painted flat. 0 keeps a theme evenly lit. */
   --falloff: 0.55;
+
+  /* How loudly the decorative layer (sigils, corner brackets, ruled
+     dividers) speaks. Ornament components multiply their own opacity by
+     this and stroke at this weight, so a theme can hush every flourish --
+     or a future [data-ornament='off'] can silence them -- without touching
+     a component. Same contract as --grain/--falloff: atmosphere, one knob. */
+  --ornament-opacity: 1;
+  --ornament-stroke: 1.25px;
 }
 
 /* ---------- Clean — porcelain and indigo, for daylight ---------- */
 [data-theme='clean'] {
   --bg: #eef0f6;
   --bg-deep: #e2e5ef;
-  --surface: rgba(255, 255, 255, 0.72);
+  --surface: var(--surface-solid);
   --surface-solid: #ffffff;
   --border: rgba(23, 26, 46, 0.10);
   --border-strong: rgba(23, 26, 46, 0.18);
@@ -86,13 +96,17 @@
 
   --grain: 0.03;
   --falloff: 0;
+
+  /* Daylight is a work theme; flourish recedes to a structural hint. */
+  --ornament-opacity: 0.35;
+  --ornament-stroke: 1px;
 }
 
 /* ---------- Parchment — aged vellum and oxblood ---------- */
 [data-theme='parchment'] {
   --bg: #f0e4cc;
   --bg-deep: #e2d2b4;
-  --surface: rgba(253, 248, 236, 0.82);
+  --surface: var(--surface-solid);
   --surface-solid: #fdf8ec;
   --border: rgba(112, 84, 50, 0.20);
   --border-strong: rgba(112, 84, 50, 0.42);
@@ -125,7 +139,7 @@
 [data-theme='forest'] {
   --bg: #0c1a12;
   --bg-deep: #050d08;
-  --surface: rgba(24, 48, 34, 0.62);
+  --surface: var(--surface-solid);
   --surface-solid: #12261a;
   --border: rgba(122, 200, 150, 0.16);
   --border-strong: rgba(122, 200, 150, 0.36);
@@ -152,6 +166,149 @@
 
   --grain: 0.04;
   --falloff: 0.4;
+}
+
+/* ---- Blood & Iron — cold forged iron, dried blood, tarnished bronze ---- *
+   Grimmer and colder than the gothic default: where Gothic is candlelit and
+   elegant, this is an armoury after a bad winter. Filed-down edges, heavy
+   grain, a vignette that closes in hard. */
+[data-theme='grimdark'] {
+  /* Forged display serif; blackletter kept to the drop cap / fleuron only. */
+  --font-display: 'Grenze', 'Cormorant Garamond', Georgia, serif;
+  --font-heading: 'Cinzel', Georgia, serif;
+  --font-ornament: 'UnifrakturCook', 'Pirata One', 'Cinzel', Georgia, serif;
+
+  /* Iron plates, not soft cards. */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-lg: 6px;
+
+  --bg: #0c0e0f;
+  --bg-deep: #050607;
+  --surface: var(--surface-solid);
+  --surface-solid: #14181a;
+  --border: rgba(140, 110, 78, 0.18);
+  --border-strong: rgba(140, 110, 78, 0.42);
+
+  --text: #d6d4cb;
+  --text-soft: #9a9488;
+  --text-mute: #6f6a5e;
+
+  --accent: #b5893f;          /* tarnished hammered bronze */
+  --accent-2: #7c2b23;        /* dried, browned blood */
+  --accent-ink: #08090a;
+  --accent-wash: rgba(181, 137, 63, 0.08);
+
+  --danger: #a7362a;
+  --danger-ink: #f4e2dd;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 14px 40px rgba(0, 0, 0, 0.6);
+  --shadow-lift: 0 2px 8px rgba(0, 0, 0, 0.85), 0 34px 72px rgba(0, 0, 0, 0.72);
+  --glow: rgba(181, 137, 63, 0.20);   /* bronze barely smoulders */
+
+  /* Dim, desaturated: cold steel light. Not an inviting aurora. */
+  --aurora-1: rgba(120, 130, 140, 0.12);
+  --aurora-2: rgba(124, 43, 35, 0.16);
+  --aurora-3: rgba(90, 66, 38, 0.22);
+
+  --grain: 0.075;   /* tallow smoke + stone grit */
+  --falloff: 0.6;   /* the dark closes in hard */
+
+  /* Ornament at full voice, struck a little heavier -- iron, not filigree. */
+  --ornament-stroke: 1.5px;
+}
+
+/* ---- Void — hull-steel black, hazard amber, reactor cyan, blood-rust ---- *
+   A derelict far-future warship: the room is dark, amber is the interactive
+   light, cyan the cold structural glow. */
+[data-theme='void'] {
+  --font-display: 'Oswald', 'Inter', system-ui, sans-serif;
+  --font-heading: 'Chakra Petch', 'Oswald', system-ui, sans-serif;
+
+  --radius-sm: 3px;
+  --radius: 6px;
+  --radius-lg: 10px;
+
+  --bg: #06080a;
+  --bg-deep: #030405;
+  --surface: var(--surface-solid);
+  --surface-solid: #101519;
+  --border: rgba(120, 170, 190, 0.14);
+  --border-strong: rgba(120, 170, 190, 0.34);
+
+  --text: #dfe7ea;
+  --text-soft: #9fb0b8;
+  --text-mute: #6f8088;
+
+  --accent: #f0a52a;          /* hazard amber — the interactive light */
+  --accent-2: #37c9d4;        /* reactor cyan */
+  --accent-ink: #0a0f12;
+  --accent-wash: rgba(240, 165, 42, 0.10);
+
+  --danger: #c23a2b;
+  --danger-ink: #f7e4df;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.7), 0 12px 34px rgba(0, 0, 0, 0.55);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.8), 0 30px 66px rgba(0, 0, 0, 0.7);
+  --glow: rgba(240, 165, 42, 0.32);
+
+  --aurora-1: rgba(55, 201, 212, 0.16);   /* cold coolant glow */
+  --aurora-2: rgba(240, 165, 42, 0.13);
+  --aurora-3: rgba(90, 44, 32, 0.26);
+
+  --grain: 0.07;
+  --falloff: 0.52;
+
+  /* Dialled back so a sigil reads as an etched instrument dial, not magic. */
+  --ornament-opacity: 0.6;
+  --ornament-stroke: 1px;
+}
+
+/* ---- Onyx — graphite and citron, precise and editorial ---- *
+   The anti-AI by inversion: near-black, hairlines, one high-chroma accent,
+   near-zero grain and vignette. */
+[data-theme='onyx'] {
+  --font-display: 'Fraunces', 'Times New Roman', Georgia, serif;
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-ornament: 'Fraunces', Georgia, serif;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  --bg: #0b0b0c;
+  --bg-deep: #060607;
+  --surface: var(--surface-solid);
+  --surface-solid: #141517;
+  --border: rgba(255, 255, 255, 0.08);        /* hairline */
+  --border-strong: rgba(255, 255, 255, 0.20);
+
+  --text: #f5f6f7;
+  --text-soft: #a9adb4;
+  --text-mute: #7c808a;
+
+  --accent: #cdf546;          /* one sharp citron ink */
+  --accent-2: #a6d62e;        /* same hue, deeper — near-monochrome gradient */
+  --accent-ink: #0b0b0c;
+  --accent-wash: rgba(205, 245, 70, 0.08);
+
+  --danger: #ff453a;
+  --danger-ink: #ffffff;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.6), 0 12px 32px rgba(0, 0, 0, 0.45);
+  --glow: rgba(205, 245, 70, 0.22);
+
+  --aurora-1: rgba(205, 245, 70, 0.05);   /* barely-there citron */
+  --aurora-2: rgba(255, 255, 255, 0.03);
+  --aurora-3: rgba(120, 132, 150, 0.05);
+
+  --grain: 0.02;
+  --falloff: 0.15;
+
+  /* Precision means restraint: flourish becomes a faint structural hint. */
+  --ornament-opacity: 0.35;
+  --ornament-stroke: 1px;
 }
 
 /* ============================================================
@@ -181,7 +338,10 @@ body {
   transition: background-color 0.6s var(--ease), color 0.6s var(--ease);
 }
 
-/* Slow-drifting light field. Fixed, behind everything, non-interactive. */
+/* A single pooled light source with a hard falloff to the edges: the page
+   reads as *lit* from above rather than painted with drifting gradients. One
+   warm radial (per-theme --aurora-1) over the vignette, static and behind
+   everything. Replaces the three roving aurora blobs that read as generic. */
 body::before {
   content: '';
   position: fixed;
@@ -194,12 +354,9 @@ body::before {
       transparent 42%,
       rgba(0, 0, 0, var(--falloff)) 100%
     ),
-    radial-gradient(38% 42% at 18% 22%, var(--aurora-1) 0%, transparent 68%),
-    radial-gradient(34% 38% at 82% 18%, var(--aurora-2) 0%, transparent 66%),
-    radial-gradient(46% 46% at 64% 84%, var(--aurora-3) 0%, transparent 70%),
+    radial-gradient(70% 60% at 50% 16%, var(--aurora-1) 0%, transparent 74%),
     var(--bg-deep);
-  filter: blur(26px) saturate(115%);
-  animation: drift 38s ease-in-out infinite alternate;
+  filter: blur(30px);
 }
 
 /* Grain, kept faint -- just enough to stop the large gradients banding.
@@ -213,15 +370,6 @@ body::after {
   pointer-events: none;
   opacity: var(--grain);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@keyframes drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  100% {
-    transform: translate3d(2.5%, -2%, 0) scale(1.08);
-  }
 }
 
 h1,

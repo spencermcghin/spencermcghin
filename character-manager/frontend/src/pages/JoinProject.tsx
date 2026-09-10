@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { inviteApi } from '../services/api';
+import Corners from '../components/Corners';
 
 type Preview = { projectId: string; projectName: string; alreadyMember: boolean };
 
@@ -38,6 +39,7 @@ export default function JoinProject() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <Corners />
         <h1>Join a project</h1>
 
         {error ? (

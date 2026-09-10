@@ -16,6 +16,7 @@
  */
 
 import type {
+  AccessRole,
   CharacterPackage,
   Condition,
   Cost,
@@ -176,6 +177,47 @@ export function updateQuality(r: Ruleset, id: Id, patch: Partial<Quality>): Rule
  */
 export function removeQuality(r: Ruleset, id: Id): Ruleset {
   return { ...r, qualities: r.qualities.filter((q) => q.id !== id) };
+}
+
+/* ------------------------------------------------------------------ *
+ * Access roles
+ * ------------------------------------------------------------------ */
+
+export function addAccessRole(r: Ruleset, role: AccessRole): Ruleset {
+  return { ...r, accessRoles: [...(r.accessRoles ?? []), role] };
+}
+
+export function updateAccessRole(
+  r: Ruleset,
+  id: Id,
+  patch: Partial<AccessRole>
+): Ruleset {
+  return {
+    ...r,
+    accessRoles: (r.accessRoles ?? []).map((a) =>
+      a.id === id ? { ...a, ...patch } : a
+    ),
+  };
+}
+
+/**
+ * Removes an access role. Unlike removeQuality/removeGroup, this also strips
+ * the id from every skill's `visibleTo`: a dangling visibility gate is not
+ * merely an author error to report but a live access decision, and a gate
+ * naming a role that no longer exists would hide a skill from everyone with no
+ * way to see why. Members may still carry the id in their assignments; it is
+ * ignored at read time (see visibility.activeRoleIds).
+ */
+export function removeAccessRole(r: Ruleset, id: Id): Ruleset {
+  return {
+    ...r,
+    accessRoles: (r.accessRoles ?? []).filter((a) => a.id !== id),
+    traits: r.traits.map((t) =>
+      t.visibleTo?.includes(id)
+        ? { ...t, visibleTo: t.visibleTo.filter((rid) => rid !== id) }
+        : t
+    ),
+  };
 }
 
 /* ------------------------------------------------------------------ *

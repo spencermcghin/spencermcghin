@@ -7,14 +7,10 @@ export default function Home() {
 
   return (
     <div className="home">
-      <p className="home-eyebrow">Rules engine &amp; character forge</p>
-      <h1>LARP Character Manager</h1>
+      <p className="home-eyebrow">For live-action games</p>
+      <h1>Larpworks</h1>
 
-      <p className="lede">
-        Build a ruleset, then build characters against it. The engine enforces
-        costs, prerequisites and archetype gating, so a sheet cannot quietly
-        drift out of legality.
-      </p>
+      <p>Your game's rules, characters, story and players, all in one place.</p>
 
       <Ornament />
 

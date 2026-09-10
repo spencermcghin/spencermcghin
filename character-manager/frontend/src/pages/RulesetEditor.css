@@ -461,6 +461,95 @@
   border-color: var(--accent);
 }
 
+/* ---------------- view-as preview ---------------- */
+
+.ed-viewas {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* Lit while active: the whole page is someone else's view, and that state
+   should not be mistakable for the normal one. */
+.ed-viewas.is-active {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+}
+
+.ed-viewas label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ed-viewas label > span {
+  font-family: var(--font-heading);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.ed-viewas select {
+  padding: 0.3rem 0.55rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.ed-viewas select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ed-viewas-note {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
+/* ---------------- access roles ---------------- */
+
+.ed-roles .ed-group-head { gap: 0.5rem; }
+
+/* A skill restricted to some roles carries a lock in its header. The other
+   header chips are plain text, so this one leans on colour, not a box, to read
+   as "not everyone sees this" without shouting. */
+.chip.is-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  color: var(--accent-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip.is-locked .lock-glyph {
+  flex: none;
+}
+
+/* The per-skill "Visible to" toggles, and reused for defining roles. */
+.ed-role-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.ed-role-check input { cursor: pointer; }
+
 /* A staff check is prose, so it gets the room the id pickers do not need. */
 .cl-row .cl-text { flex: 1; min-width: 12rem; }
 

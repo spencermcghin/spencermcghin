@@ -31,6 +31,8 @@ export interface Member {
   displayName: string;
   email: string;
   role: ProjectRole;
+  /** Visibility access roles assigned to this member (ids into the ruleset). */
+  accessRoles: string[];
   joinedAt: string;
 }
 
@@ -96,6 +98,14 @@ export interface Store {
   setMemberRole(rulesetId: string, userId: string, role: ProjectRole): Promise<boolean>;
   removeMember(rulesetId: string, userId: string): Promise<boolean>;
   countAdmins(rulesetId: string): Promise<number>;
+  /** The visibility access roles a member holds. [] when they hold none. */
+  getMemberAccessRoles(rulesetId: string, userId: string): Promise<string[]>;
+  /** Replaces a member's access roles wholesale. False when not a member. */
+  setMemberAccessRoles(
+    rulesetId: string,
+    userId: string,
+    accessRoles: string[]
+  ): Promise<boolean>;
 
   /* --- invites --- */
   createInvite(input: {

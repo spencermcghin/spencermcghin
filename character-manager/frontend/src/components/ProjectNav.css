@@ -1,0 +1,29 @@
+.project-nav {
+  display: flex;
+  gap: 1.6rem;
+  margin-bottom: 2.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.project-nav a {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding: 0.55rem 0.1rem 0.7rem;
+  /* The active rule sits on the bar's own border, not above it. */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.project-nav a:hover {
+  color: var(--text);
+}
+
+.project-nav a.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}

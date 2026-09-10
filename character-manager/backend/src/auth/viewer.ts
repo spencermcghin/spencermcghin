@@ -10,15 +10,21 @@ import type { Viewer } from './permissions';
  */
 export async function viewerFor(req: Request, rulesetId: string): Promise<Viewer> {
   const user = req.user!;
+  const store = getStore();
+  const [projectRole, accessRoles] = await Promise.all([
+    store.getMembership(rulesetId, user.id),
+    store.getMemberAccessRoles(rulesetId, user.id),
+  ]);
   return {
     userId: user.id,
     appRole: user.appRole,
-    projectRole: await getStore().getMembership(rulesetId, user.id),
+    projectRole,
+    accessRoles,
   };
 }
 
 /** For checks that do not concern a specific project. */
 export function appViewer(req: Request): Viewer {
   const user = req.user!;
-  return { userId: user.id, appRole: user.appRole, projectRole: null };
+  return { userId: user.id, appRole: user.appRole, projectRole: null, accessRoles: [] };
 }

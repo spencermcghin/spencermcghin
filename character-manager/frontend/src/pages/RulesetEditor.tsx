@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { memberApi, rulesetApi } from '../services/api';
+import { useParams } from 'react-router-dom';
+import { memberApi, rulesetApi, type Member } from '../services/api';
 import type { Condition, Ruleset, Trait } from '../../../shared/rules-schema';
 import { validateRuleset } from '../../../shared/ruleset-validation';
 import * as edit from '../../../shared/ruleset-editor';
 import { useAuth } from '../auth/useAuth';
 import Hint from '../components/Hint';
+import ProjectNav from '../components/ProjectNav';
 import TagInput from '../components/TagInput';
 import './RulesetEditor.css';
 
@@ -22,7 +23,10 @@ export default function RulesetEditor() {
   const { user } = useAuth();
 
   const [ruleset, setRuleset] = useState<Ruleset | null>(null);
-  const [canEdit, setCanEdit] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
+  const [members, setMembers] = useState<Member[]>([]);
+  /** Member id the catalogue is being previewed as, '' for yourself. */
+  const [viewAs, setViewAs] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -35,15 +39,24 @@ export default function RulesetEditor() {
   /** The open/closed default is chosen once, not re-imposed on every edit. */
   const openInitialised = useRef(false);
 
+  // A preview is strictly read-only: what the server sent back is the
+  // member's filtered view, and saving it would write that filtering into
+  // the project as a deletion of every gated skill.
+  const canEdit = isStaff && !viewAs;
+
   useEffect(() => {
-    Promise.all([rulesetApi.get(id), memberApi.list(id).catch(() => [])])
-      .then(([r, members]) => {
+    Promise.all([
+      rulesetApi.get(id, viewAs || undefined),
+      memberApi.list(id).catch(() => []),
+    ])
+      .then(([r, ms]) => {
         setRuleset(r);
-        const role = members.find((m) => m.userId === user?.id)?.role;
-        setCanEdit(role === 'admin' || user?.appRole === 'admin');
+        setMembers(ms);
+        const role = ms.find((m) => m.userId === user?.id)?.role;
+        setIsStaff(role === 'admin' || user?.appRole === 'admin');
       })
       .catch(() => setError('Could not load this project.'));
-  }, [id, user]);
+  }, [id, user, viewAs]);
 
   const apply = useCallback((next: (r: Ruleset) => Ruleset) => {
     // An updater must be pure -- React may call it more than once, and
@@ -175,6 +188,7 @@ export default function RulesetEditor() {
 
   return (
     <div className="ed">
+      <ProjectNav id={id} />
       <header className="ed-head">
         <div>
           <h1>{ruleset.name}</h1>
@@ -185,7 +199,6 @@ export default function RulesetEditor() {
           </p>
         </div>
         <div className="ed-actions">
-          <Link to={`/projects/${id}`} className="button button-small">Back</Link>
           {canEdit && (
             <>
               <button
@@ -210,6 +223,44 @@ export default function RulesetEditor() {
 
       {error && <div className="error">{error}</div>}
 
+      {/* Staff can borrow a member's eyes. The server refilters and this
+          screen drops to read-only, so the preview cannot leak or write. */}
+      {isStaff && members.length > 0 && (
+        <div className={`ed-viewas${viewAs ? ' is-active' : ''}`}>
+          <label>
+            <span>View as</span>
+            <select
+              value={viewAs}
+              disabled={dirty}
+              title={dirty ? 'Save or undo your changes first' : undefined}
+              onChange={(e) => setViewAs(e.target.value)}
+            >
+              <option value="">Yourself (staff)</option>
+              {members.map((m) => (
+                <option key={m.userId} value={m.userId}>
+                  {m.displayName}
+                  {m.role === 'admin' ? ' (admin)' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          {viewAs && (
+            <span className="ed-viewas-note">
+              Seeing what{' '}
+              {members.find((m) => m.userId === viewAs)?.displayName ?? 'this member'}{' '}
+              sees. Skills gated away from them are absent, and nothing can be
+              edited until you switch back.
+            </span>
+          )}
+          <Hint>
+            Pick a player to preview the catalogue with their access roles
+            applied. This is the same filtered ruleset the server sends them,
+            so it is the honest check that a gated skill really is hidden.
+            Assign roles on the project page.
+          </Hint>
+        </div>
+      )}
+
       <div className="ed-bar">
         <span className="ed-bar-label">Group by</span>
         <div className="ed-seg">
@@ -224,7 +275,7 @@ export default function RulesetEditor() {
           ))}
         </div>
         <span className="ed-hint">
-          Read from each skill's own conditions — nothing to maintain
+          Read from each skill's own conditions; nothing to maintain
         </span>
         <Hint>
           These are ways of looking at the same skills, not places to put
@@ -276,6 +327,8 @@ export default function RulesetEditor() {
           </ul>
         </div>
       )}
+
+      <AccessRolePanel ruleset={ruleset} canEdit={canEdit} apply={apply} />
 
       <QualityPanel ruleset={ruleset} canEdit={canEdit} apply={apply} />
 
@@ -471,7 +524,7 @@ function QualityPanel({
         <span className="ed-group-name">Qualities</span>
         <span className="ed-group-count">{ruleset.qualities.length}</span>
         <span className="ed-hint">
-          Gear, backgrounds, boons — anything a rule needs that isn't a skill
+          Gear, backgrounds, boons: anything a rule needs that isn't a skill
         </span>
         <Hint>
           A quality is something a character has rather than something they
@@ -565,6 +618,123 @@ function QualityPanel({
 
 /* ------------------------------------------------------------------ */
 
+/**
+ * The visibility roles a project defines.
+ *
+ * Above the skills, next to qualities, for the same reason: a role has to
+ * exist before a skill's "Visible to" control can offer it, and before a
+ * player can be assigned it on the project page.
+ */
+function AccessRolePanel({
+  ruleset,
+  canEdit,
+  apply,
+}: {
+  ruleset: Ruleset;
+  canEdit: boolean;
+  apply: (next: (r: Ruleset) => Ruleset) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const roles = ruleset.accessRoles ?? [];
+
+  const addRole = () => {
+    let n = 1;
+    while (roles.some((a) => a.id === `role-${n}`)) n++;
+    apply((r) => edit.addAccessRole(r, { id: `role-${n}`, name: 'New role' }));
+    setOpen(true);
+  };
+
+  // No roles and no way to add them: nothing to show a player on a project
+  // that does not use the feature.
+  if (roles.length === 0 && !canEdit) return null;
+
+  return (
+    <section className="ed-group ed-roles">
+      <div className="ed-group-head">
+        <button className="ed-caret" onClick={() => setOpen(!open)} aria-expanded={open}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="3"
+               style={{ transform: open ? 'rotate(90deg)' : undefined }}>
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+        <span className="ed-group-name">Access roles</span>
+        <span className="ed-group-count">{roles.length}</span>
+        <span className="ed-hint">
+          Who may see gated skills. Assign them to players on the project page.
+        </span>
+        <Hint>
+          An access role gates who is shown a skill, not what a character can
+          buy. Define a role such as “Magister” here, mark a skill “Visible
+          to” that role, and only players you have given the role (and project
+          staff) will see it. Everything with no role marked stays visible to
+          everyone.
+        </Hint>
+        {canEdit && (
+          <button className="ed-add" onClick={addRole}>
+            + Role
+          </button>
+        )}
+      </div>
+
+      {open && roles.length === 0 && (
+        <p className="ed-empty">
+          None yet. Add one, then mark skills “Visible to” it and assign it to
+          players.
+        </p>
+      )}
+
+      {open &&
+        roles.map((role) => (
+          <div key={role.id} className="ed-quality">
+            <div className="ed-quality-head">
+              <input
+                className="ed-skill-name"
+                value={role.name}
+                readOnly={!canEdit}
+                onChange={(e) =>
+                  apply((r) => edit.updateAccessRole(r, role.id, { name: e.target.value }))
+                }
+              />
+              {canEdit && (
+                <button
+                  className="ed-del"
+                  title="Delete role"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        `Delete "${role.name}"? Skills restricted to it become ` +
+                          'visible to everyone, and it is removed from any player who had it.'
+                      )
+                    ) {
+                      apply((r) => edit.removeAccessRole(r, role.id));
+                    }
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            <textarea
+              className="ed-tier-desc"
+              rows={2}
+              value={role.description ?? ''}
+              readOnly={!canEdit}
+              placeholder="What this role is for (optional)."
+              onChange={(e) =>
+                apply((r) =>
+                  edit.updateAccessRole(r, role.id, { description: e.target.value })
+                )
+              }
+            />
+          </div>
+        ))}
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
 function SkillRow({
   trait,
   ruleset,
@@ -587,6 +757,19 @@ function SkillRow({
       return at === null ? null : `${t.name} ${at}`;
     })
     .filter(Boolean) as string[];
+
+  const accessRoles = ruleset.accessRoles ?? [];
+  const gate = trait.visibleTo ?? [];
+  const roleName = (rid: string) =>
+    accessRoles.find((a) => a.id === rid)?.name ?? rid;
+  const toggleRole = (rid: string) => {
+    const next = gate.includes(rid)
+      ? gate.filter((x) => x !== rid)
+      : [...gate, rid];
+    apply((r) =>
+      edit.updateTrait(r, trait.id, { visibleTo: next.length ? next : undefined })
+    );
+  };
 
   const addLevel = () => {
     const next = Math.max(0, ...trait.tiers.map((t) => t.level)) + 1;
@@ -630,6 +813,27 @@ function SkillRow({
         {rankLabels.map((l) => (
           <span key={l} className="chip">{l}</span>
         ))}
+        {gate.length > 0 && (
+          <span
+            className="chip is-locked"
+            title={`Only visible to: ${gate.map(roleName).join(', ')}`}
+          >
+            <svg
+              className="lock-glyph"
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              aria-hidden="true"
+            >
+              <rect x="4" y="10.5" width="16" height="10" rx="1.5" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
+            </svg>
+            {gate.map(roleName).join(', ')}
+          </span>
+        )}
         <span className="ed-skill-meta">
           {trait.tiers.length} level{trait.tiers.length === 1 ? '' : 's'}
         </span>
@@ -688,6 +892,49 @@ function SkillRow({
               readOnly={!canEdit}
               onChange={(tags) => apply((r) => edit.updateTrait(r, trait.id, { tags }))}
             />
+          </div>
+
+          <div className="ed-field">
+            <span>
+              Visible to
+              <Hint>
+                Who is shown this skill. Leave every role unchecked and it is
+                visible to everyone in the project, which is the default. Check
+                one or more roles and only players holding one of them (and
+                project staff) can see it. This controls visibility, not whether a
+                character may buy it; that is what the prerequisites below do.
+                Define the roles themselves in “Access roles” above.
+              </Hint>
+            </span>
+            {accessRoles.length === 0 ? (
+              <p className="muted" style={{ margin: 0 }}>
+                {canEdit
+                  ? 'No access roles defined yet. Add some under “Access roles” above to gate this skill.'
+                  : 'Visible to everyone.'}
+              </p>
+            ) : canEdit ? (
+              <div className="chip-row">
+                {accessRoles.map((role) => (
+                  <label key={role.id} className="ed-role-check">
+                    <input
+                      type="checkbox"
+                      checked={gate.includes(role.id)}
+                      onChange={() => toggleRole(role.id)}
+                    />
+                    <span>{role.name}</span>
+                  </label>
+                ))}
+                {gate.length === 0 && (
+                  <span className="ed-hint">Everyone can see this skill</span>
+                )}
+              </div>
+            ) : (
+              <p className="muted" style={{ margin: 0 }}>
+                {gate.length === 0
+                  ? 'Visible to everyone.'
+                  : `Only ${gate.map(roleName).join(', ')}.`}
+              </p>
+            )}
           </div>
 
           {trait.tiers
@@ -826,7 +1073,7 @@ function ClauseEditor({
         <Hint>
           What a character needs before they can buy this level. Every kind of
           gate is a clause here, whether it names a skill, a rank, an
-          archetype, or something they own — so a requirement with several
+          archetype, or something they own, so a requirement with several
           parts is several clauses. With more than one, <strong>all</strong>{' '}
           demands every clause and <strong>any</strong> demands one of them.
           Leave it empty and anyone can buy this.
@@ -990,7 +1237,7 @@ function ClauseEditor({
           {edit.isOpaqueClause(clause) && (
             // Shown, never rewritten: flattening "A and (B or C)" would change
             // what the rule means.
-            <span className="cl-opaque">{describe(clause)} — edit as raw rules</span>
+            <span className="cl-opaque">{describe(clause)} (edit as raw rules)</span>
           )}
 
           {canEdit && (

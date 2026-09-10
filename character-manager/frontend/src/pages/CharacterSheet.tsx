@@ -152,7 +152,7 @@ export default function CharacterSheet() {
           <ul className="check-list">
             {checks.map((c, i) => (
               <li key={i}>
-                <strong>{c.subject}</strong> — {c.text}
+                <strong>{c.subject}</strong>: {c.text}
               </li>
             ))}
           </ul>

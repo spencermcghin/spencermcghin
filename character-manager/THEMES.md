@@ -6,6 +6,9 @@ in the bottom-right corner.
 | Theme | `data-theme` | Palette |
 |---|---|---|
 | **Gothic** (default) | *(none)* | Soot and candlelight, antique gold, a bruise of oxblood |
+| Blood & Iron | `grimdark` | Cold forged iron, dried blood, tarnished bronze |
+| Void | `void` | Hull-steel black, hazard amber, reactor cyan |
+| Onyx | `onyx` | Graphite + citron, precise and editorial |
 | Parchment | `parchment` | Aged vellum + oxblood |
 | Forest Realm | `forest` | Deep canopy + jade |
 | Daylight | `clean` | Porcelain + indigo |

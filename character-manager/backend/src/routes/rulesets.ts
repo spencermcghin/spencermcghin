@@ -20,6 +20,7 @@ import {
   listMembers,
   removeMember,
   revokeInvite,
+  setMemberAccessRoles,
   updateMemberRole,
 } from '../controllers/memberController';
 
@@ -39,6 +40,7 @@ router.delete('/:id', deleteRuleset);
 
 router.get('/:id/members', listMembers);
 router.patch('/:id/members/:userId', updateMemberRole);
+router.put('/:id/members/:userId/access-roles', setMemberAccessRoles);
 router.delete('/:id/members/:userId', removeMember);
 
 router.get('/:id/invites', listInvites);

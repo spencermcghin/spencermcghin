@@ -13,6 +13,8 @@ import type { Ruleset } from '../../../shared/rules-schema';
 import { balances, indexRuleset } from '../../../shared/engine';
 import { useAuth } from '../auth/useAuth';
 import Hint from '../components/Hint';
+import ProjectNav from '../components/ProjectNav';
+import Sigil from '../components/Sigil';
 
 export default function ProjectDetail() {
   const { id = '' } = useParams();
@@ -128,6 +130,21 @@ export default function ProjectDetail() {
     }
   };
 
+  // Toggling one role at a time and re-sending the whole set keeps the UI
+  // simple; the server replaces the assignment wholesale and hands back the
+  // fresh roster, so members stay in sync without a reload.
+  const toggleMemberAccessRole = async (member: Member, roleId: string) => {
+    const next = member.accessRoles.includes(roleId)
+      ? member.accessRoles.filter((r) => r !== roleId)
+      : [...member.accessRoles, roleId];
+    try {
+      setMembers(await memberApi.setAccessRoles(id, member.userId, next));
+      setError(null);
+    } catch {
+      setError('Could not update access roles.');
+    }
+  };
+
   const exportJson = () => {
     if (!ruleset) return;
     const blob = new Blob([JSON.stringify(ruleset, null, 2)], {
@@ -145,6 +162,8 @@ export default function ProjectDetail() {
   if (error) return <div className="error">{error}</div>;
   if (!ruleset) return <p className="muted">Not found.</p>;
 
+  const accessRoles = ruleset.accessRoles ?? [];
+
   const stat = (label: string, value: number) => (
     <div key={label} className="attribute-item">
       <dd>{value}</dd>
@@ -154,6 +173,7 @@ export default function ProjectDetail() {
 
   return (
     <div className="project-detail">
+      <ProjectNav id={id} />
       <div className="header">
         <div>
           <h1>{ruleset.name}</h1>
@@ -162,22 +182,10 @@ export default function ProjectDetail() {
           </p>
         </div>
         <div className="actions">
+          {/* Navigation lives in the tab bar now; only true actions remain. */}
           <button className="button" onClick={exportJson}>
             Export
           </button>
-          <Link to={`/projects/${id}/story`} className="button">
-            Story
-          </Link>
-          {isStaff && (
-            <Link to={`/projects/${id}/options`} className="button">
-              Layout options
-            </Link>
-          )}
-          {isStaff && (
-            <Link to={`/projects/${id}/edit`} className="button button-primary">
-              Edit rules
-            </Link>
-          )}
         </div>
       </div>
 
@@ -202,50 +210,72 @@ export default function ProjectDetail() {
           <h2>Members</h2>
           <ul className="member-list">
             {members.map((m) => (
-              <li key={m.userId}>
-                <span className="member-name">
-                  {m.displayName}
-                  {m.userId === user?.id && <span className="you-tag">you</span>}
-                </span>
-                {isStaff ? (
-                  <span className="member-actions">
-                    <select
-                      value={m.role}
-                      aria-label={`Role for ${m.displayName}`}
-                      onChange={async (e) => {
-                        try {
-                          setMembers(
-                            await memberApi.setRole(
-                              id,
-                              m.userId,
-                              e.target.value as ProjectRole
-                            )
-                          );
-                        } catch {
-                          setError('A project must keep at least one admin.');
-                        }
-                      }}
-                    >
-                      <option value="admin">admin</option>
-                      <option value="member">member</option>
-                    </select>
-                    <button
-                      className="button button-small button-danger"
-                      onClick={async () => {
-                        if (!confirm(`Remove ${m.displayName} from this project?`)) return;
-                        try {
-                          await memberApi.remove(id, m.userId);
-                          await load();
-                        } catch {
-                          setError('A project must keep at least one admin.');
-                        }
-                      }}
-                    >
-                      Remove
-                    </button>
+              <li key={m.userId} className="member-row">
+                <div className="member-top">
+                  <span className="member-name">
+                    {m.displayName}
+                    {m.userId === user?.id && <span className="you-tag">you</span>}
                   </span>
-                ) : (
-                  <span className="role-badge">{m.role}</span>
+                  {isStaff ? (
+                    <span className="member-actions">
+                      <select
+                        value={m.role}
+                        aria-label={`Role for ${m.displayName}`}
+                        onChange={async (e) => {
+                          try {
+                            setMembers(
+                              await memberApi.setRole(
+                                id,
+                                m.userId,
+                                e.target.value as ProjectRole
+                              )
+                            );
+                          } catch {
+                            setError('A project must keep at least one admin.');
+                          }
+                        }}
+                      >
+                        <option value="admin">admin</option>
+                        <option value="member">member</option>
+                      </select>
+                      <button
+                        className="button button-small button-danger"
+                        onClick={async () => {
+                          if (!confirm(`Remove ${m.displayName} from this project?`)) return;
+                          try {
+                            await memberApi.remove(id, m.userId);
+                            await load();
+                          } catch {
+                            setError('A project must keep at least one admin.');
+                          }
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </span>
+                  ) : (
+                    <span className="role-badge">{m.role}</span>
+                  )}
+                </div>
+
+                {/* Access roles gate what a player sees. Staff assign them;
+                    the checkboxes are the "view all roles" surface too, since
+                    each shows whether this member holds it. Only staff, so a
+                    player never sees who else was given what. */}
+                {isStaff && accessRoles.length > 0 && (
+                  <div className="member-roles">
+                    <span className="member-roles-label">Access</span>
+                    {accessRoles.map((role) => (
+                      <label key={role.id} className="member-role-check">
+                        <input
+                          type="checkbox"
+                          checked={m.accessRoles.includes(role.id)}
+                          onChange={() => toggleMemberAccessRole(m, role.id)}
+                        />
+                        <span>{role.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 )}
               </li>
             ))}
@@ -380,7 +410,7 @@ export default function ProjectDetail() {
             </button>
             <Hint align="right">
               Adds the amount to every selected character's total for that
-              currency. Use a negative number to take points back — correcting
+              currency. Use a negative number to take points back; correcting
               an award that went out wrong is the same operation in reverse.
               What a character has already spent is untouched, so a deduction
               that leaves them short shows up as overspent on their sheet
@@ -394,6 +424,7 @@ export default function ProjectDetail() {
 
       {roster.length === 0 ? (
         <div className="empty-state">
+          <Sigil name="hexagram" />
           <p>No characters in this project yet.</p>
         </div>
       ) : (
