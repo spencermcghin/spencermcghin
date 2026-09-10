@@ -461,6 +461,41 @@
   border-color: var(--accent);
 }
 
+/* Labelled fields for access-role rows: the name has to look like a place
+   to type, not a title, so it gets a real border and a caption. */
+.ed-role-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ed-role-field > span {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.ed-role-name {
+  padding: 0.5rem 0.65rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.ed-role-name:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* ---------------- view-as preview ---------------- */
 
 .ed-viewas {

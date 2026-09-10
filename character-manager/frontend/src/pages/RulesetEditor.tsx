@@ -7,6 +7,7 @@ import * as edit from '../../../shared/ruleset-editor';
 import { useAuth } from '../auth/useAuth';
 import Hint from '../components/Hint';
 import ProjectNav from '../components/ProjectNav';
+import SaveBar from '../components/SaveBar';
 import TagInput from '../components/TagInput';
 import './RulesetEditor.css';
 
@@ -357,6 +358,15 @@ export default function RulesetEditor() {
           />
         ))
       )}
+
+      <SaveBar
+        dirty={dirty && canEdit}
+        saving={saving}
+        onSave={save}
+        onUndo={undo}
+        canUndo={history.current.length > 0}
+        blockers={errors.length}
+      />
     </div>
   );
 }
@@ -513,6 +523,16 @@ function QualityPanel({
 
   return (
     <section className="ed-group ed-qualities">
+      {/* Categories are a shared vocabulary the same way tags are: offering
+          what already exists is how "Background" and "background" stay one
+          category. One panel per page, so a fixed id is safe. */}
+      <datalist id="quality-categories">
+        {[...new Set(ruleset.qualities.map((q) => q.category).filter(Boolean))]
+          .sort()
+          .map((c) => (
+            <option key={c} value={c as string} />
+          ))}
+      </datalist>
       <div className="ed-group-head">
         <button className="ed-caret" onClick={() => setOpen(!open)} aria-expanded={open}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
@@ -564,6 +584,7 @@ function QualityPanel({
                 value={q.category ?? ''}
                 readOnly={!canEdit}
                 placeholder="Category"
+                list="quality-categories"
                 onChange={(e) =>
                   apply((r) => edit.updateQuality(r, q.id, { category: e.target.value }))
                 }
@@ -690,16 +711,21 @@ function AccessRolePanel({
         roles.map((role) => (
           <div key={role.id} className="ed-quality">
             <div className="ed-quality-head">
-              <input
-                className="ed-skill-name"
-                value={role.name}
-                readOnly={!canEdit}
-                placeholder="Role name, e.g. Magister"
-                aria-label="Role name"
-                onChange={(e) =>
-                  apply((r) => edit.updateAccessRole(r, role.id, { name: e.target.value }))
-                }
-              />
+              {/* A labelled, bordered input. The borderless heading-style
+                  field used elsewhere read as a title here, and names ended
+                  up typed into the note box below it. */}
+              <label className="ed-role-field">
+                <span>Name</span>
+                <input
+                  className="ed-role-name"
+                  value={role.name}
+                  readOnly={!canEdit}
+                  placeholder="e.g. Magister"
+                  onChange={(e) =>
+                    apply((r) => edit.updateAccessRole(r, role.id, { name: e.target.value }))
+                  }
+                />
+              </label>
               {canEdit && (
                 <button
                   className="ed-del"
@@ -719,18 +745,21 @@ function AccessRolePanel({
                 </button>
               )}
             </div>
-            <textarea
-              className="ed-tier-desc"
-              rows={2}
-              value={role.description ?? ''}
-              readOnly={!canEdit}
-              placeholder="Optional note for staff. The role's name goes in the field above."
-              onChange={(e) =>
-                apply((r) =>
-                  edit.updateAccessRole(r, role.id, { description: e.target.value })
-                )
-              }
-            />
+            <label className="ed-role-field">
+              <span>Note (optional)</span>
+              <textarea
+                className="ed-tier-desc"
+                rows={2}
+                value={role.description ?? ''}
+                readOnly={!canEdit}
+                placeholder="What this role is for. Shown only to staff."
+                onChange={(e) =>
+                  apply((r) =>
+                    edit.updateAccessRole(r, role.id, { description: e.target.value })
+                  )
+                }
+              />
+            </label>
           </div>
         ))}
     </section>

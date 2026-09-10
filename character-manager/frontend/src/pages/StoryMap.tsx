@@ -9,6 +9,7 @@ import { connectionsOf, indexMap, orphans, validateMap } from '../../../shared/n
 import * as edit from '../../../shared/narrative-editor';
 import Hint from '../components/Hint';
 import ProjectNav from '../components/ProjectNav';
+import SaveBar from '../components/SaveBar';
 import Sigil from '../components/Sigil';
 import TagInput from '../components/TagInput';
 import StoryGraph from '../components/StoryGraph';
@@ -425,6 +426,14 @@ export default function StoryMap() {
           </div>
         </>
       )}
+
+      <SaveBar
+        dirty={dirty && canEdit}
+        saving={saving}
+        onSave={save}
+        onUndo={undo}
+        canUndo={history.current.length > 0}
+      />
     </div>
   );
 }
@@ -563,8 +572,18 @@ function EntityPanel({
               value={entity.occursAt ?? ''}
               placeholder="When"
               aria-label="When"
+              list="story-when-values"
               onChange={(e) => set({ occursAt: e.target.value })}
             />
+            {/* "When" values repeat across entries (the same event names),
+                so offer the ones already in use. */}
+            <datalist id="story-when-values">
+              {[...new Set(map.entities.map((e) => e.occursAt).filter(Boolean))]
+                .sort()
+                .map((w) => (
+                  <option key={w} value={w as string} />
+                ))}
+            </datalist>
             <button
               className="ed-del"
               title="Delete entry"

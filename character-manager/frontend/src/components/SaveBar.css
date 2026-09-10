@@ -1,0 +1,41 @@
+.savebar {
+  position: fixed;
+  left: 50%;
+  bottom: 1.4rem;
+  transform: translateX(-50%);
+  /* Above page content, below nothing it needs to fight; the theme pill
+     keeps the bottom-right corner. */
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lift);
+  animation: savebar-rise 0.3s var(--ease);
+}
+
+@keyframes savebar-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.savebar-label {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.savebar-problem {
+  font-size: 0.74rem;
+  color: var(--danger);
+  white-space: nowrap;
+}
