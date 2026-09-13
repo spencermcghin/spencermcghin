@@ -113,54 +113,59 @@ export default function CharacterSheet() {
         </div>
       </div>
 
-      <div className="character-info-grid">
-        <div className="info-card">
-          <h2>Points</h2>
-          <dl className="attributes">
-            {progression.map((c) => (
-              <div key={c.id} className="attribute-item">
-                <dd className={(balances[c.id] ?? 0) < 0 ? 'negative' : undefined}>
-                  {balances[c.id] ?? 0}
-                </dd>
-                <dt>{c.abbreviation ?? c.name}</dt>
-              </div>
-            ))}
-          </dl>
-        </div>
-
-        <div className="info-card">
-          <h2>Rules Check</h2>
-          {violations.length === 0 ? (
-            <p className="ok">This character is legal.</p>
-          ) : (
-            <ul className="violations">
-              {violations.map((v, i) => (
-                <li key={i}>{v.message}</li>
+      {/* Two regions: the state of the character (sticky, always in view)
+          and the shopping surface that scrolls. The one number you need
+          while buying -- points left -- must never scroll away. */}
+      <div className="sheet-layout">
+        <aside className="sheet-state">
+          <div className="info-card">
+            <h2>Points</h2>
+            <dl className="attributes">
+              {progression.map((c) => (
+                <div key={c.id} className="attribute-item">
+                  <dd className={(balances[c.id] ?? 0) < 0 ? 'negative' : undefined}>
+                    {balances[c.id] ?? 0}
+                  </dd>
+                  <dt>{c.abbreviation ?? c.name}</dt>
+                </div>
               ))}
-            </ul>
+            </dl>
+          </div>
+
+          <div className="info-card">
+            <h2>Rules Check</h2>
+            {violations.length === 0 ? (
+              <p className="ok">This character is legal.</p>
+            ) : (
+              <ul className="violations">
+                {violations.map((v, i) => (
+                  <li key={i}>{v.message}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {checks.length > 0 && (
+            <div className="info-card">
+              <h2>Needs a person</h2>
+              <p className="muted">
+                The rules ask for these, and nothing here can decide them. They
+                are settled at check-in, not by the app.
+              </p>
+              <ul className="check-list">
+                {checks.map((c, i) => (
+                  <li key={i}>
+                    <strong>{c.subject}</strong>: {c.text}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
-        </div>
-      </div>
+        </aside>
 
-      {checks.length > 0 && (
-        <div className="info-card full-width" style={{ marginBottom: '1.5rem' }}>
-          <h2>Needs a person</h2>
-          <p className="muted">
-            The rules ask for these, and nothing here can decide them. They are
-            settled at check-in, not by the app.
-          </p>
-          <ul className="check-list">
-            {checks.map((c, i) => (
-              <li key={i}>
-                <strong>{c.subject}</strong>: {c.text}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
+        <div className="sheet-shop">
       {ruleset.qualities.length > 0 && (
-        <div className="info-card full-width" style={{ marginBottom: '1.5rem' }}>
+        <div className="info-card">
           <h2>Qualities</h2>
           {Object.entries(qualityGroups).map(([category, qualities]) => (
             <div key={category} className="quality-group">
@@ -200,7 +205,7 @@ export default function CharacterSheet() {
         const options = ruleset.packages.filter((p) => p.tier === tier.id);
         if (options.length === 0) return null;
         return (
-          <div key={tier.id} className="info-card full-width" style={{ marginBottom: '1.5rem' }}>
+          <div key={tier.id} className="info-card">
             <h2>{tier.name}</h2>
             <div className="chip-row">
               {options.map((p) => {
@@ -226,7 +231,7 @@ export default function CharacterSheet() {
         const options = available.filter((o) => o.groupId === group.id);
         if (options.length === 0) return null;
         return (
-          <div key={group.id} className="info-card full-width" style={{ marginBottom: '1.5rem' }}>
+          <div key={group.id} className="info-card">
             <h2>{group.name}</h2>
             <ul className="trait-list">
               {options.map((o) => (
@@ -274,6 +279,9 @@ export default function CharacterSheet() {
           </div>
         );
       })}
+
+        </div>
+      </div>
 
       <div className="back-link">
         <Link to={`/projects/${character.rulesetId}`}>Back to {ruleset.name}</Link>

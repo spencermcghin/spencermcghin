@@ -427,13 +427,13 @@ export default function ProjectDetail() {
       </div>
 
       {isStaff && (
-        <div className="info-card full-width" style={{ marginBottom: '2.5rem' }}>
+        <div className="info-card full-width invite-card">
           <h2>Invite Players</h2>
           <p className="muted">
             Anyone with the link joins as a member. Links expire after 30 days and
             can be revoked at any time.
           </p>
-          <div className="chip-row" style={{ marginTop: '1rem' }}>
+          <div className="chip-row chip-row-spaced">
             <button className="button button-primary button-small" onClick={makeInvite}>
               Create invite link
             </button>
@@ -478,8 +478,8 @@ export default function ProjectDetail() {
         </div>
       )}
 
-      <div className="header" style={{ marginTop: '2.5rem' }}>
-        <h1 style={{ fontSize: '1.75rem' }}>Characters</h1>
+      <div className="header section-header">
+        <h1>Characters</h1>
       </div>
 
       <form className="inline-form" onSubmit={create}>

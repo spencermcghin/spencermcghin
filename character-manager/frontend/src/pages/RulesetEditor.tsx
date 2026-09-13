@@ -273,7 +273,9 @@ export default function RulesetEditor() {
         </div>
       )}
 
-      <div className="ed-bar">
+      {/* One toolbar, pinned: on a 200-skill ruleset the grouping, search
+          and expand controls must not scroll out of reach mid-list. */}
+      <div className="ed-toolbar">
         <span className="ed-bar-label">Group by</span>
         <div className="ed-seg">
           {dimensions.map((d) => (
@@ -286,9 +288,6 @@ export default function RulesetEditor() {
             </button>
           ))}
         </div>
-        <span className="ed-hint">
-          Read from each skill's own conditions; nothing to maintain
-        </span>
         <Hint>
           These are ways of looking at the same skills, not places to put
           them. Each grouping is worked out from what the skills already
@@ -296,9 +295,6 @@ export default function RulesetEditor() {
           gated on, and a skill gated on nothing falls into "No gate". Only
           the tree a skill belongs to is stored on the skill itself.
         </Hint>
-      </div>
-
-      <div className="ed-bar ed-findbar">
         <input
           className="ed-find"
           type="search"
@@ -830,7 +826,7 @@ function SkillRow({
               </Hint>
             </span>
             {accessRoles.length === 0 ? (
-              <p className="muted" style={{ margin: 0 }}>
+              <p className="muted muted-tight">
                 {canEdit
                   ? 'No access roles defined yet. Add some on the project page (next to Members) to gate this skill.'
                   : 'Visible to everyone.'}
@@ -852,7 +848,7 @@ function SkillRow({
                 )}
               </div>
             ) : (
-              <p className="muted" style={{ margin: 0 }}>
+              <p className="muted muted-tight">
                 {gate.length === 0
                   ? 'Visible to everyone.'
                   : `Only ${gate.map(roleName).join(', ')}.`}

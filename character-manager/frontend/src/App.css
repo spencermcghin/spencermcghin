@@ -31,7 +31,7 @@
 
 .nav-brand {
   font-family: var(--font-heading);
-  font-size: 1.12rem;
+  font-size: var(--step-2);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -46,7 +46,7 @@
 
 .nav-links a {
   position: relative;
-  font-size: 0.86rem;
+  font-size: var(--step-1);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -126,7 +126,7 @@
 .home p {
   max-width: 46ch;
   margin: 0 auto 3rem;
-  font-size: 1.08rem;
+  font-size: var(--step-2);
   color: var(--text-soft);
 }
 
@@ -222,13 +222,13 @@
 
 .character-card h2 {
   font-family: var(--font-display);
-  font-size: 1.75rem;
+  font-size: var(--step-3);
   font-weight: 500;
   margin-bottom: 0.5rem;
 }
 
 .character-info {
-  font-size: 0.74rem;
+  font-size: var(--step-0);
   font-weight: 600;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -237,7 +237,7 @@
 }
 
 .character-background {
-  font-size: 0.92rem;
+  font-size: var(--step-1);
   color: var(--text-soft);
   margin-bottom: 1.6rem;
   display: -webkit-box;
@@ -261,13 +261,52 @@
   margin-bottom: 2.5rem;
 }
 
+/* The sheet splits into the state of the character (left, sticky) and the
+   shopping surface (right, scrolls). Points stay in view while buying --
+   the number the whole page exists to protect. */
+.sheet-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.sheet-state {
+  position: sticky;
+  top: 84px; /* clears the sticky navbar */
+  display: grid;
+  gap: 1.5rem;
+  /* A long check-in list scrolls inside the rail rather than pushing the
+     points tiles out of the viewport. */
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.sheet-shop {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .sheet-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sheet-state {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
 .info-card.full-width {
   grid-column: 1 / -1;
 }
 
 .info-card h2 {
   font-family: var(--font-heading);
-  font-size: 0.76rem;
+  font-size: var(--step-0);
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -285,7 +324,7 @@
 }
 
 .info-card dt {
-  font-size: 0.72rem;
+  font-size: var(--step-0);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -328,7 +367,7 @@
 }
 
 .attribute-item dt {
-  font-size: 0.62rem;
+  font-size: var(--step--1);
   letter-spacing: 0.12em;
 }
 
@@ -361,7 +400,7 @@
 }
 
 .back-link a {
-  font-size: 0.8rem;
+  font-size: var(--step-0);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -385,7 +424,7 @@
 
 .empty-state p {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: var(--step-3);
   color: var(--text-soft);
   margin-bottom: 2rem;
 }
@@ -422,7 +461,7 @@
 
 .form-section h2 {
   font-family: var(--font-heading);
-  font-size: 0.76rem;
+  font-size: var(--step-0);
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -442,7 +481,7 @@
 
 .form-group label {
   display: block;
-  font-size: 0.72rem;
+  font-size: var(--step-0);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -455,7 +494,7 @@
   width: 100%;
   padding: 0.82rem 1rem;
   font-family: inherit;
-  font-size: 0.96rem;
+  font-size: var(--step-1);
   color: var(--text);
   background: var(--surface-solid);
   border: 1px solid var(--border);
@@ -493,7 +532,7 @@
 .attributes-grid input {
   text-align: center;
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: var(--step-3);
   font-weight: 600;
   color: var(--accent);
 }
@@ -515,7 +554,7 @@
   justify-content: center;
   padding: 0.78rem 1.65rem;
   font-family: var(--font-body);
-  font-size: 0.78rem;
+  font-size: var(--step-0);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -570,7 +609,7 @@
 
 .button-small {
   padding: 0.52rem 1.05rem;
-  font-size: 0.68rem;
+  font-size: var(--step--1);
 }
 
 .button:disabled {
@@ -585,7 +624,7 @@
   margin-top: auto;
   padding: 2.5rem 2rem;
   text-align: center;
-  font-size: 0.74rem;
+  font-size: var(--step-0);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-mute);
@@ -627,7 +666,29 @@
 
 .muted {
   color: var(--text-mute);
-  font-size: 0.95rem;
+  font-size: var(--step-1);
+}
+
+.muted-tight {
+  margin: 0;
+}
+
+/* A mid-page section heading: smaller than the page title, set off from
+   whatever came before it. */
+.header.section-header {
+  margin-top: var(--space-5);
+}
+
+.header.section-header h1 {
+  font-size: var(--step-3);
+}
+
+.invite-card {
+  margin-bottom: var(--space-5);
+}
+
+.chip-row-spaced {
+  margin-top: var(--space-3);
 }
 
 .projects .header,
@@ -670,7 +731,7 @@
   min-width: 220px;
   padding: 0.78rem 1rem;
   font-family: inherit;
-  font-size: 0.96rem;
+  font-size: var(--step-1);
   color: var(--text);
   background: var(--surface-solid);
   border: 1px solid var(--border);
@@ -707,7 +768,7 @@
   background: var(--surface-solid);
   border-left: 3px solid var(--danger);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-size: 0.9rem;
+  font-size: var(--step-1);
 }
 
 /* Outstanding manual checks. Shaped like the violation list so the eye finds
@@ -726,7 +787,7 @@
   background: var(--surface-solid);
   border-left: 3px solid var(--accent);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-size: 0.9rem;
+  font-size: var(--step-1);
 }
 
 .check-list strong {
@@ -740,7 +801,7 @@
 
 .quality-group h3 {
   font-family: var(--font-heading);
-  font-size: 0.62rem;
+  font-size: var(--step--1);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -792,7 +853,7 @@
 }
 
 .trait-level {
-  font-size: 0.68rem;
+  font-size: var(--step--1);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -803,14 +864,14 @@
 }
 
 .trait-reason {
-  font-size: 0.82rem;
+  font-size: var(--step-0);
   color: var(--text-mute);
 }
 
 /* A requirement the app cannot judge. Marked, not treated as an obstacle:
    the purchase is allowed, someone just has to confirm it. */
 .trait-check {
-  font-size: 0.72rem;
+  font-size: var(--step-0);
   font-style: italic;
   color: var(--accent);
   padding: 0.1rem 0.5rem;
@@ -820,7 +881,7 @@
 
 .trait-cost {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: var(--step-2);
   color: var(--text-mute);
 }
 
@@ -850,7 +911,7 @@
 }
 
 .nav-user-name {
-  font-size: 0.86rem;
+  font-size: var(--step-1);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -860,7 +921,7 @@
 .nav-signout {
   padding: 0;
   font-family: var(--font-body);
-  font-size: 0.86rem;
+  font-size: var(--step-1);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -895,7 +956,7 @@
 
 .auth-card h1 {
   font-family: var(--font-display);
-  font-size: 2.25rem;
+  font-size: var(--step-4);
   font-weight: 500;
   margin-bottom: 0.5rem;
 }
@@ -915,7 +976,7 @@
 
 .field-hint {
   margin-top: 0.4rem;
-  font-size: 0.78rem;
+  font-size: var(--step-0);
   color: var(--text-mute);
 }
 
@@ -925,7 +986,7 @@
   margin-top: 1.5rem;
   padding: 0;
   font-family: var(--font-body);
-  font-size: 0.86rem;
+  font-size: var(--step-1);
   color: var(--text-mute);
   background: none;
   border: none;
@@ -984,7 +1045,7 @@
 
 .home-eyebrow {
   font-family: var(--font-heading);
-  font-size: 0.68rem;
+  font-size: var(--step--1);
   font-weight: 600;
   letter-spacing: 0.34em;
   text-transform: uppercase;
@@ -1030,7 +1091,7 @@
 .role-badge {
   display: inline-block;
   padding: 0.1rem 0.5rem;
-  font-size: 0.62rem;
+  font-size: var(--step--1);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1085,7 +1146,7 @@
 }
 
 .member-roles-label {
-  font-size: 0.62rem;
+  font-size: var(--step--1);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1096,7 +1157,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.8rem;
+  font-size: var(--step-0);
   cursor: pointer;
 }
 
@@ -1105,7 +1166,7 @@
 }
 
 .member-roles-all {
-  font-size: 0.8rem;
+  font-size: var(--step-0);
   color: var(--text-soft);
   font-style: italic;
 }
@@ -1138,7 +1199,7 @@
   min-width: 0;
   padding: 0.45rem 0.6rem;
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: var(--step-1);
   font-weight: 600;
   color: var(--text);
   background: var(--surface-solid);
@@ -1154,7 +1215,7 @@
 .you-tag {
   margin-left: 0.5rem;
   padding: 0.05rem 0.4rem;
-  font-size: 0.6rem;
+  font-size: var(--step--1);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1173,7 +1234,7 @@
 .admin-users select {
   padding: 0.35rem 0.6rem;
   font-family: var(--font-body);
-  font-size: 0.78rem;
+  font-size: var(--step-0);
   color: var(--text);
   background: var(--surface-solid);
   border: 1px solid var(--border-strong);
@@ -1197,7 +1258,7 @@
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 0.82rem;
+  font-size: var(--step-0);
   color: var(--accent);
 }
 
@@ -1241,7 +1302,7 @@
   margin: 1.25rem 0 1.75rem;
   padding-left: 0.9rem;
   border-left: 2px solid var(--accent);
-  font-size: 0.95rem;
+  font-size: var(--step-1);
   line-height: 1.65;
   color: var(--text-soft);
 }
@@ -1265,7 +1326,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: 0.82rem;
+  font-size: var(--step-0);
   color: var(--text-soft);
   cursor: pointer;
 }
@@ -1343,7 +1404,7 @@
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-heading);
-  font-size: 0.62rem;
+  font-size: var(--step--1);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1354,7 +1415,7 @@
   width: 4.5rem;
   padding: 0.32rem 0.5rem;
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: var(--step-1);
   text-align: right;
   letter-spacing: normal;
   color: var(--text);
@@ -1366,7 +1427,7 @@
 .award-controls select {
   padding: 0.32rem 0.5rem;
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: var(--step-1);
   color: var(--text);
   background: var(--surface-solid);
   border: 1px solid var(--border);
@@ -1382,7 +1443,7 @@
 .award-note {
   margin-bottom: 1.25rem;
   padding: 0.6rem 0.85rem;
-  font-size: 0.88rem;
+  font-size: var(--step-1);
   color: var(--text-soft);
   background: var(--surface-solid);
   border-left: 3px solid var(--accent);
@@ -1414,14 +1475,14 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-bottom: 1.2rem;
-  font-size: 0.8rem;
+  font-size: var(--step-0);
   color: var(--accent);
 }
 
 .card-balances .is-negative { color: var(--danger); }
 
 .card-balances .muted {
-  font-size: 0.7rem;
+  font-size: var(--step--1);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -1431,7 +1492,7 @@
 .inline-form select {
   padding: 0.7rem 0.9rem;
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: var(--step-1);
   color: var(--text);
   background: var(--surface-solid);
   border: 1px solid var(--border);
@@ -1446,7 +1507,7 @@
 .projects-nudge {
   max-width: 62ch;
   margin: -0.5rem 0 2rem;
-  font-size: 0.88rem;
+  font-size: var(--step-1);
   line-height: 1.6;
   color: var(--text-mute);
 }
