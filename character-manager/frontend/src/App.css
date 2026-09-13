@@ -44,6 +44,66 @@
   gap: 2rem;
 }
 
+/* The menu toggle exists only where the links collapse. */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.55rem;
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--text-soft);
+  transition: transform 0.25s var(--ease), opacity 0.25s var(--ease);
+}
+
+.nav-toggle[aria-expanded='true'] span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.nav-toggle[aria-expanded='true'] span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle[aria-expanded='true'] span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+@media (max-width: 720px) {
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  /* The links become a panel under the bar, on solid ground so the page
+     never shows through the menu. */
+  .nav-links {
+    display: none;
+  }
+
+  .nav-links.is-open {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.1rem;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 1.1rem 1.25rem 1.35rem;
+    background: var(--surface-solid);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+}
+
 .nav-links a {
   position: relative;
   font-size: var(--step-1);
@@ -180,16 +240,8 @@
   gap: 1.5rem;
 }
 
-.character-card,
-.info-card {
-  position: relative;
-  padding: 1.85rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
+/* Cards take their surface from the kit's .section-card; .character-card
+   layers the hover lift and hairline wipe on top of it. */
 
 /* Accent hairline that wipes in on hover. */
 .character-card::before {
@@ -220,11 +272,18 @@
   transform: scaleX(1);
 }
 
-.character-card h2 {
+/* A character's name, not the kit card's bordered eyebrow -- doubled class
+   so it outranks .section-card h2 regardless of stylesheet order. */
+.section-card.character-card h2 {
   font-family: var(--font-display);
   font-size: var(--step-3);
   font-weight: 500;
   margin-bottom: 0.5rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--text);
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .character-info {
@@ -300,47 +359,10 @@
   }
 }
 
-.info-card.full-width {
-  grid-column: 1 / -1;
-}
-
-.info-card h2 {
-  font-family: var(--font-heading);
-  font-size: var(--step-0);
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-mute);
-  margin-bottom: 1.4rem;
-  padding-bottom: 0.9rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.info-card dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.7rem 1.5rem;
-  margin: 0;
-}
-
-.info-card dt {
-  font-size: var(--step-0);
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-mute);
-  align-self: center;
-}
-
-.info-card dd {
-  margin: 0;
-  color: var(--text);
-}
-
-/* Attribute stat tiles. Qualified with .info-card so this beats the
-   `.info-card dl` rule above, which would otherwise impose `auto 1fr` and
+/* Attribute stat tiles. Qualified with .section-card so this beats the
+   kit's `.section-card dl` rule, which would otherwise impose `auto 1fr` and
    leave a short label's tile crushed next to a long one. */
-.info-card .attributes {
+.section-card .attributes {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 0.7rem;
@@ -379,20 +401,30 @@
   color: var(--accent);
 }
 
-.info-card ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Span twins of dt/dd for tiles that are links: dt/dd may not live inside
+   an anchor, so linked tiles carry the same look on spans. */
+.attribute-item .attribute-label {
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
 }
 
-.info-card ul li {
-  padding: 0.65rem 0;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-soft);
+.attribute-item .attribute-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--accent);
 }
 
-.info-card ul li:last-child {
-  border-bottom: none;
+a.attribute-item {
+  text-decoration: none;
+}
+
+a.attribute-item:hover {
+  border-color: var(--accent);
 }
 
 .back-link {
@@ -745,11 +777,6 @@
   box-shadow: 0 0 0 4px var(--accent-wash);
 }
 
-.phase-toggle {
-  display: flex;
-  gap: 0.4rem;
-}
-
 .ok {
   color: var(--accent);
   font-weight: 500;
@@ -834,6 +861,7 @@
   gap: 1rem;
   padding: 0.85rem 0;
   border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
 .trait:last-child {
@@ -1062,21 +1090,6 @@
   line-height: 0.82;
   padding: 0.08em 0.12em 0 0;
   color: var(--accent);
-}
-
-/* Corner marks: two hairlines suggesting a frame, without boxing the card in. */
-.info-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 34px;
-  height: 34px;
-  border-top: 1px solid var(--border-strong);
-  border-right: 1px solid var(--border-strong);
-  border-top-right-radius: var(--radius);
-  opacity: calc(0.7 * var(--ornament-opacity));
-  pointer-events: none;
 }
 
 /* Small caps for archetype names reads more carved than sentence case. */
@@ -1308,19 +1321,6 @@
 }
 
 /* ---------------- Bulk award ---------------- */
-
-.award-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  padding: 0.85rem 1.15rem;
-  margin-bottom: 1.25rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-}
 
 .award-check {
   display: inline-flex;

@@ -17,13 +17,7 @@
   font-variant-caps: small-caps;
 }
 
-.story-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  flex-wrap: wrap;
-  margin: 1.5rem 0;
-}
+/* The control strip comes from the kit (Toolbar). */
 
 /* Two columns: the list stays put while the panel changes, so following a
    connection never loses your place in the list. */
@@ -102,22 +96,16 @@
 
 /* ---------------- panel ---------------- */
 
-.story-panel {
-  position: sticky;
-  top: 5.5rem;
-  padding: 1.5rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-}
-
+/* The panel surface comes from the kit (SectionCard, sticky). Its inner
+   sections keep their own quieter headings: several h2s per card, so the
+   kit's single bordered eyebrow would draw a line under every one. */
 .story-panel section + section {
   margin-top: 1.75rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
 }
 
-.story-panel h2 {
+.section-card.story-panel h2 {
   display: flex;
   align-items: center;
   font-family: var(--font-heading);
@@ -127,6 +115,8 @@
   text-transform: uppercase;
   color: var(--text-mute);
   margin-bottom: 0.9rem;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .story-detail-head {
@@ -183,6 +173,25 @@
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+/* The kit card's generic list rows (border under each, roomier padding)
+   would restyle the panel's own lists; these keep the panel's rhythm. */
+.section-card.story-panel .story-hubs li {
+  padding: 0.25rem 0;
+  border-bottom: none;
+  color: inherit;
+}
+
+.section-card.story-panel .story-links li {
+  padding: 0.4rem 0;
+  color: inherit;
+}
+
+.section-card.story-panel .story-sources li {
+  padding: 0.2rem 0;
+  border-bottom: none;
+  color: var(--text-mute);
 }
 
 .story-links li {

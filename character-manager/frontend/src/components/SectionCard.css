@@ -1,0 +1,82 @@
+.section-card {
+  position: relative;
+  padding: 1.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.section-card.is-sticky {
+  position: sticky;
+  top: 5.5rem;
+}
+
+.section-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.section-card h2 {
+  font-family: var(--font-heading);
+  font-size: var(--step-0);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 1.4rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-card dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem 1.5rem;
+  margin: 0;
+}
+
+.section-card dt {
+  font-size: var(--step-0);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  align-self: center;
+}
+
+.section-card dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.section-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.section-card ul li {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-soft);
+}
+
+.section-card ul li:last-child {
+  border-bottom: none;
+}
+
+/* Corner marks: two hairlines suggesting a frame, without boxing the card in. */
+.section-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 34px;
+  height: 34px;
+  border-top: 1px solid var(--border-strong);
+  border-right: 1px solid var(--border-strong);
+  border-top-right-radius: var(--radius);
+  opacity: calc(0.7 * var(--ornament-opacity));
+  pointer-events: none;
+}

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type { MapIndex } from '../../../shared/narrative';
 import { connectionsOf } from '../../../shared/narrative';
 import type { NarrativeEntity } from '../../../shared/narrative-schema';
+import SegmentedControl from './SegmentedControl';
 import './StoryGraph.css';
 
 /**
@@ -213,22 +214,16 @@ export default function StoryGraph({
         </div>
 
         <div className="graph-tools">
-          <div className="ed-seg">
-            <button
-              className={!showOuter ? 'is-on' : ''}
-              onClick={() => setShowOuter(false)}
-              disabled={edges2.length === 0}
-            >
-              Neighbours
-            </button>
-            <button
-              className={showOuter ? 'is-on' : ''}
-              onClick={() => setShowOuter(true)}
-              disabled={edges2.length === 0}
-            >
-              Two steps
-            </button>
-          </div>
+          <SegmentedControl
+            label="Graph reach"
+            options={[
+              { id: 'inner', label: 'Neighbours' },
+              { id: 'outer', label: 'Two steps' },
+            ]}
+            value={showOuter ? 'outer' : 'inner'}
+            disabled={edges2.length === 0}
+            onChange={(reach) => setShowOuter(reach === 'outer')}
+          />
           <div className="graph-zoom">
             <button onClick={() => zoomAt(1 / 1.25)} aria-label="Zoom out">−</button>
             <button onClick={() => zoomAt(1.25)} aria-label="Zoom in">+</button>

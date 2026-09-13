@@ -4,7 +4,7 @@ import './Corners.css';
  * Four L-shaped corner brackets with a small spark flourish, wrapping
  * whatever position:relative container they are dropped into.
  *
- * The generalisation of the single hairline corner .info-card carries: fixed
+ * The generalisation of the single hairline corner .section-card carries: fixed
  * pixel size so the brackets stay crisp on any container, one drawing rotated
  * four ways so the corners cannot drift apart in style. Colour from
  * currentColor (set to a token in CSS), loudness from --ornament-opacity.

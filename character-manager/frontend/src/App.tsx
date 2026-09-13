@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Link,
   NavLink,
+  useLocation,
   useNavigate,
 } from 'react-router-dom';
 import Home from './pages/Home';
@@ -15,7 +17,6 @@ import JoinProject from './pages/JoinProject';
 import AdminUsers from './pages/AdminUsers';
 import RulesetEditor from './pages/RulesetEditor';
 import StoryMap from './pages/StoryMap';
-import StoryOptions from './pages/StoryOptions';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { AuthProvider } from './auth/AuthProvider';
 import { RequireAuth } from './auth/RequireAuth';
@@ -59,12 +60,28 @@ function NavAdmin() {
 }
 
 function Shell() {
+  /* On a phone the links collapse behind a toggle; navigating anywhere
+     closes the menu again, so it never lingers over the new page. */
+  const [navOpen, setNavOpen] = useState(false);
+  const location = useLocation();
+  useEffect(() => setNavOpen(false), [location.pathname]);
+
   return (
     <div className="app">
       <nav className="navbar">
         <div className="nav-container">
           <Link to="/" className="nav-brand">Larpworks</Link>
-          <div className="nav-links">
+          <button
+            className="nav-toggle"
+            aria-expanded={navOpen}
+            aria-label={navOpen ? 'Close the menu' : 'Open the menu'}
+            onClick={() => setNavOpen((o) => !o)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+          <div className={`nav-links ${navOpen ? 'is-open' : ''}`}>
             <NavLink to="/" end>
               Home
             </NavLink>
@@ -108,14 +125,6 @@ function Shell() {
             element={
               <RequireAuth>
                 <StoryMap />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/projects/:id/options"
-            element={
-              <RequireAuth>
-                <StoryOptions />
               </RequireAuth>
             }
           />

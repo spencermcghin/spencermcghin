@@ -11,14 +11,7 @@ import './ProjectNav.css';
  * NavLink stamps `.active` on the current tab; `end` keeps Overview from
  * claiming every deeper path.
  */
-export default function ProjectNav({
-  id,
-  showOptions = false,
-}: {
-  id: string;
-  /** The layout-options page is staff scaffolding; only surface it there. */
-  showOptions?: boolean;
-}) {
+export default function ProjectNav({ id }: { id: string }) {
   return (
     <nav className="project-nav" aria-label="Project sections">
       <NavLink to={`/projects/${id}`} end>
@@ -26,7 +19,6 @@ export default function ProjectNav({
       </NavLink>
       <NavLink to={`/projects/${id}/story`}>Story</NavLink>
       <NavLink to={`/projects/${id}/edit`}>Rules</NavLink>
-      {showOptions && <NavLink to={`/projects/${id}/options`}>Layout</NavLink>}
     </nav>
   );
 }

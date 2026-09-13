@@ -10,8 +10,11 @@ import * as edit from '../../../shared/narrative-editor';
 import Hint from '../components/Hint';
 import ProjectNav from '../components/ProjectNav';
 import SaveBar from '../components/SaveBar';
+import SectionCard from '../components/SectionCard';
+import SegmentedControl from '../components/SegmentedControl';
 import Sigil from '../components/Sigil';
 import TagInput from '../components/TagInput';
+import Toolbar from '../components/Toolbar';
 import StoryGraph from '../components/StoryGraph';
 import CampaignBoard from '../components/CampaignBoard';
 import './StoryMap.css';
@@ -276,7 +279,7 @@ export default function StoryMap() {
             </div>
           )}
 
-          <div className="story-bar">
+          <Toolbar label="Story controls">
             <input
               className="ed-find"
               type="search"
@@ -285,31 +288,25 @@ export default function StoryMap() {
               aria-label="Find in the story map"
               onChange={(e) => setQuery(e.target.value)}
             />
-            <div className="ed-seg">
-              <button className={kind === 'all' ? 'is-on' : ''} onClick={() => setKind('all')}>
-                All
-              </button>
-              {map.entityKinds.map((k) => (
-                <button
-                  key={k.id}
-                  className={kind === k.id ? 'is-on' : ''}
-                  onClick={() => setKind(k.id)}
-                >
-                  {k.plural}
-                </button>
-              ))}
-            </div>
-            <div className="ed-seg">
-              {(['list', 'graph', 'campaign'] as const).map((v) => (
-                <button
-                  key={v}
-                  className={view === v ? 'is-on' : ''}
-                  onClick={() => setView(v)}
-                >
-                  {v === 'list' ? 'List' : v === 'graph' ? 'Graph' : 'Campaign'}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              label="Filter by kind"
+              options={[
+                { id: 'all', label: 'All' },
+                ...map.entityKinds.map((k) => ({ id: k.id, label: k.plural })),
+              ]}
+              value={kind}
+              onChange={setKind}
+            />
+            <SegmentedControl
+              label="View"
+              options={[
+                { id: 'list', label: 'List' },
+                { id: 'graph', label: 'Graph' },
+                { id: 'campaign', label: 'Campaign' },
+              ] as const}
+              value={view}
+              onChange={setView}
+            />
             {canEdit && (
               <>
                 <button
@@ -330,7 +327,7 @@ export default function StoryMap() {
                 </button>
               </>
             )}
-          </div>
+          </Toolbar>
 
           {showKinds && <KindsPanel map={map} canEdit={canEdit} apply={apply} />}
 
@@ -408,7 +405,7 @@ export default function StoryMap() {
             </div>
             )}
 
-            <aside className="story-panel">
+            <SectionCard as="aside" sticky className="story-panel">
               {!entity ? (
                 <Overview idx={idx} loose={loose} onOpen={open} />
               ) : (
@@ -422,7 +419,7 @@ export default function StoryMap() {
                   onClose={() => setSelected(null)}
                 />
               )}
-            </aside>
+            </SectionCard>
           </div>
         </>
       )}

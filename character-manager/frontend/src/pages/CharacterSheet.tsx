@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { characterApi, type CharacterSheet as Sheet } from '../services/api';
 import type { Phase } from '../../../shared/engine';
+import SectionCard from '../components/SectionCard';
+import SegmentedControl from '../components/SegmentedControl';
 
 export default function CharacterSheet() {
   const { id = '' } = useParams();
@@ -99,17 +101,15 @@ export default function CharacterSheet() {
           </p>
         </div>
         <div className="actions">
-          <div className="phase-toggle" role="group" aria-label="Purchase phase">
-            {(['creation', 'advancement'] as const).map((p) => (
-              <button
-                key={p}
-                className={`button button-small ${phase === p ? 'button-primary' : ''}`}
-                onClick={() => setPhase(p)}
-              >
-                {p === 'creation' ? 'Creation' : 'Advancement'}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            label="Purchase phase"
+            options={[
+              { id: 'creation', label: 'Creation' },
+              { id: 'advancement', label: 'Advancement' },
+            ]}
+            value={phase}
+            onChange={setPhase}
+          />
         </div>
       </div>
 
@@ -118,8 +118,7 @@ export default function CharacterSheet() {
           while buying -- points left -- must never scroll away. */}
       <div className="sheet-layout">
         <aside className="sheet-state">
-          <div className="info-card">
-            <h2>Points</h2>
+          <SectionCard title="Points">
             <dl className="attributes">
               {progression.map((c) => (
                 <div key={c.id} className="attribute-item">
@@ -130,10 +129,9 @@ export default function CharacterSheet() {
                 </div>
               ))}
             </dl>
-          </div>
+          </SectionCard>
 
-          <div className="info-card">
-            <h2>Rules Check</h2>
+          <SectionCard title="Rules Check">
             {violations.length === 0 ? (
               <p className="ok">This character is legal.</p>
             ) : (
@@ -143,11 +141,10 @@ export default function CharacterSheet() {
                 ))}
               </ul>
             )}
-          </div>
+          </SectionCard>
 
           {checks.length > 0 && (
-            <div className="info-card">
-              <h2>Needs a person</h2>
+            <SectionCard title="Needs a person">
               <p className="muted">
                 The rules ask for these, and nothing here can decide them. They
                 are settled at check-in, not by the app.
@@ -159,14 +156,13 @@ export default function CharacterSheet() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </SectionCard>
           )}
         </aside>
 
         <div className="sheet-shop">
       {ruleset.qualities.length > 0 && (
-        <div className="info-card">
-          <h2>Qualities</h2>
+        <SectionCard title="Qualities">
           {Object.entries(qualityGroups).map(([category, qualities]) => (
             <div key={category} className="quality-group">
               <h3>{category}</h3>
@@ -198,15 +194,14 @@ export default function CharacterSheet() {
               </div>
             </div>
           ))}
-        </div>
+        </SectionCard>
       )}
 
       {ruleset.packageTiers.map((tier) => {
         const options = ruleset.packages.filter((p) => p.tier === tier.id);
         if (options.length === 0) return null;
         return (
-          <div key={tier.id} className="info-card">
-            <h2>{tier.name}</h2>
+          <SectionCard key={tier.id} title={tier.name}>
             <div className="chip-row">
               {options.map((p) => {
                 const held = character.packageIds.includes(p.id);
@@ -223,7 +218,7 @@ export default function CharacterSheet() {
                 );
               })}
             </div>
-          </div>
+          </SectionCard>
         );
       })}
 
@@ -231,8 +226,7 @@ export default function CharacterSheet() {
         const options = available.filter((o) => o.groupId === group.id);
         if (options.length === 0) return null;
         return (
-          <div key={group.id} className="info-card">
-            <h2>{group.name}</h2>
+          <SectionCard key={group.id} title={group.name}>
             <ul className="trait-list">
               {options.map((o) => (
                 <li key={o.traitId} className={`trait trait-${o.status}`}>
@@ -276,7 +270,7 @@ export default function CharacterSheet() {
                 </li>
               ))}
             </ul>
-          </div>
+          </SectionCard>
         );
       })}
 

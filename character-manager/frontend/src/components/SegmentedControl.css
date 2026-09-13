@@ -1,0 +1,40 @@
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.seg button {
+  padding: 0.32rem 0.95rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-mute);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.seg button:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.seg button.is-on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.seg button:disabled {
+  cursor: default;
+}
+
+.seg button:disabled:not(.is-on) {
+  opacity: 0.55;
+}
+
+.seg-sm button {
+  padding: 0.12rem 0.6rem;
+  font-size: 0.66rem;
+}

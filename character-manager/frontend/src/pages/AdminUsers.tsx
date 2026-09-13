@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { adminApi, type AdminUser, type AppRole } from '../services/api';
 import { useAuth } from '../auth/useAuth';
+import SectionCard from '../components/SectionCard';
 
 export default function AdminUsers() {
   const { user } = useAuth();
@@ -27,8 +28,10 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      <div className="info-card full-width">
-        <h2>{users.length} account{users.length === 1 ? '' : 's'}</h2>
+      <SectionCard
+        fullWidth
+        title={`${users.length} account${users.length === 1 ? '' : 's'}`}
+      >
         <ul className="member-list">
           {users.map((u) => (
             <li key={u.id}>
@@ -57,7 +60,7 @@ export default function AdminUsers() {
             </li>
           ))}
         </ul>
-      </div>
+      </SectionCard>
     </div>
   );
 }

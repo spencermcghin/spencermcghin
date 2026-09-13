@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
   accessRoleApi,
   memberApi,
@@ -14,7 +14,9 @@ import { useAuth } from '../auth/useAuth';
 import Hint from '../components/Hint';
 import ProjectNav from '../components/ProjectNav';
 import SaveBar from '../components/SaveBar';
+import SegmentedControl from '../components/SegmentedControl';
 import TagInput from '../components/TagInput';
+import Toolbar from '../components/Toolbar';
 import './RulesetEditor.css';
 
 /**
@@ -38,7 +40,12 @@ export default function RulesetEditor() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [groupBy, setGroupBy] = useState('group');
+  /** Grouping is linkable (?group=…), so the overview tiles can open the
+      catalogue already sliced the way the tile named. */
+  const [params, setParams] = useSearchParams();
+  const groupBy = params.get('group') ?? 'group';
+  const setGroupBy = (dim: string) =>
+    setParams(dim === 'group' ? {} : { group: dim }, { replace: true });
   const [open, setOpen] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [query, setQuery] = useState('');
@@ -275,19 +282,14 @@ export default function RulesetEditor() {
 
       {/* One toolbar, pinned: on a 200-skill ruleset the grouping, search
           and expand controls must not scroll out of reach mid-list. */}
-      <div className="ed-toolbar">
-        <span className="ed-bar-label">Group by</span>
-        <div className="ed-seg">
-          {dimensions.map((d) => (
-            <button
-              key={d.id}
-              className={groupBy === d.id ? 'is-on' : ''}
-              onClick={() => setGroupBy(d.id)}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
+      <Toolbar sticky label="Catalogue controls">
+        <span className="toolbar-label">Group by</span>
+        <SegmentedControl
+          label="Group skills by"
+          options={dimensions.map((d) => ({ id: d.id, label: d.label }))}
+          value={groupBy}
+          onChange={setGroupBy}
+        />
         <Hint>
           These are ways of looking at the same skills, not places to put
           them. Each grouping is worked out from what the skills already
@@ -296,7 +298,7 @@ export default function RulesetEditor() {
           the tree a skill belongs to is stored on the skill itself.
         </Hint>
         <input
-          className="ed-find"
+          className="ed-find toolbar-grow"
           type="search"
           value={query}
           placeholder="Find a skill…"
@@ -317,7 +319,7 @@ export default function RulesetEditor() {
             </button>
           </>
         )}
-      </div>
+      </Toolbar>
 
       {issues.length > 0 && (
         <div className="ed-issues">
@@ -599,20 +601,20 @@ function QualityPanel({
                   apply((r) => edit.updateQuality(r, q.id, { category: e.target.value }))
                 }
               />
-              <div className="cl-seg" title="Who may put this on a character">
-                {(['player', 'staff'] as const).map((who) => (
-                  <button
-                    key={who}
-                    className={q.grantedBy === who ? 'is-on' : ''}
-                    disabled={!canEdit}
-                    onClick={() =>
-                      apply((r) => edit.updateQuality(r, q.id, { grantedBy: who }))
-                    }
-                  >
-                    {who === 'player' ? 'Player' : 'Staff'}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                size="sm"
+                title="Who may put this on a character"
+                label="Who may put this on a character"
+                options={[
+                  { id: 'player', label: 'Player' },
+                  { id: 'staff', label: 'Staff' },
+                ]}
+                value={q.grantedBy}
+                disabled={!canEdit}
+                onChange={(who) =>
+                  apply((r) => edit.updateQuality(r, q.id, { grantedBy: who }))
+                }
+              />
               {canEdit && (
                 <button
                   className="ed-del"
@@ -998,18 +1000,17 @@ function ClauseEditor({
           Leave it empty and anyone can buy this.
         </Hint>
         {clauses.length > 1 && (
-          <div className="cl-seg">
-            {(['all', 'any'] as const).map((op) => (
-              <button
-                key={op}
-                className={operator === op ? 'is-on' : ''}
-                disabled={!canEdit}
-                onClick={() => onChange(edit.conditionFrom(op, clauses))}
-              >
-                {op}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            size="sm"
+            label="All or any of the clauses"
+            options={[
+              { id: 'all', label: 'all' },
+              { id: 'any', label: 'any' },
+            ]}
+            value={operator}
+            disabled={!canEdit}
+            onChange={(op) => onChange(edit.conditionFrom(op, clauses))}
+          />
         )}
       </div>
 

@@ -25,75 +25,8 @@
 
 /* ---------------- grouping ---------------- */
 
-.ed-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  flex-wrap: wrap;
-  margin: 1.5rem 0;
-}
-
-/* The merged control strip, pinned below the navbar while the outline
-   scrolls. Solid ground and a hairline so the list reads as passing under
-   it rather than through it. */
-.ed-toolbar {
-  position: sticky;
-  top: 72px; /* below the sticky navbar */
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  flex-wrap: wrap;
-  margin: 1.5rem 0;
-  padding: 0.6rem 0.85rem;
-  background: var(--surface-solid);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow);
-}
-
-/* The search grows to fill whatever the segments leave over. */
-.ed-toolbar .ed-find {
-  flex: 1;
-  min-width: 12rem;
-  width: auto;
-  margin-left: auto;
-}
-
-.ed-bar-label {
-  font-family: var(--font-heading);
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-mute);
-}
-
-.ed-seg {
-  display: inline-flex;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.ed-seg button {
-  padding: 0.32rem 0.95rem;
-  font-family: var(--font-body);
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-mute);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s var(--ease), color 0.2s var(--ease);
-}
-
-.ed-seg button:hover { color: var(--text); }
-
-.ed-seg button.is-on {
-  background: var(--accent);
-  color: var(--accent-ink);
-}
+/* The pinned control strip and segment pills come from the kit
+   (Toolbar sticky, SegmentedControl). */
 
 .ed-hint {
   font-size: 0.75rem;
@@ -190,6 +123,9 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0;
+  /* Long skill names share a row with meta and controls; on a phone the
+     row folds rather than forcing the page wide. */
+  flex-wrap: wrap;
 }
 
 .ed-caret {
@@ -305,6 +241,7 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
+  flex-wrap: wrap;
 }
 
 .ed-tier-lv {
@@ -363,29 +300,6 @@
   color: var(--text-mute);
 }
 
-.cl-seg {
-  display: inline-flex;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.cl-seg button {
-  padding: 0.12rem 0.6rem;
-  font-family: var(--font-body);
-  font-size: 0.66rem;
-  font-weight: 600;
-  color: var(--text-mute);
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.cl-seg button.is-on {
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
 .cl-none {
   font-size: 0.8rem;
   color: var(--text-mute);
@@ -396,6 +310,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0;
+  flex-wrap: wrap;
 }
 
 .cl-kind {
@@ -470,6 +385,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .ed-quality-cat {

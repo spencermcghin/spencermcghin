@@ -119,7 +119,7 @@ export default function Projects() {
       ) : (
         <div className="character-grid">
           {projects.map((p) => (
-            <div key={p.id} className="character-card">
+            <div key={p.id} className="section-card character-card">
               <h2>{p.name}</h2>
               <p className="character-info">
                 v{p.version} · {p.characterCount}{' '}

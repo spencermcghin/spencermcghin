@@ -16,7 +16,9 @@ import { balances, indexRuleset } from '../../../shared/engine';
 import { useAuth } from '../auth/useAuth';
 import Hint from '../components/Hint';
 import ProjectNav from '../components/ProjectNav';
+import SectionCard from '../components/SectionCard';
 import Sigil from '../components/Sigil';
+import Toolbar from '../components/Toolbar';
 
 export default function ProjectDetail() {
   const { id = '' } = useParams();
@@ -229,12 +231,21 @@ export default function ProjectDetail() {
   if (error) return <div className="error">{error}</div>;
   if (!ruleset) return <p className="muted">Not found.</p>;
 
-  const stat = (label: string, value: number) => (
-    <div key={label} className="attribute-item">
-      <dd>{value}</dd>
-      <dt>{label}</dt>
-    </div>
-  );
+  /** A tile that navigates when there is somewhere to go, and states a
+      count when there is not. dt/dd cannot sit inside an anchor, so linked
+      tiles use span twins with the same look. */
+  const stat = (label: string, value: number, to?: string, title?: string) =>
+    to ? (
+      <Link key={label} className="attribute-item" to={to} title={title}>
+        <span className="attribute-value">{value}</span>
+        <span className="attribute-label">{label}</span>
+      </Link>
+    ) : (
+      <div key={label} className="attribute-item">
+        <span className="attribute-value">{value}</span>
+        <span className="attribute-label">{label}</span>
+      </div>
+    );
 
   return (
     <div className="project-detail">
@@ -259,20 +270,37 @@ export default function ProjectDetail() {
       {ruleset.description && <p className="project-blurb">{ruleset.description}</p>}
 
       <div className="character-info-grid">
-        <div className="info-card">
-          <h2>Ruleset</h2>
-          <dl className="attributes">
+        <SectionCard title="Ruleset">
+          <div className="attributes">
             {stat('Currencies', ruleset.currencies.length)}
             {stat('Archetypes', ruleset.packages.length)}
-            {stat('Trees', ruleset.traitGroups.length)}
-            {stat('Skills', ruleset.traits.length)}
-            {stat('Tracks', ruleset.tracks.length)}
+            {stat(
+              'Trees',
+              ruleset.traitGroups.length,
+              `/projects/${id}/edit`,
+              'Open the skill catalogue, grouped by tree'
+            )}
+            {stat(
+              'Skills',
+              ruleset.traits.length,
+              `/projects/${id}/edit`,
+              'Open the skill catalogue'
+            )}
+            {stat(
+              'Tracks',
+              ruleset.tracks.length,
+              ruleset.tracks.length > 0
+                ? `/projects/${id}/edit?group=track:${ruleset.tracks[0].id}`
+                : undefined,
+              ruleset.tracks.length > 0
+                ? `Open the catalogue grouped by the ${ruleset.tracks[0].name} track`
+                : undefined
+            )}
             {stat('Caps', ruleset.purchaseRules.length)}
-          </dl>
-        </div>
+          </div>
+        </SectionCard>
 
-        <div className="info-card">
-          <h2>Members</h2>
+        <SectionCard title="Members">
           <ul className="member-list">
             {members.map((m) => {
               // The server refuses to demote or remove the last admin; the
@@ -373,13 +401,12 @@ export default function ProjectDetail() {
               );
             })}
           </ul>
-        </div>
+        </SectionCard>
 
         {/* Role definitions are governance, so they live here with the
             members rather than inside the rules. Each action saves at once. */}
         {isStaff && (
-          <div className="info-card">
-            <h2>Access Roles</h2>
+          <SectionCard title="Access Roles">
             <p className="muted">
               Roles gate who can see restricted skills. Define them here, tick
               them on members above, and mark skills “Visible to” a role in the
@@ -422,13 +449,12 @@ export default function ProjectDetail() {
                 Add Role
               </button>
             </form>
-          </div>
+          </SectionCard>
         )}
       </div>
 
       {isStaff && (
-        <div className="info-card full-width invite-card">
-          <h2>Invite Players</h2>
+        <SectionCard fullWidth className="invite-card" title="Invite Players">
           <p className="muted">
             Anyone with the link joins as a member. Links expire after 30 days and
             can be revoked at any time.
@@ -475,7 +501,7 @@ export default function ProjectDetail() {
                 ))}
             </ul>
           )}
-        </div>
+        </SectionCard>
       )}
 
       <div className="header section-header">
@@ -495,7 +521,7 @@ export default function ProjectDetail() {
       </form>
 
       {isStaff && roster.length > 0 && (
-        <div className="award-bar">
+        <Toolbar boxed spread label="Bulk award">
           <div className="award-select">
             <label className="award-check">
               <input
@@ -560,7 +586,7 @@ export default function ProjectDetail() {
               rather than silently unpicking their build.
             </Hint>
           </div>
-        </div>
+        </Toolbar>
       )}
 
       {awardNote && <p className="award-note">{awardNote}</p>}
@@ -578,7 +604,7 @@ export default function ProjectDetail() {
             return (
               <div
                 key={c.id}
-                className={`character-card ${selected.includes(c.id) ? 'is-selected' : ''}`}
+                className={`section-card character-card ${selected.includes(c.id) ? 'is-selected' : ''}`}
               >
                 {isStaff && (
                   <label className="card-check">
