@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { attachUser } from './auth/middleware';
+import { buildCsp, httpsRedirect, securityHeaders } from './security';
 import { initStore } from './db';
 import adminRoutes from './routes/admin';
 import authRoutes from './routes/auth';
@@ -15,6 +16,8 @@ import rulesetRoutes from './routes/rulesets';
 dotenv.config();
 
 const app: Express = express();
+// Advertising the framework in every response helps nobody but a scanner.
+app.disable('x-powered-by');
 const port = process.env.PORT || 3000;
 
 // Sessions ride on a cookie, so a split deploy must name the exact frontend
@@ -22,6 +25,9 @@ const port = process.env.PORT || 3000;
 // Same-origin deploys need no CORS configuration at all.
 const allowedOrigin = process.env.CORS_ORIGIN;
 const frontendDist = findFrontendBuild();
+
+app.use(httpsRedirect);
+app.use(securityHeaders(buildCsp(frontendDist)));
 
 if (allowedOrigin) {
   // Split deploy: name the exact frontend origin. A credentialed request

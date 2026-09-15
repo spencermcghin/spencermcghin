@@ -97,7 +97,8 @@ export interface RulesetSummary {
 export interface Member {
   userId: string;
   displayName: string;
-  email: string;
+  /** Present only when the caller can manage members; personal data. */
+  email?: string;
   role: ProjectRole;
   /** Visibility access roles assigned to this member (ids into the ruleset). */
   accessRoles: string[];

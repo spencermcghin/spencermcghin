@@ -42,7 +42,15 @@ async function authorize(
 
 export async function listMembers(req: Request, res: Response) {
   if (!(await authorize(req, res, 'view'))) return;
-  res.json(await getStore().listMembers(req.params.id));
+  const members = await getStore().listMembers(req.params.id);
+
+  // Email addresses are personal data. Staff see them, since they may need
+  // to reach a player; an ordinary member sees only display names.
+  const viewer = await viewerFor(req, req.params.id);
+  if (canManageMembers(viewer)) {
+    return res.json(members);
+  }
+  res.json(members.map(({ email: _email, ...rest }) => rest));
 }
 
 export async function updateMemberRole(req: Request, res: Response) {
