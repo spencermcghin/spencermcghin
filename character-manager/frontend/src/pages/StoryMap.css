@@ -101,6 +101,24 @@
    kit's single bordered eyebrow would draw a line under every one. Scoped
    to direct children so the entry's own name, which sits inside an
    ObjectHeader, keeps its display face. */
+
+/* The list and the panel scroll independently: the panel stays pinned and
+   scrolls inside itself when an entry runs long, so reading its tail never
+   means scrolling the whole page past the list. Same pattern as the
+   character sheet's rail. */
+.section-card.story-panel {
+  max-height: calc(100vh - 6.5rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@media (max-width: 900px) {
+  /* Stacked layout: one column, so the page is the right scroll container. */
+  .section-card.story-panel {
+    max-height: none;
+    overflow: hidden;
+  }
+}
 .story-panel section + section {
   margin-top: 1.75rem;
   padding-top: 1.5rem;
