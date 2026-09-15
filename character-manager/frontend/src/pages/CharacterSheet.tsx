@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { characterApi, type CharacterSheet as Sheet } from '../services/api';
 import type { Phase } from '../../../shared/engine';
+import ObjectHeader from '../components/ObjectHeader';
 import SectionCard from '../components/SectionCard';
 import SegmentedControl from '../components/SegmentedControl';
 
@@ -92,15 +93,14 @@ export default function CharacterSheet() {
 
   return (
     <div className="character-sheet">
-      <div className="header">
-        <div>
-          <h1>{character.name}</h1>
-          <p className="muted">
-            {ruleset.name} · played by {ownerName}
-            {!canEdit && ' · read only'}
-          </p>
-        </div>
-        <div className="actions">
+      <ObjectHeader
+        level={1}
+        className="is-page"
+        kind="Character"
+        meta={ruleset.name}
+        name={character.name}
+        subtitle={`Played by ${ownerName}${!canEdit ? ' · read only' : ''}`}
+        actions={
           <SegmentedControl
             label="Purchase phase"
             options={[
@@ -110,8 +110,8 @@ export default function CharacterSheet() {
             value={phase}
             onChange={setPhase}
           />
-        </div>
-      </div>
+        }
+      />
 
       {/* Two regions: the state of the character (sticky, always in view)
           and the shopping surface that scrolls. The one number you need

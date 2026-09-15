@@ -98,14 +98,16 @@
 
 /* The panel surface comes from the kit (SectionCard, sticky). Its inner
    sections keep their own quieter headings: several h2s per card, so the
-   kit's single bordered eyebrow would draw a line under every one. */
+   kit's single bordered eyebrow would draw a line under every one. Scoped
+   to direct children so the entry's own name, which sits inside an
+   ObjectHeader, keeps its display face. */
 .story-panel section + section {
   margin-top: 1.75rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
 }
 
-.section-card.story-panel h2 {
+.section-card.story-panel section > h2 {
   display: flex;
   align-items: center;
   font-family: var(--font-heading);
@@ -119,29 +121,26 @@
   border-bottom: none;
 }
 
-.story-detail-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+/* The head itself is the kit's ObjectHeader; only the copy control needs
+   local care so it keeps its size beside a long name. */
+.story-panel .object-header {
+  margin-bottom: 0.9rem;
 }
 
-.story-detail-head h2 {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--text);
-  margin-bottom: 0.35rem;
+.story-detail-head .story-copy {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.story-detail-kind {
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 0.8rem;
+.story-missing {
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 1.25rem;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-solid);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
+
+
 
 .story-summary {
   font-size: 0.95rem;

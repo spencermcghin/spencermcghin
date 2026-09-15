@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { storyApi } from '../services/api';
 import type {
   NarrativeEntity,
@@ -8,6 +8,7 @@ import type {
 import { connectionsOf, indexMap, orphans, validateMap } from '../../../shared/narrative';
 import * as edit from '../../../shared/narrative-editor';
 import Hint from '../components/Hint';
+import ObjectHeader from '../components/ObjectHeader';
 import ProjectNav from '../components/ProjectNav';
 import SaveBar from '../components/SaveBar';
 import SectionCard from '../components/SectionCard';
@@ -32,7 +33,8 @@ import './StoryMap.css';
  * board answers "what is running where, and what is still a draft".
  */
 export default function StoryMap() {
-  const { id = '' } = useParams();
+  const { id = '', entryId } = useParams();
+  const navigate = useNavigate();
 
   const [map, setMap] = useState<NarrativeMap | null>(null);
   const [canEdit, setCanEdit] = useState(false);
@@ -40,7 +42,20 @@ export default function StoryMap() {
   const [note, setNote] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  /* The selected entry lives in the URL, so every entry has an address that
+     can be linked to, bookmarked, and shared. Selecting pushes history, so
+     the browser's back button also walks your reading path. */
+  const selected = entryId ?? null;
+  const setSelected = useCallback(
+    (entityId: string | null) => {
+      navigate(
+        entityId
+          ? `/projects/${id}/story/${encodeURIComponent(entityId)}`
+          : `/projects/${id}/story`
+      );
+    },
+    [navigate, id]
+  );
   const [kind, setKind] = useState('all');
   const [query, setQuery] = useState('');
   const [showKinds, setShowKinds] = useState(false);
@@ -113,18 +128,19 @@ export default function StoryMap() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [map, kind, query]);
 
-  const open = useCallback((entityId: string) => {
-    setSelected((current) => {
-      if (current && current !== entityId) {
+  const open = useCallback(
+    (entityId: string) => {
+      if (selected && selected !== entityId) {
         // Revisiting somewhere already on the trail winds back to it rather
         // than looping, so the trail stays a path and not a history log.
         setTrail((t) =>
-          t.includes(entityId) ? t.slice(0, t.indexOf(entityId)) : [...t, current]
+          t.includes(entityId) ? t.slice(0, t.indexOf(entityId)) : [...t, selected]
         );
       }
-      return entityId;
-    });
-  }, []);
+      setSelected(entityId);
+    },
+    [selected, setSelected]
+  );
 
   const back = useCallback(() => {
     setTrail((t) => {
@@ -132,7 +148,7 @@ export default function StoryMap() {
       setSelected(t[t.length - 1]);
       return t.slice(0, -1);
     });
-  }, []);
+  }, [setSelected]);
 
   /* ---------------- import and export ---------------- */
 
@@ -407,7 +423,15 @@ export default function StoryMap() {
 
             <SectionCard as="aside" sticky className="story-panel">
               {!entity ? (
-                <Overview idx={idx} loose={loose} onOpen={open} />
+                <>
+                  {entryId && (
+                    <p className="muted story-missing">
+                      There is no story entry at this address. It may have
+                      been deleted.
+                    </p>
+                  )}
+                  <Overview idx={idx} loose={loose} onOpen={open} />
+                </>
               ) : (
                 <EntityPanel
                   entity={entity}
@@ -523,26 +547,63 @@ function EntityPanel({
 }) {
   const [linkKind, setLinkKind] = useState(map.relationKinds[0]?.id ?? '');
   const [linkTo, setLinkTo] = useState('');
+  const [copied, setCopied] = useState(false);
   const links = connectionsOf(entity.id, idx);
   const set = (patch: Partial<NarrativeEntity>) =>
     apply((m) => edit.updateEntity(m, entity.id, patch));
 
+  /* Every entry has an address now; this puts it on the clipboard so plot
+     docs and chat messages can point straight at it. */
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* Clipboard access can be denied; the URL bar still has the address. */
+    }
+  };
+
   return (
     <>
       <section>
-        <div className="story-detail-head">
-          {canEdit ? (
-            <input
-              className="story-name-input"
-              value={entity.name}
-              aria-label="Name"
-              onChange={(e) => set({ name: e.target.value })}
-            />
-          ) : (
-            <h2>{entity.name}</h2>
-          )}
-          <button className="ed-del" aria-label="Close" onClick={onClose}>×</button>
-        </div>
+        <ObjectHeader
+          className="story-detail-head"
+          kind={idx.entityKinds.get(entity.kindId)?.label ?? entity.kindId}
+          meta={
+            `${entity.status} · ${links.length} connection${links.length === 1 ? '' : 's'}` +
+            (entity.occursAt ? ` · ${entity.occursAt}` : '')
+          }
+          name={
+            canEdit ? (
+              <input
+                className="story-name-input"
+                value={entity.name}
+                aria-label="Name"
+                onChange={(e) => set({ name: e.target.value })}
+              />
+            ) : (
+              entity.name
+            )
+          }
+          subtitle={
+            !canEdit && entity.aliases.length > 0
+              ? `Also called ${entity.aliases.map((a) => `"${a}"`).join(', ')}.`
+              : undefined
+          }
+          actions={
+            <>
+              <button
+                className="ed-add story-copy"
+                onClick={() => void copyLink()}
+                title="Copy a link to this entry"
+              >
+                {copied ? 'Copied' : 'Copy link'}
+              </button>
+              <button className="ed-del" aria-label="Close" onClick={onClose}>×</button>
+            </>
+          }
+        />
 
         {canEdit ? (
           <div className="story-meta-row">
@@ -598,13 +659,7 @@ function EntityPanel({
               ×
             </button>
           </div>
-        ) : (
-          <p className="story-detail-kind">
-            {idx.entityKinds.get(entity.kindId)?.label ?? entity.kindId}
-            {entity.status !== 'canon' && ` · ${entity.status}`}
-            {entity.occursAt && ` · ${entity.occursAt}`}
-          </p>
-        )}
+        ) : null}
 
         {canEdit ? (
           <>
@@ -653,9 +708,6 @@ function EntityPanel({
           </>
         ) : (
           <>
-            {entity.aliases.length > 0 && (
-              <p className="muted">Also called {entity.aliases.join(', ')}</p>
-            )}
             {entity.summary && <p className="story-summary">{entity.summary}</p>}
             {entity.body && <p className="story-body-text">{entity.body}</p>}
             {entity.tags.length > 0 && (

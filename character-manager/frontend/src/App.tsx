@@ -17,6 +17,7 @@ import JoinProject from './pages/JoinProject';
 import AdminUsers from './pages/AdminUsers';
 import RulesetEditor from './pages/RulesetEditor';
 import StoryMap from './pages/StoryMap';
+import ProjectCharacters from './pages/ProjectCharacters';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { AuthProvider } from './auth/AuthProvider';
 import { RequireAuth } from './auth/RequireAuth';
@@ -125,6 +126,22 @@ function Shell() {
             element={
               <RequireAuth>
                 <StoryMap />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/projects/:id/story/:entryId"
+            element={
+              <RequireAuth>
+                <StoryMap />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/projects/:id/characters"
+            element={
+              <RequireAuth>
+                <ProjectCharacters />
               </RequireAuth>
             }
           />

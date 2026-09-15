@@ -19,6 +19,7 @@ export default function ProjectNav({ id }: { id: string }) {
       </NavLink>
       <NavLink to={`/projects/${id}/story`}>Story</NavLink>
       <NavLink to={`/projects/${id}/edit`}>Rules</NavLink>
+      <NavLink to={`/projects/${id}/characters`}>Characters</NavLink>
     </nav>
   );
 }
