@@ -10,8 +10,10 @@ import { initStore } from './db';
 import adminRoutes from './routes/admin';
 import authRoutes from './routes/auth';
 import characterRoutes from './routes/characters';
+import googleRoutes from './routes/google';
 import inviteRoutes from './routes/invites';
 import rulesetRoutes from './routes/rulesets';
+import { syncAllProjects } from './controllers/sourceController';
 
 dotenv.config();
 
@@ -74,6 +76,7 @@ app.get('/api', (_req: Request, res: Response) => {
 
 app.use('/api', attachUser);
 app.use('/api/auth', authRoutes);
+app.use('/api/google', googleRoutes);
 app.use('/api/rulesets', rulesetRoutes);
 app.use('/api/characters', characterRoutes);
 app.use('/api/invites', inviteRoutes);
@@ -141,6 +144,11 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 
 initStore()
   .then(() => {
+    // The source sweep: linked folders are re-listed on an interval so the
+    // ledger notices drift without anyone pressing anything. Fifteen
+    // minutes matches how fast plot documents actually change.
+    setInterval(() => void syncAllProjects(), 15 * 60 * 1000);
+
     app.listen(port, () => {
       if (allowedOrigin) {
         console.log(

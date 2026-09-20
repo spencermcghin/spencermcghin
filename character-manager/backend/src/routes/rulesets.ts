@@ -15,6 +15,13 @@ import {
 } from '../controllers/characterController';
 import { getNarrative, saveNarrative } from '../controllers/narrativeController';
 import {
+  addSourceFolder,
+  listSources,
+  removeSourceFolder,
+  reviewSource,
+  syncSources,
+} from '../controllers/sourceController';
+import {
   createAccessRole,
   createInvite,
   deleteAccessRole,
@@ -56,6 +63,14 @@ router.delete('/:id/access-roles/:roleId', deleteAccessRole);
 router.get('/:id/invites', listInvites);
 router.post('/:id/invites', createInvite);
 router.delete('/:id/invites/:inviteId', revokeInvite);
+
+// The source ledger: which documents the canon was written from, and
+// whether they have drifted since.
+router.get('/:id/sources', listSources);
+router.post('/:id/sources/sync', syncSources);
+router.post('/:id/sources/:docId/review', reviewSource);
+router.post('/:id/source-folders', addSourceFolder);
+router.delete('/:id/source-folders/:folderId', removeSourceFolder);
 
 // The story map belongs to a project the way its rules do.
 router.get('/:rulesetId/narrative', getNarrative);

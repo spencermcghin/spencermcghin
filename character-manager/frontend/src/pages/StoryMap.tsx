@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { storyApi } from '../services/api';
+import { sourceApi, storyApi, type SourceStatus } from '../services/api';
+import { extractDriveId } from '../../../shared/sources';
 import type {
   NarrativeEntity,
   NarrativeMap,
@@ -92,6 +93,11 @@ export default function StoryMap() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  /** Ledger status per source, keyed by Drive file id or exact URL. */
+  const [sourceStatus, setSourceStatus] = useState<Map<string, SourceStatus>>(
+    new Map()
+  );
+
   useEffect(() => {
     storyApi
       .get(id)
@@ -103,6 +109,19 @@ export default function StoryMap() {
         if (r.map.campaign?.spineKindId) setView('campaign');
       })
       .catch(() => setError('Could not load this project.'));
+    sourceApi
+      .list(id)
+      .then((r) => {
+        const byKey = new Map<string, SourceStatus>();
+        for (const d of r.documents) {
+          byKey.set(d.externalId, d.status);
+          byKey.set(d.url, d.status);
+        }
+        setSourceStatus(byKey);
+      })
+      .catch(() => {
+        /* No ledger, no chips. The page stands without it. */
+      });
   }, [id]);
 
   const apply = useCallback((next: (m: NarrativeMap) => NarrativeMap) => {
@@ -588,6 +607,7 @@ export default function StoryMap() {
                   apply={apply}
                   onOpen={open}
                   onClose={() => setSelected(null)}
+                  sourceStatus={sourceStatus}
                 />
               )}
             </SectionCard>
@@ -695,6 +715,7 @@ function EntityPanel({
   apply,
   onOpen,
   onClose,
+  sourceStatus,
 }: {
   entity: NarrativeEntity;
   map: NarrativeMap;
@@ -703,6 +724,7 @@ function EntityPanel({
   apply: (next: (m: NarrativeMap) => NarrativeMap) => void;
   onOpen: (id: string) => void;
   onClose: () => void;
+  sourceStatus: Map<string, SourceStatus>;
 }) {
   const [copied, setCopied] = useState(false);
   const [confirm, confirmDialog] = useConfirm();
@@ -974,16 +996,28 @@ function EntityPanel({
             </Hint>
           </h2>
           <ul className="story-sources">
-            {entity.sources.map((s, i) => (
-              <li key={i}>
-                {s.url ? (
-                  <a href={s.url} target="_blank" rel="noreferrer">{s.label}</a>
-                ) : (
-                  s.label
-                )}
-                {s.locator && <span className="muted"> · {s.locator}</span>}
-              </li>
-            ))}
+            {entity.sources.map((s, i) => {
+              const key = s.url ? (extractDriveId(s.url) ?? s.url) : null;
+              const status = key ? sourceStatus.get(key) : undefined;
+              return (
+                <li key={i}>
+                  {s.url ? (
+                    <a href={s.url} target="_blank" rel="noreferrer">{s.label}</a>
+                  ) : (
+                    s.label
+                  )}
+                  {s.locator && <span className="muted"> · {s.locator}</span>}
+                  {/* Drift flags from the source ledger: the document
+                      changed since review, or is gone from its folder. */}
+                  {status === 'stale' && (
+                    <span className="source-chip is-stale">changed since review</span>
+                  )}
+                  {status === 'missing' && (
+                    <span className="source-chip is-missing">gone from its folder</span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

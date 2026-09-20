@@ -1,0 +1,96 @@
+.sources-folders {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+}
+
+.sources-folders li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.3rem 0;
+}
+
+.sources-folders a {
+  color: var(--accent);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.sources-folders .muted { font-size: var(--step-0); }
+
+.sources-add {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+
+.sources-add input {
+  flex: 1;
+  min-width: 14rem;
+  font: inherit;
+  font-size: var(--step-1);
+  color: var(--text);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+}
+
+.sources-docs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.source-row {
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.source-row-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.source-row-main > a {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.source-row-main > a:hover { color: var(--accent); }
+
+.source-chip {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border-strong);
+}
+
+.source-chip.is-stale {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.source-chip.is-missing {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.source-chip.is-uncited {
+  color: var(--text-mute);
+}
+
+.source-row-cites {
+  margin: 0.25rem 0 0;
+  font-size: var(--step-0);
+}
+
+.source-row-cites a {
+  color: var(--accent);
+}

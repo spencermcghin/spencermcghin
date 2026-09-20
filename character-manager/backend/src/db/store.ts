@@ -1,5 +1,6 @@
 import type { NarrativeMap } from '../../../shared/narrative-schema';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
+import type { SourceDocument, SourceFolder } from '../../../shared/sources';
 import type { AccessRole } from '../../../shared/visibility';
 import type { AppRole, ProjectRole } from '../auth/permissions';
 
@@ -55,6 +56,23 @@ export interface Invite {
 export interface Owned<T> {
   value: T;
   ownerId: string;
+}
+
+export interface GoogleAccount {
+  userId: string;
+  email: string;
+  /** Encrypted at rest; only the oauth module can use it. */
+  refreshToken: string;
+  connectedAt: string;
+}
+
+/** What one sync pass observed in a folder. */
+export interface SeenSourceFile {
+  externalId: string;
+  name: string;
+  url: string;
+  mimeType?: string;
+  modifiedAt: string;
 }
 
 export interface CharacterRow {
@@ -147,6 +165,41 @@ export interface Store {
   /* --- narrative --- */
   getNarrative(rulesetId: string): Promise<NarrativeMap | null>;
   putNarrative(map: NarrativeMap): Promise<NarrativeMap>;
+
+  /* --- google connections --- */
+  getGoogleAccount(userId: string): Promise<GoogleAccount | null>;
+  putGoogleAccount(userId: string, email: string, refreshToken: string): Promise<void>;
+  deleteGoogleAccount(userId: string): Promise<boolean>;
+
+  /* --- source folders and documents (the ledger) --- */
+  listSourceFolders(rulesetId: string): Promise<SourceFolder[]>;
+  addSourceFolder(input: {
+    id: string;
+    rulesetId: string;
+    externalId: string;
+    name: string;
+    url: string;
+    linkedBy: string;
+  }): Promise<SourceFolder>;
+  removeSourceFolder(id: string, rulesetId: string): Promise<boolean>;
+  listSourceDocuments(rulesetId: string): Promise<SourceDocument[]>;
+  /**
+   * Applies one sync pass over a folder: seen files are upserted and
+   * refreshed, previously-seen files not in the listing are marked
+   * missing, and the folder's sync time advances. First sight of a file
+   * counts as reviewed -- a folder is linked because the story already
+   * reflects it; only changes after that need a decision.
+   */
+  reconcileSourceDocuments(
+    folderId: string,
+    rulesetId: string,
+    seen: SeenSourceFile[],
+    at: string
+  ): Promise<void>;
+  /** Records "the story still matches this document". False if unknown. */
+  reviewSourceDocument(id: string, rulesetId: string, at: string): Promise<boolean>;
+  /** Every ruleset with at least one linked folder, for the sync sweep. */
+  listRulesetsWithSources(): Promise<string[]>;
 
   /* --- characters --- */
   listCharacters(rulesetId: string): Promise<CharacterRow[]>;

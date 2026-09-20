@@ -7,14 +7,17 @@ import {
 } from '../../../shared/normalize';
 import type { NarrativeMap } from '../../../shared/narrative-schema';
 import type { Character, Ruleset } from '../../../shared/rules-schema';
+import type { SourceDocument, SourceFolder } from '../../../shared/sources';
 import type { AccessRole } from '../../../shared/visibility';
 import type { AppRole, ProjectRole } from '../auth/permissions';
 import type {
   CharacterRow,
+  GoogleAccount,
   Invite,
   Member,
   Owned,
   RulesetSummary,
+  SeenSourceFile,
   Store,
   User,
   UserWithSecret,
@@ -167,6 +170,51 @@ export class PostgresStore implements Store {
         uses       INTEGER NOT NULL DEFAULT 0
       );
     `);
+
+    // The source ledger: which Google account a user connected, which
+    // folders a project watches, and what those folders hold.
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS google_accounts (
+        user_id       TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        email         TEXT NOT NULL,
+        refresh_token TEXT NOT NULL,
+        connected_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS source_folders (
+        id           TEXT PRIMARY KEY,
+        ruleset_id   TEXT NOT NULL REFERENCES rulesets(id) ON DELETE CASCADE,
+        external_id  TEXT NOT NULL,
+        name         TEXT NOT NULL,
+        url          TEXT NOT NULL,
+        linked_by    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+        last_sync_at TIMESTAMPTZ,
+        UNIQUE (ruleset_id, external_id)
+      );
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS source_documents (
+        id            TEXT PRIMARY KEY,
+        folder_id     TEXT NOT NULL REFERENCES source_folders(id) ON DELETE CASCADE,
+        ruleset_id    TEXT NOT NULL REFERENCES rulesets(id) ON DELETE CASCADE,
+        external_id   TEXT NOT NULL,
+        name          TEXT NOT NULL,
+        url           TEXT NOT NULL,
+        mime_type     TEXT,
+        modified_at   TIMESTAMPTZ NOT NULL,
+        first_seen_at TIMESTAMPTZ NOT NULL,
+        last_seen_at  TIMESTAMPTZ NOT NULL,
+        reviewed_at   TIMESTAMPTZ,
+        missing_at    TIMESTAMPTZ,
+        UNIQUE (folder_id, external_id)
+      );
+    `);
+    await this.pool.query(
+      `CREATE INDEX IF NOT EXISTS source_documents_ruleset_idx
+         ON source_documents (ruleset_id);`
+    );
 
     await this.pool.query(
       `CREATE INDEX IF NOT EXISTS characters_ruleset_id_idx ON characters (ruleset_id);`
@@ -554,6 +602,153 @@ export class PostgresStore implements Store {
     return map;
   }
 
+  /* ---------------- google and the source ledger ---------------- */
+
+  async getGoogleAccount(userId: string): Promise<GoogleAccount | null> {
+    const { rows } = await this.pool.query(
+      `SELECT user_id, email, refresh_token, connected_at
+         FROM google_accounts WHERE user_id = $1;`,
+      [userId]
+    );
+    if (!rows[0]) return null;
+    return {
+      userId: rows[0].user_id,
+      email: rows[0].email,
+      refreshToken: rows[0].refresh_token,
+      connectedAt: new Date(rows[0].connected_at).toISOString(),
+    };
+  }
+
+  async putGoogleAccount(
+    userId: string,
+    email: string,
+    refreshToken: string
+  ): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO google_accounts (user_id, email, refresh_token)
+            VALUES ($1, $2, $3)
+       ON CONFLICT (user_id) DO UPDATE
+               SET email = EXCLUDED.email,
+                   refresh_token = EXCLUDED.refresh_token,
+                   connected_at = now();`,
+      [userId, email, refreshToken]
+    );
+  }
+
+  async deleteGoogleAccount(userId: string): Promise<boolean> {
+    const { rowCount } = await this.pool.query(
+      `DELETE FROM google_accounts WHERE user_id = $1;`,
+      [userId]
+    );
+    return (rowCount ?? 0) > 0;
+  }
+
+  async listSourceFolders(rulesetId: string): Promise<SourceFolder[]> {
+    const { rows } = await this.pool.query(
+      `SELECT * FROM source_folders WHERE ruleset_id = $1 ORDER BY created_at;`,
+      [rulesetId]
+    );
+    return rows.map(toSourceFolder);
+  }
+
+  async addSourceFolder(input: {
+    id: string;
+    rulesetId: string;
+    externalId: string;
+    name: string;
+    url: string;
+    linkedBy: string;
+  }): Promise<SourceFolder> {
+    const { rows } = await this.pool.query(
+      `INSERT INTO source_folders (id, ruleset_id, external_id, name, url, linked_by)
+            VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (ruleset_id, external_id) DO UPDATE
+               SET name = EXCLUDED.name, url = EXCLUDED.url
+         RETURNING *;`,
+      [input.id, input.rulesetId, input.externalId, input.name, input.url, input.linkedBy]
+    );
+    return toSourceFolder(rows[0]);
+  }
+
+  async removeSourceFolder(id: string, rulesetId: string): Promise<boolean> {
+    const { rowCount } = await this.pool.query(
+      `DELETE FROM source_folders WHERE id = $1 AND ruleset_id = $2;`,
+      [id, rulesetId]
+    );
+    return (rowCount ?? 0) > 0;
+  }
+
+  async listSourceDocuments(rulesetId: string): Promise<SourceDocument[]> {
+    const { rows } = await this.pool.query(
+      `SELECT * FROM source_documents WHERE ruleset_id = $1 ORDER BY name;`,
+      [rulesetId]
+    );
+    return rows.map(toSourceDocument);
+  }
+
+  async reconcileSourceDocuments(
+    folderId: string,
+    rulesetId: string,
+    seen: SeenSourceFile[],
+    at: string
+  ): Promise<void> {
+    for (const f of seen) {
+      await this.pool.query(
+        `INSERT INTO source_documents
+               (id, folder_id, ruleset_id, external_id, name, url, mime_type,
+                modified_at, first_seen_at, last_seen_at, reviewed_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $9)
+        ON CONFLICT (folder_id, external_id) DO UPDATE
+                SET name = EXCLUDED.name,
+                    url = EXCLUDED.url,
+                    mime_type = EXCLUDED.mime_type,
+                    modified_at = EXCLUDED.modified_at,
+                    last_seen_at = EXCLUDED.last_seen_at,
+                    missing_at = NULL;`,
+        [
+          randomUUID(),
+          folderId,
+          rulesetId,
+          f.externalId,
+          f.name,
+          f.url,
+          f.mimeType ?? null,
+          f.modifiedAt,
+          at,
+        ]
+      );
+    }
+    await this.pool.query(
+      `UPDATE source_documents SET missing_at = $3
+        WHERE folder_id = $1 AND last_seen_at < $2 AND missing_at IS NULL;`,
+      [folderId, at, at]
+    );
+    await this.pool.query(
+      `UPDATE source_folders SET last_sync_at = $2 WHERE id = $1;`,
+      [folderId, at]
+    );
+  }
+
+  async reviewSourceDocument(
+    id: string,
+    rulesetId: string,
+    at: string
+  ): Promise<boolean> {
+    const { rowCount } = await this.pool.query(
+      `UPDATE source_documents SET reviewed_at = $3
+        WHERE id = $1 AND ruleset_id = $2;`,
+      [id, rulesetId, at]
+    );
+    return (rowCount ?? 0) > 0;
+  }
+
+  async listRulesetsWithSources(): Promise<string[]> {
+    const { rows } = await this.pool.query(
+      `SELECT DISTINCT ruleset_id FROM source_folders;`
+    );
+    return rows.map((r) => r.ruleset_id);
+  }
+
   /* ---------------- characters ---------------- */
 
   async listCharacters(rulesetId: string): Promise<CharacterRow[]> {
@@ -676,6 +871,58 @@ function toInvite(row: {
     expiresAt: row.expires_at ? new Date(row.expires_at).toISOString() : null,
     revokedAt: row.revoked_at ? new Date(row.revoked_at).toISOString() : null,
     uses: row.uses,
+  };
+}
+
+function toSourceFolder(row: {
+  id: string;
+  ruleset_id: string;
+  external_id: string;
+  name: string;
+  url: string;
+  linked_by: string;
+  created_at: Date | string;
+  last_sync_at: Date | string | null;
+}): SourceFolder {
+  return {
+    id: row.id,
+    rulesetId: row.ruleset_id,
+    externalId: row.external_id,
+    name: row.name,
+    url: row.url,
+    linkedBy: row.linked_by,
+    createdAt: new Date(row.created_at).toISOString(),
+    lastSyncAt: row.last_sync_at ? new Date(row.last_sync_at).toISOString() : null,
+  };
+}
+
+function toSourceDocument(row: {
+  id: string;
+  folder_id: string;
+  ruleset_id: string;
+  external_id: string;
+  name: string;
+  url: string;
+  mime_type: string | null;
+  modified_at: Date | string;
+  first_seen_at: Date | string;
+  last_seen_at: Date | string;
+  reviewed_at: Date | string | null;
+  missing_at: Date | string | null;
+}): SourceDocument {
+  return {
+    id: row.id,
+    folderId: row.folder_id,
+    rulesetId: row.ruleset_id,
+    externalId: row.external_id,
+    name: row.name,
+    url: row.url,
+    mimeType: row.mime_type ?? undefined,
+    modifiedAt: new Date(row.modified_at).toISOString(),
+    firstSeenAt: new Date(row.first_seen_at).toISOString(),
+    lastSeenAt: new Date(row.last_seen_at).toISOString(),
+    reviewedAt: row.reviewed_at ? new Date(row.reviewed_at).toISOString() : null,
+    missingAt: row.missing_at ? new Date(row.missing_at).toISOString() : null,
   };
 }
 

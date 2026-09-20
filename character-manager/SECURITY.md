@@ -55,6 +55,15 @@ tracking or analytics of any kind.
 - **No secret material in responses or logs.** Tokens appear once, in the
   response that creates them; errors are logged server side and reported to
   clients as generic messages.
+- **Google connections are metadata-only and per user.** The source ledger
+  asks Google for `drive.metadata.readonly` plus the account email and
+  nothing else: the app can list names and modified times of files the
+  connecting user can see, and can never read a document's contents.
+  Refresh tokens are encrypted at rest (AES-256-GCM, key derived from the
+  OAuth client secret), so a copy of the database alone cannot mint Drive
+  access. Disconnecting revokes the grant at Google and deletes the row;
+  deleting the account removes it by cascade, along with any folders it
+  had linked.
 - **Data export and account deletion.** The account page offers a JSON
   download of everything the account owns (account record, owned projects
   with rules and story, memberships, owned characters), and permanent

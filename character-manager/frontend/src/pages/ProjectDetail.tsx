@@ -15,6 +15,7 @@ import { useAuth } from '../auth/useAuth';
 import { useConfirm } from '../components/ConfirmDialog';
 import ProjectNav from '../components/ProjectNav';
 import SectionCard from '../components/SectionCard';
+import SourcesCard from '../components/SourcesCard';
 
 /**
  * The project overview: what this project is, how big it is, and who is in
@@ -390,6 +391,10 @@ export default function ProjectDetail() {
             </form>
           </SectionCard>
         )}
+
+        {/* The source ledger: which documents the canon was written from,
+            and whether the story has kept up with them. */}
+        <SourcesCard rulesetId={id} isStaff={isStaff} />
       </div>
 
       <div className="back-link">

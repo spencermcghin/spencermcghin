@@ -230,6 +230,8 @@
 
 .story-links li:last-child { border-bottom: none; }
 
+.story-sources .source-chip { margin-left: 0.45rem; }
+
 /* Kind glyphs sit inside whatever text names a kind. */
 .kind-glyph { margin-right: 0.1em; opacity: 0.85; }
 

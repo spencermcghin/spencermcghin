@@ -317,6 +317,75 @@ export const inviteApi = {
     (await api.post(`/invites/${token}/accept`)).data,
 };
 
+/* ---------------- the source ledger ---------------- */
+
+export interface SourceFolder {
+  id: string;
+  rulesetId: string;
+  externalId: string;
+  name: string;
+  url: string;
+  linkedBy: string;
+  createdAt: string;
+  lastSyncAt: string | null;
+}
+
+export type SourceStatus = 'current' | 'stale' | 'uncited' | 'missing';
+
+export interface LedgerDocument {
+  id: string;
+  folderId: string;
+  externalId: string;
+  name: string;
+  url: string;
+  mimeType?: string;
+  modifiedAt: string;
+  reviewedAt: string | null;
+  missingAt: string | null;
+  status: SourceStatus;
+  citedBy: { id: string; name: string }[];
+}
+
+export interface SourcesResponse {
+  configured: boolean;
+  folders: SourceFolder[];
+  documents: LedgerDocument[];
+}
+
+export const sourceApi = {
+  googleStatus: async (): Promise<{
+    configured: boolean;
+    connected: boolean;
+    email: string | null;
+  }> => (await api.get('/google/status')).data,
+
+  /** Starts the OAuth round trip; a navigation, not an XHR. */
+  googleConnectUrl: (back: string): string =>
+    `${API_BASE_URL}/google/connect?back=${encodeURIComponent(back)}`,
+
+  googleDisconnect: async (): Promise<void> => {
+    await api.delete('/google');
+  },
+
+  list: async (rulesetId: string): Promise<SourcesResponse> =>
+    (await api.get(`/rulesets/${rulesetId}/sources`)).data,
+
+  addFolder: async (rulesetId: string, url: string): Promise<SourceFolder> =>
+    (await api.post(`/rulesets/${rulesetId}/source-folders`, { url })).data,
+
+  removeFolder: async (rulesetId: string, folderId: string): Promise<void> => {
+    await api.delete(`/rulesets/${rulesetId}/source-folders/${folderId}`);
+  },
+
+  sync: async (rulesetId: string): Promise<void> => {
+    await api.post(`/rulesets/${rulesetId}/sources/sync`);
+  },
+
+  review: async (rulesetId: string, docId: string): Promise<void> => {
+    await api.post(`/rulesets/${rulesetId}/sources/${docId}/review`);
+  },
+};
+
 export interface AdminUser {
   id: string;
   email: string;
