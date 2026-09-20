@@ -1,0 +1,56 @@
+/* A real box, not display:contents -- the anchor's rect positions the card,
+   and a boxless element measures 0x0 at the viewport origin. */
+.entity-peek-anchor {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.entity-peek {
+  position: fixed;
+  z-index: 60;
+  width: min(21rem, calc(100vw - 2rem));
+  padding: 0.8rem 0.95rem;
+  border: 1px solid var(--border);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  animation: entity-peek-in 0.18s var(--ease);
+}
+
+.entity-peek.is-above {
+  transform: translateY(-100%);
+}
+
+@keyframes entity-peek-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.entity-peek-meta {
+  margin: 0 0 0.25rem;
+  font-size: var(--step-0);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.entity-peek-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  color: var(--text);
+}
+
+.entity-peek-summary {
+  margin: 0.35rem 0 0;
+  color: var(--text-soft);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

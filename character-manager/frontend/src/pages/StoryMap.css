@@ -59,6 +59,14 @@
   box-shadow: inset 2px 0 0 var(--accent);
 }
 
+/* Where the arrow keys stand. Distinct from is-selected: this is the
+   candidate under the keyboard, not the entry already open. */
+.story-row.is-active {
+  background: var(--accent-wash);
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
 .story-row-name {
   flex: 1;
   min-width: 0;

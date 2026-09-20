@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { rulesetApi, type RulesetSummary } from '../services/api';
+import { useConfirm } from '../components/ConfirmDialog';
 import Sigil from '../components/Sigil';
 
 export default function Projects() {
@@ -10,6 +11,7 @@ export default function Projects() {
   const [name, setName] = useState('');
   const [creating, setCreating] = useState(false);
   const [template, setTemplate] = useState<'blank' | 'demo'>('blank');
+  const [confirm, confirmDialog] = useConfirm();
 
   const load = async () => {
     try {
@@ -55,7 +57,13 @@ export default function Projects() {
   };
 
   const remove = async (id: string, label: string) => {
-    if (!confirm(`Delete "${label}" and every character in it?`)) return;
+    if (
+      !(await confirm({
+        title: `Delete "${label}"?`,
+        body: 'Every character in it goes with it.',
+      }))
+    )
+      return;
     await rulesetApi.remove(id);
     await load();
   };
@@ -71,6 +79,7 @@ export default function Projects() {
 
   return (
     <div className="projects">
+      {confirmDialog}
       <div className="header">
         <div>
           <h1>Projects</h1>

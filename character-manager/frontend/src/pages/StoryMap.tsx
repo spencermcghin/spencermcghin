@@ -7,6 +7,8 @@ import type {
 } from '../../../shared/narrative-schema';
 import { connectionsOf, indexMap, orphans, validateMap } from '../../../shared/narrative';
 import * as edit from '../../../shared/narrative-editor';
+import { useConfirm } from '../components/ConfirmDialog';
+import EntityPeek from '../components/EntityPeek';
 import Hint from '../components/Hint';
 import ObjectHeader from '../components/ObjectHeader';
 import ProjectNav from '../components/ProjectNav';
@@ -64,6 +66,30 @@ export default function StoryMap() {
   const [trail, setTrail] = useState<string[]>([]);
   const history = useRef<NarrativeMap[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
+  const findInput = useRef<HTMLInputElement>(null);
+  /** Which row the arrow keys are standing on; -1 is none. */
+  const [activeIdx, setActiveIdx] = useState(-1);
+
+  /* Slash focuses the search from anywhere that is not already a place to
+     type, the way it does on GitHub -- reachable without looking down. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === 'INPUT' ||
+          t.tagName === 'TEXTAREA' ||
+          t.tagName === 'SELECT' ||
+          t.isContentEditable)
+      )
+        return;
+      e.preventDefault();
+      findInput.current?.focus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   useEffect(() => {
     storyApi
@@ -127,6 +153,15 @@ export default function StoryMap() {
       )
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [map, kind, query]);
+
+  /* The arrow highlight stands on positions, not entries; when the list
+     under it changes, it steps off rather than pointing at the wrong row. */
+  useEffect(() => setActiveIdx(-1), [query, kind, view]);
+  useEffect(() => {
+    document
+      .querySelector('.story-row.is-active')
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [activeIdx]);
 
   const open = useCallback(
     (entityId: string) => {
@@ -297,12 +332,34 @@ export default function StoryMap() {
 
           <Toolbar label="Story controls">
             <input
+              ref={findInput}
               className="ed-find"
               type="search"
               value={query}
-              placeholder="Find anything…"
+              placeholder="Find anything… ( / )"
               aria-label="Find in the story map"
+              title="Press / to search, arrows to move, Enter to open"
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setActiveIdx((i) => Math.min(i + 1, shown.length - 1));
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setActiveIdx((i) => Math.max(i - 1, -1));
+                } else if (e.key === 'Enter') {
+                  // Enter opens where the arrows stand, or the only match.
+                  const target =
+                    activeIdx >= 0 ? shown[activeIdx] : shown.length === 1 ? shown[0] : null;
+                  if (target) {
+                    e.preventDefault();
+                    open(target.id);
+                  }
+                } else if (e.key === 'Escape') {
+                  setQuery('');
+                  e.currentTarget.blur();
+                }
+              }}
             />
             <SegmentedControl
               label="Filter by kind"
@@ -397,12 +454,14 @@ export default function StoryMap() {
             ) : (
             <div className="story-list">
               {shown.length === 0 && <p className="ed-empty">Nothing here yet.</p>}
-              {shown.map((e) => {
+              {shown.map((e, i) => {
                 const degree = (idx.byEntity.get(e.id) ?? []).length;
                 return (
                   <button
                     key={e.id}
-                    className={`story-row ${selected === e.id ? 'is-selected' : ''}`}
+                    className={`story-row ${selected === e.id ? 'is-selected' : ''} ${
+                      activeIdx === i ? 'is-active' : ''
+                    }`}
                     onClick={() => open(e.id)}
                   >
                     <span className="story-row-name">{e.name}</span>
@@ -492,7 +551,9 @@ function Overview({
           <ul className="story-hubs">
             {ranked.map((h) => (
               <li key={h.entity.id}>
-                <button onClick={() => onOpen(h.entity.id)}>{h.entity.name}</button>
+                <EntityPeek entity={h.entity} idx={idx}>
+                  <button onClick={() => onOpen(h.entity.id)}>{h.entity.name}</button>
+                </EntityPeek>
                 <span className="muted">{h.degree}</span>
               </li>
             ))}
@@ -512,13 +573,23 @@ function Overview({
           <p className="ok">Everything is connected to something.</p>
         ) : (
           <ul className="story-hubs">
-            {loose.map((oid) => (
-              <li key={oid}>
-                <button onClick={() => onOpen(oid)}>
-                  {idx.entities.get(oid)?.name ?? oid}
-                </button>
-              </li>
-            ))}
+            {loose.map((oid) => {
+              const e = idx.entities.get(oid);
+              const button = (
+                <button onClick={() => onOpen(oid)}>{e?.name ?? oid}</button>
+              );
+              return (
+                <li key={oid}>
+                  {e ? (
+                    <EntityPeek entity={e} idx={idx}>
+                      {button}
+                    </EntityPeek>
+                  ) : (
+                    button
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -548,6 +619,7 @@ function EntityPanel({
   const [linkKind, setLinkKind] = useState(map.relationKinds[0]?.id ?? '');
   const [linkTo, setLinkTo] = useState('');
   const [copied, setCopied] = useState(false);
+  const [confirm, confirmDialog] = useConfirm();
   const links = connectionsOf(entity.id, idx);
   const set = (patch: Partial<NarrativeEntity>) =>
     apply((m) => edit.updateEntity(m, entity.id, patch));
@@ -566,6 +638,7 @@ function EntityPanel({
 
   return (
     <>
+      {confirmDialog}
       <section>
         <ObjectHeader
           className="story-detail-head"
@@ -645,11 +718,12 @@ function EntityPanel({
             <button
               className="ed-del"
               title="Delete entry"
-              onClick={() => {
+              onClick={async () => {
                 if (
-                  confirm(
-                    `Delete "${entity.name}"? Its connections go with it. Nothing else is touched.`
-                  )
+                  await confirm({
+                    title: `Delete "${entity.name}"?`,
+                    body: 'Its connections go with it. Nothing else is touched.',
+                  })
                 ) {
                   onClose();
                   apply((m) => edit.removeEntity(m, entity.id));
@@ -761,7 +835,9 @@ function EntityPanel({
               <li key={c.relation.id}>
                 <span className="story-link-label">{c.label}</span>
                 {c.other ? (
-                  <button onClick={() => onOpen(c.other!.id)}>{c.other.name}</button>
+                  <EntityPeek entity={c.other} idx={idx}>
+                    <button onClick={() => onOpen(c.other!.id)}>{c.other.name}</button>
+                  </EntityPeek>
                 ) : (
                   <span className="story-broken">{c.otherId} (missing)</span>
                 )}

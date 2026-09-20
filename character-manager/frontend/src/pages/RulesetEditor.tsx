@@ -11,6 +11,7 @@ import type { Condition, Ruleset, Trait } from '../../../shared/rules-schema';
 import { validateRuleset } from '../../../shared/ruleset-validation';
 import * as edit from '../../../shared/ruleset-editor';
 import { useAuth } from '../auth/useAuth';
+import { useConfirm } from '../components/ConfirmDialog';
 import Hint from '../components/Hint';
 import ProjectNav from '../components/ProjectNav';
 import SaveBar from '../components/SaveBar';
@@ -515,6 +516,7 @@ function QualityPanel({
   apply: (next: (r: Ruleset) => Ruleset) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [confirm, confirmDialog] = useConfirm();
 
   const addQuality = () => {
     let n = 1;
@@ -535,6 +537,7 @@ function QualityPanel({
 
   return (
     <section className="ed-group ed-qualities">
+      {confirmDialog}
       {/* Categories are a shared vocabulary the same way tags are: offering
           what already exists is how "Background" and "background" stay one
           category. One panel per page, so a fixed id is safe. */}
@@ -619,11 +622,12 @@ function QualityPanel({
                 <button
                   className="ed-del"
                   title="Delete quality"
-                  onClick={() => {
+                  onClick={async () => {
                     if (
-                      confirm(
-                        `Delete "${q.name}"? Rules that require it will report the break.`
-                      )
+                      await confirm({
+                        title: `Delete "${q.name}"?`,
+                        body: 'Rules that require it will report the break.',
+                      })
                     ) {
                       apply((r) => edit.removeQuality(r, q.id));
                     }
@@ -671,6 +675,7 @@ function SkillRow({
   accessRoles: AccessRole[];
   apply: (next: (r: Ruleset) => Ruleset) => void;
 }) {
+  const [confirm, confirmDialog] = useConfirm();
   const currency = ruleset.currencies.find((c) => c.kind === 'progression');
   const rankLabels = ruleset.tracks
     .map((t) => {
@@ -710,6 +715,7 @@ function SkillRow({
 
   return (
     <div className="ed-skill">
+      {confirmDialog}
       <div className="ed-skill-head">
         <button className="ed-caret" onClick={onToggle} aria-expanded={open}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
@@ -761,8 +767,13 @@ function SkillRow({
           <button
             className="ed-del"
             title="Delete skill"
-            onClick={() => {
-              if (confirm(`Delete "${trait.name}"? Skills that require it will report the break.`)) {
+            onClick={async () => {
+              if (
+                await confirm({
+                  title: `Delete "${trait.name}"?`,
+                  body: 'Skills that require it will report the break.',
+                })
+              ) {
                 apply((r) => edit.removeTrait(r, trait.id));
               }
             }}

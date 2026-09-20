@@ -12,6 +12,7 @@ import {
 } from '../services/api';
 import type { Ruleset } from '../../../shared/rules-schema';
 import { useAuth } from '../auth/useAuth';
+import { useConfirm } from '../components/ConfirmDialog';
 import ProjectNav from '../components/ProjectNav';
 import SectionCard from '../components/SectionCard';
 
@@ -30,6 +31,7 @@ export default function ProjectDetail() {
   const [newRoleName, setNewRoleName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [confirm, confirmDialog] = useConfirm();
 
   const myRole: ProjectRole | null =
     members.find((m) => m.userId === user?.id)?.role ?? null;
@@ -116,10 +118,12 @@ export default function ProjectDetail() {
 
   const removeAccessRole = async (role: AccessRole) => {
     if (
-      !confirm(
-        `Delete "${role.name || role.id}"? Skills restricted to it become visible ` +
-          'to everyone, and it is removed from any player who had it.'
-      )
+      !(await confirm({
+        title: `Delete "${role.name || role.id}"?`,
+        body:
+          'Skills restricted to it become visible to everyone, and it is ' +
+          'removed from any player who had it.',
+      }))
     )
       return;
     try {
@@ -170,6 +174,7 @@ export default function ProjectDetail() {
 
   return (
     <div className="project-detail">
+      {confirmDialog}
       <ProjectNav id={id} />
       <div className="header">
         <div>
@@ -280,7 +285,14 @@ export default function ProjectDetail() {
                             : undefined
                         }
                         onClick={async () => {
-                          if (!confirm(`Remove ${m.displayName} from this project?`)) return;
+                          if (
+                            !(await confirm({
+                              title: `Remove ${m.displayName} from this project?`,
+                              body: 'Their characters stay; their access ends.',
+                              action: 'Remove',
+                            }))
+                          )
+                            return;
                           try {
                             await memberApi.remove(id, m.userId);
                             await load();
