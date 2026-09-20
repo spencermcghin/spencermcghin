@@ -14,6 +14,7 @@ import googleRoutes from './routes/google';
 import inviteRoutes from './routes/invites';
 import rulesetRoutes from './routes/rulesets';
 import { syncAllProjects } from './controllers/sourceController';
+import { googleConfigured, googleFake } from './google/oauth';
 
 dotenv.config();
 
@@ -71,6 +72,9 @@ app.get('/api', (_req: Request, res: Response) => {
     // Same-origin deploys need no cross-origin sign-in, so this being false
     // alongside corsMode 'same-origin' is the healthy arrangement.
     signInWorksCrossOrigin: Boolean(allowedOrigin),
+    // Whether the Drive source ledger has its OAuth client configured.
+    // A boolean, never the values; this page is public.
+    sourceSync: googleConfigured() || googleFake(),
   });
 });
 
