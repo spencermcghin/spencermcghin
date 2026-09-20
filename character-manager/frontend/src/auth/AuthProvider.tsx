@@ -34,6 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await authApi.logout();
     setUser(null);
+    // The offline cache holds this account's data; signing out hands the
+    // browser to whoever is next, so the cache goes with the session.
+    navigator.serviceWorker?.controller?.postMessage('clear-api-cache');
   }, []);
 
   const value = useMemo<AuthContextValue>(

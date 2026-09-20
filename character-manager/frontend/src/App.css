@@ -968,6 +968,15 @@ a.attribute-item:hover {
   color: var(--text);
 }
 
+.offline-bar {
+  padding: 0.45rem 1rem;
+  text-align: center;
+  font-size: var(--step-0);
+  letter-spacing: 0.04em;
+  color: var(--danger-ink);
+  background: var(--danger);
+}
+
 .account-page {
   display: grid;
   gap: var(--space-4);

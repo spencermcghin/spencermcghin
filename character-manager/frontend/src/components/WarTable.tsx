@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type DragEvent, type ReactNode } from 'react';
 import type { MapIndex } from '../../../shared/narrative';
 import { campaignBoard, naturally } from '../../../shared/narrative';
 import type {
   CampaignShape,
+  EntityKind,
   EntityStatus,
   NarrativeEntity,
   NarrativeMap,
 } from '../../../shared/narrative-schema';
 import Hint from './Hint';
+import KindGlyph from './KindGlyph';
 import './WarTable.css';
 
 /**
@@ -33,6 +35,7 @@ export default function WarTable({
   onSelect,
   onShape,
   onStatus,
+  onPlace,
 }: {
   map: NarrativeMap;
   idx: MapIndex;
@@ -41,6 +44,13 @@ export default function WarTable({
   onSelect: (id: string) => void;
   onShape: (shape: CampaignShape) => void;
   onStatus: (id: string, status: EntityStatus) => void;
+  /** A piece was dropped: into a lane (or none), on a day (or unmoved). */
+  onPlace: (
+    pieceId: string,
+    laneId: string | null,
+    day: string | null,
+    eventId: string
+  ) => void;
 }) {
   const board = useMemo(() => campaignBoard(idx), [idx]);
 
@@ -80,6 +90,7 @@ export default function WarTable({
         const piece: TablePiece = {
           entity,
           kind: idx.entityKinds.get(entity.kindId)?.label ?? entity.kindId,
+          shape: idx.entityKinds.get(entity.kindId)?.shape,
           laneIds: touches(entity, laneIds),
           slot: slotOf(entity, event),
         };
@@ -235,9 +246,13 @@ export default function WarTable({
                     {columns.map((c) => {
                       const cell = inLane(lane.id, c);
                       return (
-                        <div
+                        <DropCell
                           key={c || 'unordered'}
                           className={`wt-cell ${cell.length === 0 ? 'is-empty' : ''}`}
+                          canEdit={canEdit}
+                          onDropPiece={(pieceId) =>
+                            onPlace(pieceId, lane.id, c, open.id)
+                          }
                         >
                           {cell.map((p) => (
                             <Piece
@@ -249,7 +264,7 @@ export default function WarTable({
                               onStatus={onStatus}
                             />
                           ))}
-                        </div>
+                        </DropCell>
                       );
                     })}
                   </div>
@@ -258,10 +273,14 @@ export default function WarTable({
             </div>
           )}
 
-          {(trayless.length > 0 || several.length > 0) && (
+          {(trayless.length > 0 || several.length > 0 || canEdit) && (
             <div className="wt-trays">
-              {trayless.length > 0 && (
-                <div className="wt-tray">
+              {(trayless.length > 0 || canEdit) && (
+                <DropCell
+                  className="wt-tray"
+                  canEdit={canEdit}
+                  onDropPiece={(pieceId) => onPlace(pieceId, null, null, open.id)}
+                >
                   <h4>At this event · in no track</h4>
                   <div className="wt-tray-row">
                     {trayless.map((p) => (
@@ -275,7 +294,7 @@ export default function WarTable({
                       />
                     ))}
                   </div>
-                </div>
+                </DropCell>
               )}
               {several.length > 0 && (
                 <div className="wt-tray">
@@ -410,6 +429,7 @@ export default function WarTable({
 interface TablePiece {
   entity: NarrativeEntity;
   kind: string;
+  shape?: EntityKind['shape'];
   laneIds: string[];
   slot: { day: string; full: string };
 }
@@ -439,6 +459,42 @@ function initialOf(name: string): string {
   return (main ?? words[0]).charAt(0).toUpperCase();
 }
 
+/** A droppable region of the table: a cell or a tray. */
+function DropCell({
+  className,
+  canEdit,
+  onDropPiece,
+  children,
+}: {
+  className: string;
+  canEdit: boolean;
+  onDropPiece: (pieceId: string) => void;
+  children: ReactNode;
+}) {
+  const [over, setOver] = useState(0);
+  const handlers = canEdit
+    ? {
+        onDragOver: (e: DragEvent) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        },
+        onDragEnter: () => setOver((n) => n + 1),
+        onDragLeave: () => setOver((n) => Math.max(0, n - 1)),
+        onDrop: (e: DragEvent) => {
+          e.preventDefault();
+          setOver(0);
+          const id = e.dataTransfer.getData('text/plain');
+          if (id) onDropPiece(id);
+        },
+      }
+    : {};
+  return (
+    <div className={`${className} ${over > 0 ? 'is-drop' : ''}`} {...handlers}>
+      {children}
+    </div>
+  );
+}
+
 function Piece({
   piece,
   canEdit,
@@ -458,7 +514,14 @@ function Piece({
   const draft = entity.status === 'draft';
   const note = under ?? (piece.slot.full !== piece.slot.day ? piece.slot.full : '');
   return (
-    <div className={`wt-piece ${draft ? '' : 'is-canon'} ${selected ? 'is-selected' : ''}`}>
+    <div
+      className={`wt-piece ${draft ? '' : 'is-canon'} ${selected ? 'is-selected' : ''}`}
+      draggable={canEdit}
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/plain', entity.id);
+        e.dataTransfer.effectAllowed = 'move';
+      }}
+    >
       {canEdit ? (
         <button
           className={`wt-seal ${draft ? 'is-broken' : 'is-pressed'}`}
@@ -473,7 +536,9 @@ function Piece({
         />
       )}
       <button className="wt-piece-body" onClick={() => onSelect(entity.id)}>
-        <span className="wt-piece-kind">{piece.kind}</span>
+        <span className="wt-piece-kind">
+          <KindGlyph shape={piece.shape} size={9} /> {piece.kind}
+        </span>
         <span className="wt-piece-name">{entity.name}</span>
         {note && <span className="wt-piece-under">{note}</span>}
       </button>

@@ -68,8 +68,29 @@ function Shell() {
   const location = useLocation();
   useEffect(() => setNavOpen(false), [location.pathname]);
 
+  /* Offline is a state worth naming: the service worker serves what was
+     last loaded, and this line says so instead of letting stale data pass
+     as fresh. */
+  const [online, setOnline] = useState(navigator.onLine);
+  useEffect(() => {
+    const up = () => setOnline(true);
+    const down = () => setOnline(false);
+    window.addEventListener('online', up);
+    window.addEventListener('offline', down);
+    return () => {
+      window.removeEventListener('online', up);
+      window.removeEventListener('offline', down);
+    };
+  }, []);
+
   return (
     <div className="app">
+      {!online && (
+        <div className="offline-bar" role="status">
+          Offline. Showing what was last loaded; edits cannot be saved until
+          the connection returns.
+        </div>
+      )}
       <nav className="navbar">
         <div className="nav-container">
           <Link to="/" className="nav-brand">Larpworks</Link>

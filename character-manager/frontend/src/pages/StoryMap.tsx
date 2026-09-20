@@ -10,6 +10,7 @@ import * as edit from '../../../shared/narrative-editor';
 import { useConfirm } from '../components/ConfirmDialog';
 import EntityPeek from '../components/EntityPeek';
 import Hint from '../components/Hint';
+import KindGlyph from '../components/KindGlyph';
 import ObjectHeader from '../components/ObjectHeader';
 import ProjectNav from '../components/ProjectNav';
 import SaveBar from '../components/SaveBar';
@@ -187,6 +188,75 @@ export default function StoryMap() {
       return t.slice(0, -1);
     });
   }, [setSelected]);
+
+  /**
+   * Drops a piece onto the table: sets its "when" from the event and day,
+   * and moves its track membership to the lane it landed in. laneId null
+   * untracks it; day null leaves the "when" alone. The new lane link
+   * borrows the relation kind and direction the map already uses for
+   * piece-to-lane links, so a drag writes the same shape of data a person
+   * would have written by hand.
+   */
+  const placePiece = useCallback(
+    (pieceId: string, laneId: string | null, day: string | null, eventId: string) => {
+      apply((m) => {
+        const event = m.entities.find((e) => e.id === eventId);
+        if (!event || !m.entities.some((e) => e.id === pieceId)) return m;
+
+        let next = m;
+        if (day !== null) {
+          const eventAt = (event.occursAt ?? event.name).trim();
+          next = edit.updateEntity(next, pieceId, {
+            occursAt: day ? `${eventAt} · ${day}` : eventAt,
+          });
+        }
+
+        const laneKind = m.campaign?.laneKindId;
+        if (!laneKind) return next;
+        const laneIds = new Set(
+          m.entities.filter((e) => e.kindId === laneKind).map((e) => e.id)
+        );
+
+        // How this map words a piece-to-lane link: the most common kind
+        // and direction wins, the first relation kind failing that.
+        const votes = new Map<string, number>();
+        for (const r of m.relations) {
+          const fromLane = laneIds.has(r.fromId);
+          const toLane = laneIds.has(r.toId);
+          if (fromLane === toLane) continue;
+          const key = `${r.kindId}|${toLane ? 'out' : 'in'}`;
+          votes.set(key, (votes.get(key) ?? 0) + 1);
+        }
+        const best = [...votes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+        const [linkKindId, dir] = best
+          ? best.split('|')
+          : [m.relationKinds[0]?.id, 'out'];
+
+        const current = next.relations.filter(
+          (r) =>
+            (r.fromId === pieceId && laneIds.has(r.toId)) ||
+            (r.toId === pieceId && laneIds.has(r.fromId))
+        );
+        for (const r of current) {
+          const other = r.fromId === pieceId ? r.toId : r.fromId;
+          if (other !== laneId) next = edit.disconnect(next, r.id);
+        }
+        if (
+          laneId &&
+          linkKindId &&
+          !current.some((r) => (r.fromId === pieceId ? r.toId : r.fromId) === laneId)
+        ) {
+          next = edit.connect(next, {
+            fromId: dir === 'out' ? pieceId : laneId,
+            toId: dir === 'out' ? laneId : pieceId,
+            kindId: linkKindId,
+          });
+        }
+        return next;
+      });
+    },
+    [apply]
+  );
 
   /* ---------------- import and export ---------------- */
 
@@ -368,7 +438,14 @@ export default function StoryMap() {
               label="Filter by kind"
               options={[
                 { id: 'all', label: 'All' },
-                ...map.entityKinds.map((k) => ({ id: k.id, label: k.plural })),
+                ...map.entityKinds.map((k) => ({
+                  id: k.id,
+                  label: (
+                    <span className="seg-kind">
+                      <KindGlyph shape={k.shape} /> {k.plural}
+                    </span>
+                  ),
+                })),
               ]}
               value={kind}
               onChange={setKind}
@@ -435,6 +512,7 @@ export default function StoryMap() {
                 onStatus={(entityId, status) =>
                   apply((m) => edit.updateEntity(m, entityId, { status }))
                 }
+                onPlace={placePiece}
               />
             ) : view === 'graph' ? (
               selected ? (
@@ -475,6 +553,7 @@ export default function StoryMap() {
                   >
                     <span className="story-row-name">{e.name}</span>
                     <span className="story-row-kind">
+                      <KindGlyph shape={idx.entityKinds.get(e.kindId)?.shape} />{' '}
                       {idx.entityKinds.get(e.kindId)?.label ?? e.kindId}
                     </span>
                     {e.status !== 'canon' && (
@@ -625,8 +704,6 @@ function EntityPanel({
   onOpen: (id: string) => void;
   onClose: () => void;
 }) {
-  const [linkKind, setLinkKind] = useState(map.relationKinds[0]?.id ?? '');
-  const [linkTo, setLinkTo] = useState('');
   const [copied, setCopied] = useState(false);
   const [confirm, confirmDialog] = useConfirm();
   const links = connectionsOf(entity.id, idx);
@@ -651,7 +728,12 @@ function EntityPanel({
       <section>
         <ObjectHeader
           className="story-detail-head"
-          kind={idx.entityKinds.get(entity.kindId)?.label ?? entity.kindId}
+          kind={
+            <>
+              <KindGlyph shape={idx.entityKinds.get(entity.kindId)?.shape} />{' '}
+              {idx.entityKinds.get(entity.kindId)?.label ?? entity.kindId}
+            </>
+          }
           meta={
             `${entity.status} · ${links.length} connection${links.length === 1 ? '' : 's'}` +
             (entity.occursAt ? ` · ${entity.occursAt}` : '')
@@ -878,42 +960,7 @@ function EntityPanel({
         )}
 
         {canEdit && map.relationKinds.length > 0 && (
-          <div className="story-connect">
-            <select
-              value={linkKind}
-              aria-label="Connection kind"
-              onChange={(e) => setLinkKind(e.target.value)}
-            >
-              {map.relationKinds.map((k) => (
-                <option key={k.id} value={k.id}>{k.label}</option>
-              ))}
-            </select>
-            <select
-              value={linkTo}
-              aria-label="Connect to"
-              onChange={(e) => setLinkTo(e.target.value)}
-            >
-              <option value="">choose an entry…</option>
-              {map.entities
-                .filter((e) => e.id !== entity.id)
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((e) => (
-                  <option key={e.id} value={e.id}>{e.name}</option>
-                ))}
-            </select>
-            <button
-              className="ed-add"
-              disabled={!linkTo || !linkKind}
-              onClick={() => {
-                apply((m) =>
-                  edit.connect(m, { fromId: entity.id, toId: linkTo, kindId: linkKind })
-                );
-                setLinkTo('');
-              }}
-            >
-              Connect
-            </button>
-          </div>
+          <ConnectSentence entity={entity} map={map} idx={idx} apply={apply} />
         )}
       </section>
 
@@ -1064,6 +1111,112 @@ function KindsPanel({
         </div>
       ))}
     </section>
+  );
+}
+
+/**
+ * Making a connection reads like writing a sentence: the entry is the
+ * subject, the relation kind is the verb, and the object is typed by name
+ * with matches offered as you go. Aliases match too, since half of canon
+ * knows things by their other names. Enter takes the first match.
+ */
+function ConnectSentence({
+  entity,
+  map,
+  idx,
+  apply,
+}: {
+  entity: NarrativeEntity;
+  map: NarrativeMap;
+  idx: ReturnType<typeof indexMap>;
+  apply: (next: (m: NarrativeMap) => NarrativeMap) => void;
+}) {
+  const [kindId, setKindId] = useState(map.relationKinds[0]?.id ?? '');
+  const [q, setQ] = useState('');
+  const [showList, setShowList] = useState(false);
+
+  const matches = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return [];
+    return map.entities
+      .filter((e) => e.id !== entity.id)
+      .map((e) => {
+        const nameHit = e.name.toLowerCase().includes(s);
+        const alias = nameHit
+          ? undefined
+          : e.aliases.find((a) => a.toLowerCase().includes(s));
+        return { e, alias, hit: nameHit || alias !== undefined };
+      })
+      .filter((m2) => m2.hit)
+      .sort((a, b) => {
+        // Names that start with the query come first; then alphabetical.
+        const as = a.e.name.toLowerCase().startsWith(s) ? 0 : 1;
+        const bs = b.e.name.toLowerCase().startsWith(s) ? 0 : 1;
+        return as - bs || a.e.name.localeCompare(b.e.name);
+      })
+      .slice(0, 8);
+  }, [q, map.entities, entity.id]);
+
+  const connectTo = (toId: string) => {
+    apply((m) => edit.connect(m, { fromId: entity.id, toId, kindId }));
+    setQ('');
+    setShowList(false);
+  };
+
+  return (
+    <div className="story-connect-sentence">
+      <span className="scs-subject">{entity.name}</span>
+      <select
+        className="scs-verb"
+        value={kindId}
+        aria-label="Connection kind"
+        onChange={(e) => setKindId(e.target.value)}
+      >
+        {map.relationKinds.map((k) => (
+          <option key={k.id} value={k.id}>{k.label}</option>
+        ))}
+      </select>
+      <span className="scs-object">
+        <input
+          value={q}
+          placeholder="type a name…"
+          aria-label="Connect to"
+          onChange={(e) => {
+            setQ(e.target.value);
+            setShowList(true);
+          }}
+          onFocus={() => setShowList(true)}
+          onBlur={() => setShowList(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && matches[0]) {
+              e.preventDefault();
+              connectTo(matches[0].e.id);
+            } else if (e.key === 'Escape') {
+              setQ('');
+            }
+          }}
+        />
+        {showList && matches.length > 0 && (
+          <ul className="scs-matches" role="listbox">
+            {matches.map((m2) => (
+              <li key={m2.e.id}>
+                {/* mousedown, so the choice lands before the input blurs. */}
+                <button
+                  onMouseDown={(ev) => {
+                    ev.preventDefault();
+                    connectTo(m2.e.id);
+                  }}
+                >
+                  <KindGlyph shape={idx.entityKinds.get(m2.e.kindId)?.shape} />{' '}
+                  {m2.e.name}
+                  {m2.alias && <i> · called "{m2.alias}"</i>}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </span>
+    </div>
   );
 }
 

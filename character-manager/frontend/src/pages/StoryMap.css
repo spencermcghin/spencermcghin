@@ -230,6 +230,89 @@
 
 .story-links li:last-child { border-bottom: none; }
 
+/* Kind glyphs sit inside whatever text names a kind. */
+.kind-glyph { margin-right: 0.1em; opacity: 0.85; }
+
+.seg-kind { display: inline-flex; align-items: center; gap: 0.3em; }
+
+/* The connect field as a sentence: subject, verb, typed object. */
+.story-connect-sentence {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  font-size: var(--step-1);
+  color: var(--text-soft);
+}
+
+.scs-subject {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.scs-verb {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-strong);
+  padding: 0 0.1rem 0.05rem;
+  cursor: pointer;
+}
+
+.scs-object { position: relative; flex: 1; min-width: 12rem; }
+
+.scs-object input {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 0 0.1rem 0.05rem;
+}
+
+.scs-object input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.scs-matches {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.scs-matches button {
+  display: block;
+  width: 100%;
+  padding: 0.4rem 0.7rem;
+  font-size: var(--step-1);
+  text-align: left;
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.scs-matches li:first-child button { background: var(--accent-wash); }
+
+.scs-matches button:hover { background: var(--accent-wash); }
+
+.scs-matches i { color: var(--text-mute); }
+
 /* Connections as prose (Story-with-Soul move 1). */
 .story-prose p {
   margin: 0 0 0.7rem;

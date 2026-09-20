@@ -189,6 +189,17 @@
   min-width: 0;
 }
 
+/* A drag hovering over a legal home. */
+.wt-cell.is-drop,
+.wt-tray.is-drop {
+  outline: 1px dashed var(--accent);
+  outline-offset: -4px;
+  background: var(--accent-wash);
+}
+
+.wt-piece[draggable='true'] { cursor: grab; }
+.wt-piece[draggable='true']:active { cursor: grabbing; }
+
 .wt-cell.is-empty {
   background: repeating-linear-gradient(
     45deg,
