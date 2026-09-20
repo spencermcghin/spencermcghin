@@ -79,6 +79,17 @@ export const authApi = {
   logout: async (): Promise<void> => {
     await api.post('/auth/logout');
   },
+
+  /**
+   * The export is served with a Content-Disposition header, so a plain link
+   * to this URL downloads the file; the session cookie rides along on the
+   * navigation.
+   */
+  exportUrl: `${API_BASE_URL}/auth/export`,
+
+  deleteAccount: async (password: string): Promise<void> => {
+    await api.delete('/auth/account', { data: { password } });
+  },
 };
 
 export type ProjectRole = 'admin' | 'member';

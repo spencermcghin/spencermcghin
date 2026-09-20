@@ -79,6 +79,13 @@ export interface Store {
   countUsers(): Promise<number>;
   listUsers(): Promise<User[]>;
   setAppRole(userId: string, role: AppRole): Promise<boolean>;
+  /**
+   * Deletes the account and everything hanging off it: sessions,
+   * memberships, projects the user owns (with their narratives, characters,
+   * invites and role definitions), and characters they own in other
+   * people's projects. False when no such user.
+   */
+  deleteUser(userId: string): Promise<boolean>;
 
   /* --- sessions --- */
   createSession(tokenHash: string, userId: string, expiresAt: Date): Promise<void>;
@@ -143,6 +150,8 @@ export interface Store {
 
   /* --- characters --- */
   listCharacters(rulesetId: string): Promise<CharacterRow[]>;
+  /** Every character the user owns, across all projects. For data export. */
+  listCharactersOwnedBy(userId: string): Promise<Character[]>;
   getCharacter(id: string): Promise<CharacterRow | null>;
   putCharacter(character: Character, ownerId: string): Promise<Character>;
   deleteCharacter(id: string): Promise<boolean>;

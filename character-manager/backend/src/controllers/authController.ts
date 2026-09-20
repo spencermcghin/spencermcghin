@@ -19,14 +19,15 @@ import { SESSION_COOKIE, SESSION_TTL_MS, sessionCookieOptions } from '../auth/mi
 const DUMMY_HASH_PROMISE = hashPassword('not-a-real-password-placeholder');
 
 /**
- * Per-process login throttle. Enough to make online guessing impractical;
- * it is not a substitute for a shared limiter if this ever runs multi-instance.
+ * Per-process login/registration throttle. Enough to make online guessing
+ * impractical; it is not a substitute for a shared limiter if this ever runs
+ * multi-instance.
  */
 const attempts = new Map<string, { count: number; firstAt: number }>();
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 10;
 
-function throttled(key: string): boolean {
+function throttled(key: string, max = MAX_ATTEMPTS): boolean {
   const now = Date.now();
   const entry = attempts.get(key);
   if (!entry || now - entry.firstAt > ATTEMPT_WINDOW_MS) {
@@ -34,12 +35,20 @@ function throttled(key: string): boolean {
     return false;
   }
   entry.count++;
-  return entry.count > MAX_ATTEMPTS;
+  return entry.count > max;
 }
 
 function clearThrottle(key: string): void {
   attempts.delete(key);
 }
+
+/**
+ * Registration is throttled per IP so the "email already exists" answer
+ * cannot be used to sweep for registered addresses in bulk. The honest
+ * duplicate-email message stays until the app can send verification email
+ * (see SECURITY.md, known limits).
+ */
+const MAX_REGISTRATIONS_PER_IP = 5;
 
 async function startSession(res: Response, userId: string): Promise<void> {
   const { token, tokenHash } = createSessionToken();
@@ -55,6 +64,11 @@ export async function register(req: Request, res: Response) {
 
   if (!isValidEmail(email)) {
     return res.status(400).json({ message: 'Enter a valid email address.' });
+  }
+  if (throttled(`register:${req.ip ?? 'unknown'}`, MAX_REGISTRATIONS_PER_IP)) {
+    return res
+      .status(429)
+      .json({ message: 'Too many sign-up attempts. Try again in a few minutes.' });
   }
   const weak = checkPasswordStrength(password);
   if (weak) return res.status(400).json({ message: weak.message });
@@ -124,4 +138,64 @@ export async function logout(req: Request, res: Response) {
 export async function me(req: Request, res: Response) {
   if (!req.user) return res.status(401).json({ message: 'Authentication required' });
   res.json({ user: req.user });
+}
+
+/**
+ * Everything the account owns, as one JSON download: the account record,
+ * each project membership, full content for projects the account owns, and
+ * every character the account owns anywhere. Projects the user merely
+ * belongs to contribute their name and the user's role -- another owner's
+ * game is not this account's data to take.
+ */
+export async function exportData(req: Request, res: Response) {
+  if (!req.user) return res.status(401).json({ message: 'Authentication required' });
+  const store = getStore();
+  const userId = req.user.id;
+
+  const projects = [];
+  for (const summary of await store.listRulesetsForUser(userId)) {
+    const owned = await store.getRuleset(summary.id);
+    const isOwner = owned?.ownerId === userId;
+    projects.push({
+      id: summary.id,
+      name: summary.name,
+      role: summary.role,
+      accessRoles: await store.getMemberAccessRoles(summary.id, userId),
+      ruleset: isOwner ? owned?.value : undefined,
+      narrative: isOwner ? ((await store.getNarrative(summary.id)) ?? undefined) : undefined,
+    });
+  }
+
+  const filename = `larpworks-export-${new Date().toISOString().slice(0, 10)}.json`;
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.json({
+    exportedAt: new Date().toISOString(),
+    account: req.user,
+    projects,
+    characters: await store.listCharactersOwnedBy(userId),
+  });
+}
+
+export async function deleteAccount(req: Request, res: Response) {
+  if (!req.user) return res.status(401).json({ message: 'Authentication required' });
+  const store = getStore();
+  const password = String(req.body?.password ?? '');
+
+  const key = `delete:${req.ip ?? 'unknown'}:${req.user.id}`;
+  if (throttled(key)) {
+    return res
+      .status(429)
+      .json({ message: 'Too many attempts. Try again in a few minutes.' });
+  }
+
+  // Deletion is irreversible, so holding a session cookie is not enough:
+  // the password proves the account holder is the one asking.
+  const record = await store.findUserByEmail(req.user.email);
+  if (!record || !(await verifyPassword(password, record.passwordHash))) {
+    return res.status(403).json({ message: 'That password is not correct.' });
+  }
+
+  await store.deleteUser(req.user.id);
+  res.clearCookie(SESSION_COOKIE, { ...sessionCookieOptions(), maxAge: undefined });
+  res.status(204).send();
 }

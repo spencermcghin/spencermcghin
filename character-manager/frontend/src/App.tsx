@@ -15,6 +15,7 @@ import CharacterSheet from './pages/CharacterSheet';
 import SignIn from './pages/SignIn';
 import JoinProject from './pages/JoinProject';
 import AdminUsers from './pages/AdminUsers';
+import Account from './pages/Account';
 import RulesetEditor from './pages/RulesetEditor';
 import StoryMap from './pages/StoryMap';
 import ProjectCharacters from './pages/ProjectCharacters';
@@ -36,9 +37,9 @@ function NavAuth() {
 
   return (
     <div className="nav-user">
-      <span className="nav-user-name" title={user.email}>
+      <Link className="nav-user-name" to="/account" title={user.email}>
         {user.displayName}
-      </span>
+      </Link>
       <button
         className="nav-signout"
         onClick={async () => {
@@ -158,6 +159,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <AdminUsers />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <RequireAuth>
+                <Account />
               </RequireAuth>
             }
           />

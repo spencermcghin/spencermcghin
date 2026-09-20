@@ -250,6 +250,17 @@ export class PostgresStore implements Store {
     return (rowCount ?? 0) > 0;
   }
 
+  async deleteUser(userId: string): Promise<boolean> {
+    // Every dependent table references users(id) with ON DELETE CASCADE, so
+    // one statement removes sessions, memberships, owned rulesets (and with
+    // them their narratives, characters, invites and role definitions), and
+    // characters owned in other people's projects.
+    const { rowCount } = await this.pool.query(`DELETE FROM users WHERE id = $1;`, [
+      userId,
+    ]);
+    return (rowCount ?? 0) > 0;
+  }
+
   /* ---------------- sessions ---------------- */
 
   async createSession(tokenHash: string, userId: string, expiresAt: Date): Promise<void> {
@@ -555,6 +566,14 @@ export class PostgresStore implements Store {
       [rulesetId]
     );
     return rows.map(toCharacterRow);
+  }
+
+  async listCharactersOwnedBy(userId: string): Promise<Character[]> {
+    const { rows } = await this.pool.query(
+      `SELECT data FROM characters WHERE owner_id = $1 ORDER BY name;`,
+      [userId]
+    );
+    return rows.map((r) => normalizeCharacter(r.data));
   }
 
   async getCharacter(id: string): Promise<CharacterRow | null> {

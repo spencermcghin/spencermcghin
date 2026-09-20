@@ -55,17 +55,20 @@ tracking or analytics of any kind.
 - **No secret material in responses or logs.** Tokens appear once, in the
   response that creates them; errors are logged server side and reported to
   clients as generic messages.
+- **Data export and account deletion.** The account page offers a JSON
+  download of everything the account owns (account record, owned projects
+  with rules and story, memberships, owned characters), and permanent
+  deletion. Deletion requires the password again, is rate limited, and
+  removes the account with everything hanging off it -- sessions,
+  memberships, owned projects, and characters -- via `ON DELETE CASCADE`.
 
 ## Known limits, held deliberately
 
 - **Registration reveals existing emails.** Sign-up says when an email is
   already registered. Fixing this properly needs email verification flows;
   until the app sends email at all, the honest error is more useful than a
-  fake success.
-- **No account deletion or data export yet.** Both belong in the app before
-  it takes on a real player base beyond people the owner knows. When built,
-  deletion should remove the account, its memberships, and its characters,
-  and export should hand back everything the account owns as JSON.
+  fake success. Sign-up attempts are rate limited per IP so the answer
+  cannot be used to sweep for registered addresses in bulk.
 - **No field-level encryption in the database.** Disk-level encryption plus
   hashed credentials covers the realistic threats for this app today.
   Field-level encryption of emails would break login lookups for little gain
