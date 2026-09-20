@@ -1,0 +1,402 @@
+/* The War Table, styled after the concept folio's plate: ledger tabs,
+   a darkened tabletop surface, wax seals, and the ward sigil. Colors are
+   the app's tokens; the folio was drawn from them. */
+
+.wt {
+  min-width: 0;
+}
+
+/* First-run setup, before a project has named its sequence. */
+.board-setup {
+  max-width: 46rem;
+  color: var(--text-soft);
+}
+
+.board-setup p { margin: 0 0 var(--space-2); }
+
+.board-setup-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: var(--step-0);
+  color: var(--text-mute);
+}
+
+/* ---------------- ledger tabs ---------------- */
+
+.wt-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0 2px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.wt-tab {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  padding: 7px 12px 9px;
+  white-space: nowrap;
+  background: var(--bg-deep);
+  cursor: pointer;
+}
+
+.wt-tab.is-past { opacity: 0.75; }
+.wt-tab.is-future { opacity: 0.4; }
+
+.wt-tab.is-now {
+  background: var(--accent-wash);
+  color: var(--text);
+  border-color: var(--border-strong);
+  padding: 9px 22px 11px;
+  font-size: 0.72rem;
+  opacity: 1;
+}
+
+.wt-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 7px;
+  vertical-align: 2px;
+}
+
+/* ---------------- table head ---------------- */
+
+.wt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+  padding: var(--space-4) var(--space-1) var(--space-3);
+}
+
+.wt-head h2 {
+  margin: 0 0 2px;
+}
+
+.wt-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 2.1rem;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wt-title:hover { color: var(--accent); }
+
+.wt-sub {
+  margin: 0;
+  color: var(--text-mute);
+  font-size: var(--step-1);
+  max-width: 52ch;
+}
+
+.wt-why {
+  margin: 10px 0 0;
+  color: var(--text-mute);
+  font-size: var(--step-0);
+  font-style: italic;
+}
+
+.wt-ward {
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.wt-count {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-top: 8px;
+}
+
+/* ---------------- the surface ---------------- */
+
+.wt-surface {
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(120% 150% at 50% -10%, transparent 40%, rgba(0, 0, 0, 0.5) 100%),
+    #100d0a;
+  overflow-x: auto;
+}
+
+.wt-grid {
+  display: grid;
+  min-width: 640px;
+}
+
+/* Each lane row is a subgrid-free contents row: the row wrapper spans by
+   spreading its children into the parent grid. */
+.wt-row { display: contents; }
+
+.wt-hd {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.wt-lane {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  text-align: left;
+  background: none;
+  cursor: pointer;
+  border-top: none;
+  border-left: none;
+}
+
+.wt-lane:hover { color: var(--accent); }
+
+.wt-cell {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.wt-cell.is-empty {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 7px,
+    rgba(198, 168, 109, 0.04) 7px,
+    rgba(198, 168, 109, 0.04) 8px
+  );
+}
+
+/* ---------------- pieces and seals ---------------- */
+
+.wt-piece {
+  position: relative;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.wt-piece.is-canon { border-left-color: var(--border-strong); }
+
+.wt-piece.is-selected {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.wt-piece-body {
+  display: block;
+  width: 100%;
+  padding: 9px 30px 9px 11px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wt-piece-kind {
+  font-family: var(--font-heading);
+  display: block;
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.wt-piece-name {
+  display: block;
+  font-size: var(--step-1);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wt-piece-under {
+  display: block;
+  font-size: 0.66rem;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+
+.wt-seal {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  padding: 0;
+  border: none;
+  background: none;
+  z-index: 1;
+}
+
+button.wt-seal { cursor: pointer; }
+
+/* Broken: a gold ring with a bite taken out. */
+.wt-seal.is-broken {
+  border: 1.5px solid var(--accent);
+  -webkit-mask: conic-gradient(#000 0 70%, transparent 70% 100%);
+          mask: conic-gradient(#000 0 70%, transparent 70% 100%);
+}
+
+/* Pressed: a whole disc of oxblood wax. */
+.wt-seal.is-pressed {
+  background: var(--accent-2);
+  box-shadow: 0 0 0 1px rgba(156, 59, 50, 0.4);
+}
+
+button.wt-seal:hover { transform: scale(1.25); }
+
+/* ---------------- trays ---------------- */
+
+.wt-trays {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--border);
+}
+
+.wt-tray {
+  background: rgba(4, 3, 3, 0.55);
+  padding: 14px 16px;
+}
+
+.wt-tray h4 {
+  font-family: var(--font-heading);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin: 0 0 10px;
+}
+
+.wt-tray-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wt-tray-row .wt-piece {
+  flex: 0 1 auto;
+  min-width: 130px;
+}
+
+/* ---------------- the rim ---------------- */
+
+.wt-rim {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 2px 0;
+  color: var(--text-mute);
+  font-size: var(--step-0);
+}
+
+.wt-tok {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-solid);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.wt-tok:hover {
+  border-color: var(--accent);
+}
+
+.wt-rim-names {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------- setup ---------------- */
+
+.wt-shape {
+  margin-top: var(--space-3);
+  color: var(--text-mute);
+}
+
+.wt-shape summary {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.wt-shape-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.wt-shape-row label,
+.wt-shape-kinds {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--step-0);
+}
+
+.wt-kind {
+  font-size: var(--step-0);
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-mute);
+  cursor: pointer;
+}
+
+.wt-kind.is-on {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--accent-wash);
+}

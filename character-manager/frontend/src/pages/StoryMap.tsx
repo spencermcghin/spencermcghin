@@ -19,7 +19,7 @@ import Sigil from '../components/Sigil';
 import TagInput from '../components/TagInput';
 import Toolbar from '../components/Toolbar';
 import StoryGraph from '../components/StoryGraph';
-import CampaignBoard from '../components/CampaignBoard';
+import WarTable from '../components/WarTable';
 import './StoryMap.css';
 
 /**
@@ -97,6 +97,9 @@ export default function StoryMap() {
       .then((r) => {
         setMap(r.map);
         setCanEdit(r.canEdit);
+        // The Story section opens on the table when the project has one:
+        // the next event is what most readers came to look at.
+        if (r.map.campaign?.spineKindId) setView('campaign');
       })
       .catch(() => setError('Could not load this project.'));
   }, [id]);
@@ -373,9 +376,9 @@ export default function StoryMap() {
             <SegmentedControl
               label="View"
               options={[
+                { id: 'campaign', label: 'War Table' },
                 { id: 'list', label: 'List' },
                 { id: 'graph', label: 'Graph' },
-                { id: 'campaign', label: 'Campaign' },
               ] as const}
               value={view}
               onChange={setView}
@@ -404,32 +407,38 @@ export default function StoryMap() {
 
           {showKinds && <KindsPanel map={map} canEdit={canEdit} apply={apply} />}
 
+          {/* The trail rides above every view, not only the graph: where
+              you have been matters as much on the table as in the web. */}
+          {trail.length > 0 && selected && (
+            <nav className="graph-trail" aria-label="Where you have been">
+              <button className="ed-add" onClick={back}>← Back</button>
+              {trail.slice(-4).map((tid) => (
+                <button key={tid} className="graph-crumb" onClick={() => open(tid)}>
+                  {idx.entities.get(tid)?.name ?? tid}
+                </button>
+              ))}
+              <span className="graph-crumb is-here">
+                {idx.entities.get(selected)?.name}
+              </span>
+            </nav>
+          )}
+
           <div className={`story-body ${view !== 'list' ? 'is-graph' : ''}`}>
             {view === 'campaign' ? (
-              <CampaignBoard
+              <WarTable
                 map={map}
                 idx={idx}
                 canEdit={canEdit}
                 selectedId={selected}
                 onSelect={open}
                 onShape={(campaign) => apply((m) => ({ ...m, campaign }))}
+                onStatus={(entityId, status) =>
+                  apply((m) => edit.updateEntity(m, entityId, { status }))
+                }
               />
             ) : view === 'graph' ? (
               selected ? (
                 <div className="graph-frame">
-                  {trail.length > 0 && (
-                    <nav className="graph-trail" aria-label="Where you have been">
-                      <button className="ed-add" onClick={back}>← Back</button>
-                      {trail.slice(-4).map((tid) => (
-                        <button key={tid} className="graph-crumb" onClick={() => open(tid)}>
-                          {idx.entities.get(tid)?.name ?? tid}
-                        </button>
-                      ))}
-                      <span className="graph-crumb is-here">
-                        {idx.entities.get(selected)?.name}
-                      </span>
-                    </nav>
-                  )}
                   <StoryGraph centreId={selected} idx={idx} onSelect={open} />
                 </div>
               ) : (
@@ -660,7 +669,7 @@ function EntityPanel({
             )
           }
           subtitle={
-            !canEdit && entity.aliases.length > 0
+            entity.aliases.length > 0
               ? `Also called ${entity.aliases.map((a) => `"${a}"`).join(', ')}.`
               : undefined
           }
@@ -689,15 +698,18 @@ function EntityPanel({
                 <option key={k.id} value={k.id}>{k.label}</option>
               ))}
             </select>
-            <select
+            {/* Draft, Canon, Retired read left to right as a lifecycle,
+                which a dropdown hides. */}
+            <SegmentedControl
+              label="Status"
+              options={[
+                { id: 'draft', label: 'Draft' },
+                { id: 'canon', label: 'Canon' },
+                { id: 'retired', label: 'Retired' },
+              ]}
               value={entity.status}
-              aria-label="Status"
-              onChange={(e) => set({ status: e.target.value as NarrativeEntity['status'] })}
-            >
-              <option value="draft">draft</option>
-              <option value="canon">canon</option>
-              <option value="retired">retired</option>
-            </select>
+              onChange={(s) => set({ status: s as NarrativeEntity['status'] })}
+            />
             <input
               className="story-when"
               value={entity.occursAt ?? ''}
@@ -830,32 +842,39 @@ function EntityPanel({
         {links.length === 0 ? (
           <p className="muted">Nothing connects to this yet.</p>
         ) : (
-          <ul className="story-links">
+          /* Connections written as prose, the way a reference book would
+             put them: the label opens the sentence, the name is the link,
+             and the note reads as the clause it always was. */
+          <div className="story-prose">
             {links.map((c) => (
-              <li key={c.relation.id}>
-                <span className="story-link-label">{c.label}</span>
+              <p key={c.relation.id}>
+                <b>{sentenceCase(c.label)}</b>{' '}
                 {c.other ? (
                   <EntityPeek entity={c.other} idx={idx}>
-                    <button onClick={() => onOpen(c.other!.id)}>{c.other.name}</button>
+                    <button
+                      className="story-prose-link"
+                      onClick={() => onOpen(c.other!.id)}
+                    >
+                      {c.other.name}
+                    </button>
                   </EntityPeek>
                 ) : (
                   <span className="story-broken">{c.otherId} (missing)</span>
                 )}
+                .
+                {c.relation.note && <i> {asSentence(c.relation.note)}</i>}
                 {canEdit && (
                   <button
-                    className="ed-del"
+                    className="ed-del story-prose-del"
                     title="Remove connection"
                     onClick={() => apply((m) => edit.disconnect(m, c.relation.id))}
                   >
                     ×
                   </button>
                 )}
-                {c.relation.note && (
-                  <span className="story-link-note">{c.relation.note}</span>
-                )}
-              </li>
+              </p>
             ))}
-          </ul>
+          </div>
         )}
 
         {canEdit && map.relationKinds.length > 0 && (
@@ -1046,6 +1065,18 @@ function KindsPanel({
       ))}
     </section>
   );
+}
+
+/** "is the subject of" -> "Is the subject of", for opening a sentence. */
+function sentenceCase(label: string): string {
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+/** A note becomes the sentence it was always trying to be. */
+function asSentence(note: string): string {
+  const trimmed = note.trim();
+  const upped = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  return /[.!?…]$/.test(upped) ? upped : `${upped}.`;
 }
 
 /**

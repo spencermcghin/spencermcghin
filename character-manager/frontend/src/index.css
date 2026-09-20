@@ -7,13 +7,15 @@
    ============================================================ */
 
 :root {
-  /* Body text stays in a face built for screen reading. The decorative
-     faces are reserved for display sizes and ornament, where their
-     character reads as atmosphere rather than an obstacle. */
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-heading: 'Cinzel', Georgia, serif;
-  --font-ornament: 'Pirata One', 'Cinzel', Georgia, serif;
+  /* The folio stack: a Palatino-class book serif for display type and
+     letterspaced caps, the system face for body. Chosen over the previous
+     Cormorant/Cinzel pairing after the Story concept folio -- the quieter
+     chrome reads better. Caps come from letter-spacing and text-transform
+     in components, not from a separate caps face. */
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --font-heading: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --font-ornament: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
 
   --radius-sm: 6px;
   --radius: 12px;

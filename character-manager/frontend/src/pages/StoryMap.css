@@ -230,6 +230,37 @@
 
 .story-links li:last-child { border-bottom: none; }
 
+/* Connections as prose (Story-with-Soul move 1). */
+.story-prose p {
+  margin: 0 0 0.7rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+  font-size: var(--step-1);
+}
+
+.story-prose b {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05em;
+  color: var(--text);
+}
+
+.story-prose-link {
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-strong);
+  cursor: pointer;
+}
+
+.story-prose-link:hover { color: var(--text); }
+
+.story-prose i { color: var(--text-mute); }
+
+.story-prose-del { margin-left: 0.45rem; vertical-align: 1px; }
+
 .story-link-label {
   min-width: 8.5rem;
   font-size: 0.68rem;
@@ -393,6 +424,10 @@
 .story-body.is-graph .story-panel {
   position: static;
   max-width: 60rem;
+  /* Stacked under the table or graph, the page is the scroll container;
+     an inner scrollbar here would hide half the entry. */
+  max-height: none;
+  overflow: visible;
 }
 
 .graph-trail {
