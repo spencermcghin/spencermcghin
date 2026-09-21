@@ -13,6 +13,7 @@ import {
 import type { Ruleset } from '../../../shared/rules-schema';
 import { useAuth } from '../auth/useAuth';
 import { useConfirm } from '../components/ConfirmDialog';
+import Loading from '../components/Loading';
 import ProjectNav from '../components/ProjectNav';
 import SectionCard from '../components/SectionCard';
 import SourcesCard from '../components/SourcesCard';
@@ -153,9 +154,23 @@ export default function ProjectDetail() {
     URL.revokeObjectURL(url);
   };
 
-  if (loading) return <p className="muted">Loading…</p>;
-  if (error) return <div className="error">{error}</div>;
-  if (!ruleset) return <p className="muted">Not found.</p>;
+  // Loading, error, and not-found all keep the project tab bar, so a slow
+  // or failed load is still a place you can navigate out of rather than a
+  // dead end. Only the content area changes.
+  if (loading || error || !ruleset) {
+    return (
+      <div className="project-detail">
+        <ProjectNav id={id} />
+        {loading ? (
+          <Loading />
+        ) : error ? (
+          <div className="error">{error}</div>
+        ) : (
+          <p className="muted">This project could not be found.</p>
+        )}
+      </div>
+    );
+  }
 
   /** A tile that navigates when there is somewhere to go, and states a
       count when there is not. dt/dd cannot sit inside an anchor, so linked

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { rulesetApi, type RulesetSummary } from '../services/api';
 import { useConfirm } from '../components/ConfirmDialog';
+import Loading from '../components/Loading';
 import Sigil from '../components/Sigil';
 
 export default function Projects() {
@@ -68,8 +69,6 @@ export default function Projects() {
     await load();
   };
 
-  if (loading) return <p className="muted">Loading…</p>;
-
   // The nudge is for accounts with no worked example: one seeded before the
   // demo existed, or one where it was deleted. Matching on the name is a
   // guess -- renaming your copy brings the nudge back -- but the alternative
@@ -87,7 +86,14 @@ export default function Projects() {
         </div>
       </div>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error">
+          {error}{' '}
+          <button className="link-button" onClick={() => void load()}>
+            Try again
+          </button>
+        </div>
+      )}
 
       <form className="inline-form" onSubmit={create}>
         <input
@@ -109,7 +115,7 @@ export default function Projects() {
         </button>
       </form>
 
-      {!hasDemo && (
+      {!hasDemo && !loading && !error && (
         <p className="projects-nudge">
           Not sure where to start?{' '}
           <button className="link-button" onClick={addDemo} disabled={creating}>
@@ -120,7 +126,11 @@ export default function Projects() {
         </p>
       )}
 
-      {projects.length === 0 ? (
+      {/* Loading and a failed load are distinct from an empty account: only
+          a finished, successful, genuinely empty load shows "no projects". */}
+      {loading ? (
+        <Loading label="Loading your projects…" />
+      ) : error ? null : projects.length === 0 ? (
         <div className="empty-state">
           <Sigil name="compass" />
           <p>No projects yet.</p>

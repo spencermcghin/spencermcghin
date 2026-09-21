@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { sourceApi, storyApi, type SourceStatus } from '../services/api';
 import { extractDriveId } from '../../../shared/sources';
 import type {
@@ -39,6 +39,7 @@ import './StoryMap.css';
 export default function StoryMap() {
   const { id = '', entryId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [map, setMap] = useState<NarrativeMap | null>(null);
   const [canEdit, setCanEdit] = useState(false);
@@ -50,12 +51,18 @@ export default function StoryMap() {
      can be linked to, bookmarked, and shared. Selecting pushes history, so
      the browser's back button also walks your reading path. */
   const selected = entryId ?? null;
+  /* The reading trail rides in navigation state, so it is a property of the
+     history entry rather than a second store beside the URL. The browser
+     Back button and the in-page Back are then the same motion, and a crumb
+     can never fall out of step with the entry on screen. */
+  const trail = (location.state as { trail?: string[] } | null)?.trail ?? [];
   const setSelected = useCallback(
-    (entityId: string | null) => {
+    (entityId: string | null, nextTrail: string[] = []) => {
       navigate(
         entityId
           ? `/projects/${id}/story/${encodeURIComponent(entityId)}`
-          : `/projects/${id}/story`
+          : `/projects/${id}/story`,
+        { state: { trail: nextTrail } }
       );
     },
     [navigate, id]
@@ -64,8 +71,6 @@ export default function StoryMap() {
   const [query, setQuery] = useState('');
   const [showKinds, setShowKinds] = useState(false);
   const [view, setView] = useState<'list' | 'graph' | 'campaign'>('list');
-  /** Where you have been, so you can walk back out of the graph. */
-  const [trail, setTrail] = useState<string[]>([]);
   const history = useRef<NarrativeMap[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
   const findInput = useRef<HTMLInputElement>(null);
@@ -104,9 +109,11 @@ export default function StoryMap() {
       .then((r) => {
         setMap(r.map);
         setCanEdit(r.canEdit);
-        // The Story section opens on the table when the project has one:
-        // the next event is what most readers came to look at.
-        if (r.map.campaign?.spineKindId) setView('campaign');
+        // The Story section opens on the table when the project has one,
+        // but only when no entry is addressed. A shared /story/:entryId
+        // link is meant to land on that entry, not below a full-height
+        // table, so a deep link opens in the reading list instead.
+        if (r.map.campaign?.spineKindId && !entryId) setView('campaign');
       })
       .catch(() => setError('Could not load this project.'));
     sourceApi
@@ -188,25 +195,22 @@ export default function StoryMap() {
 
   const open = useCallback(
     (entityId: string) => {
+      let nextTrail = trail;
       if (selected && selected !== entityId) {
         // Revisiting somewhere already on the trail winds back to it rather
         // than looping, so the trail stays a path and not a history log.
-        setTrail((t) =>
-          t.includes(entityId) ? t.slice(0, t.indexOf(entityId)) : [...t, selected]
-        );
+        nextTrail = trail.includes(entityId)
+          ? trail.slice(0, trail.indexOf(entityId))
+          : [...trail, selected];
       }
-      setSelected(entityId);
+      setSelected(entityId, nextTrail);
     },
-    [selected, setSelected]
+    [selected, trail, setSelected]
   );
 
-  const back = useCallback(() => {
-    setTrail((t) => {
-      if (t.length === 0) return t;
-      setSelected(t[t.length - 1]);
-      return t.slice(0, -1);
-    });
-  }, [setSelected]);
+  // The in-page Back is the browser's Back: one motion, one history. Going
+  // back restores the previous entry and its trail together.
+  const back = useCallback(() => navigate(-1), [navigate]);
 
   /**
    * Drops a piece onto the table: sets its "when" from the event and day,

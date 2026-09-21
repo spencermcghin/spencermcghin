@@ -1,32 +1,56 @@
 import { useEffect, useState } from 'react';
 import { adminApi, type AdminUser, type AppRole } from '../services/api';
 import { useAuth } from '../auth/useAuth';
+import Loading from '../components/Loading';
 import SectionCard from '../components/SectionCard';
 
 export default function AdminUsers() {
   const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     adminApi
       .listUsers()
       .then(setUsers)
-      .catch(() => setError('You do not have access to this page.'));
+      .catch(() => setError('You do not have access to this page.'))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (error) return <div className="error">{error}</div>;
+  const header = (
+    <div className="header">
+      <div>
+        <h1>Accounts</h1>
+        <p className="muted">
+          App administrators can open and manage every project.
+        </p>
+      </div>
+    </div>
+  );
+
+  // The header stays put through loading and error, and the count is only
+  // claimed once the fetch has actually resolved.
+  if (loading) {
+    return (
+      <div className="admin-users">
+        {header}
+        <Loading label="Loading accounts…" />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="admin-users">
+        {header}
+        <div className="error">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-users">
-      <div className="header">
-        <div>
-          <h1>Accounts</h1>
-          <p className="muted">
-            App administrators can open and manage every project.
-          </p>
-        </div>
-      </div>
+      {header}
 
       <SectionCard
         fullWidth
