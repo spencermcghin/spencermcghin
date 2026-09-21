@@ -68,10 +68,13 @@ export default function StoryGraph({
   centreId,
   idx,
   onSelect,
+  dimmed,
 }: {
   centreId: string;
   idx: MapIndex;
   onSelect: (id: string) => void;
+  /** When set, nodes whose id is not in the set are dimmed as non-matches. */
+  dimmed?: Set<string> | null;
 }) {
   // Hover shows a card; clicking moves. Two different questions -- "what is
   // that" and "take me there" -- and one gesture serving both would mean you
@@ -273,11 +276,13 @@ export default function StoryGraph({
           {showOuter &&
             outer.map((n, i) => (
               <Node key={`f${i}`} node={n} shape={shapeOf(n.entity)} onSelect={onSelect}
-                    onPeek={setPeeked} lit={peeked?.entity.id === n.entity.id} />
+                    onPeek={setPeeked} lit={peeked?.entity.id === n.entity.id}
+                    dim={!!dimmed && !dimmed.has(n.entity.id)} />
             ))}
           {inner.map((n, i) => (
             <Node key={`n${i}`} node={n} shape={shapeOf(n.entity)} onSelect={onSelect}
-                  onPeek={setPeeked} lit={peeked?.entity.id === n.entity.id} />
+                  onPeek={setPeeked} lit={peeked?.entity.id === n.entity.id}
+                  dim={!!dimmed && !dimmed.has(n.entity.id)} />
           ))}
 
           {/* Drawn last and largest: the centre is the subject, and on the
@@ -328,16 +333,18 @@ function Node({
   onSelect,
   onPeek,
   lit,
+  dim = false,
 }: {
   node: Placed;
   shape: string;
   onSelect: (id: string) => void;
   onPeek: (node: Placed | null) => void;
   lit: boolean;
+  dim?: boolean;
 }) {
   return (
     <g
-      className={`graph-node is-hop${node.hop} ${lit ? 'is-lit' : ''}`}
+      className={`graph-node is-hop${node.hop} ${lit ? 'is-lit' : ''} ${dim ? 'is-dim' : ''}`}
       onClick={() => onSelect(node.entity.id)}
       onMouseEnter={() => onPeek(node)}
       onMouseLeave={() => onPeek(null)}

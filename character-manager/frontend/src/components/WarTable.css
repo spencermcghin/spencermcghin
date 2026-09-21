@@ -222,6 +222,10 @@
 
 .wt-piece.is-canon { border-left-color: var(--border-strong); }
 
+/* Dimmed while a search or kind filter is active and this piece is not a
+   match. Kept legible, not hidden, so the table still reads as a whole. */
+.wt-piece.is-dim { opacity: 0.28; transition: opacity 0.2s var(--ease); }
+
 .wt-piece.is-selected {
   border-color: var(--border-strong);
   box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(0, 0, 0, 0.4);

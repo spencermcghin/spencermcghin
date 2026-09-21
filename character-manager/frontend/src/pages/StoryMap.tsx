@@ -184,6 +184,12 @@ export default function StoryMap() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [map, kind, query]);
 
+  /* A filter is active when the reader has narrowed by text or by kind.
+     The set of matching ids drives dimming in the graph and on the War
+     Table, so the same search that filters the list narrows every view. */
+  const filterActive = query.trim() !== '' || kind !== 'all';
+  const matchIds = useMemo(() => new Set(shown.map((e) => e.id)), [shown]);
+
   /* The arrow highlight stands on positions, not entries; when the list
      under it changes, it steps off rather than pointing at the wrong row. */
   useEffect(() => setActiveIdx(-1), [query, kind, view]);
@@ -437,23 +443,34 @@ export default function StoryMap() {
               title="Press / to search, arrows to move, Enter to open"
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'ArrowDown') {
-                  e.preventDefault();
-                  setActiveIdx((i) => Math.min(i + 1, shown.length - 1));
-                } else if (e.key === 'ArrowUp') {
-                  e.preventDefault();
-                  setActiveIdx((i) => Math.max(i - 1, -1));
-                } else if (e.key === 'Enter') {
-                  // Enter opens where the arrows stand, or the only match.
-                  const target =
-                    activeIdx >= 0 ? shown[activeIdx] : shown.length === 1 ? shown[0] : null;
-                  if (target) {
-                    e.preventDefault();
-                    open(target.id);
-                  }
-                } else if (e.key === 'Escape') {
+                if (e.key === 'Escape') {
                   setQuery('');
                   e.currentTarget.blur();
+                  return;
+                }
+                // The arrow walker only ranges over the List view's rows;
+                // in the graph and the War Table there are no rows to stand
+                // on, so it stays idle and Enter can never open something
+                // that is not on screen. A single match is unambiguous, so
+                // Enter still jumps to it from any view.
+                if (view === 'list') {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setActiveIdx((i) => Math.min(i + 1, shown.length - 1));
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setActiveIdx((i) => Math.max(i - 1, -1));
+                  } else if (e.key === 'Enter') {
+                    const target =
+                      activeIdx >= 0 ? shown[activeIdx] : shown.length === 1 ? shown[0] : null;
+                    if (target) {
+                      e.preventDefault();
+                      open(target.id);
+                    }
+                  }
+                } else if (e.key === 'Enter' && shown.length === 1) {
+                  e.preventDefault();
+                  open(shown[0].id);
                 }
               }}
             />
@@ -536,11 +553,17 @@ export default function StoryMap() {
                   apply((m) => edit.updateEntity(m, entityId, { status }))
                 }
                 onPlace={placePiece}
+                dimmed={filterActive ? matchIds : null}
               />
             ) : view === 'graph' ? (
               selected ? (
                 <div className="graph-frame">
-                  <StoryGraph centreId={selected} idx={idx} onSelect={open} />
+                  <StoryGraph
+                    centreId={selected}
+                    idx={idx}
+                    onSelect={open}
+                    dimmed={filterActive ? matchIds : null}
+                  />
                 </div>
               ) : (
                 <div className="graph-hint">

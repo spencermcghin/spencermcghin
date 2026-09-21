@@ -122,6 +122,9 @@
 
 /* Focus: hovering one node quiets everything else, so a busy ring can still
    be read one relationship at a time. */
+/* Dimmed while a search or kind filter is active and this node is not a
+   match. The centre stays lit so the reader keeps their bearings. */
+.graph-node.is-dim:not(.is-centre) { opacity: 0.22; }
 .graph svg.is-focused .graph-node:not(.is-lit):not(.is-centre) { opacity: 0.32; }
 .graph svg.is-focused .graph-spoke:not(.is-lit) { opacity: 0.18; }
 .graph svg.is-focused .graph-edge.is-far { opacity: 0.12; }

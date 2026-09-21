@@ -36,6 +36,7 @@ export default function WarTable({
   onShape,
   onStatus,
   onPlace,
+  dimmed,
 }: {
   map: NarrativeMap;
   idx: MapIndex;
@@ -51,6 +52,8 @@ export default function WarTable({
     day: string | null,
     eventId: string
   ) => void;
+  /** When set, pieces whose id is not in the set are dimmed as non-matches. */
+  dimmed: Set<string> | null;
 }) {
   const board = useMemo(() => campaignBoard(idx), [idx]);
 
@@ -260,6 +263,7 @@ export default function WarTable({
                               piece={p}
                               canEdit={canEdit}
                               selected={selectedId === p.entity.id}
+                              dim={!!dimmed && !dimmed.has(p.entity.id)}
                               onSelect={onSelect}
                               onStatus={onStatus}
                             />
@@ -289,6 +293,7 @@ export default function WarTable({
                         piece={p}
                         canEdit={canEdit}
                         selected={selectedId === p.entity.id}
+                              dim={!!dimmed && !dimmed.has(p.entity.id)}
                         onSelect={onSelect}
                         onStatus={onStatus}
                       />
@@ -306,6 +311,7 @@ export default function WarTable({
                         piece={p}
                         canEdit={canEdit}
                         selected={selectedId === p.entity.id}
+                              dim={!!dimmed && !dimmed.has(p.entity.id)}
                         onSelect={onSelect}
                         onStatus={onStatus}
                         under={
@@ -499,6 +505,7 @@ function Piece({
   piece,
   canEdit,
   selected,
+  dim = false,
   onSelect,
   onStatus,
   under,
@@ -506,6 +513,7 @@ function Piece({
   piece: TablePiece;
   canEdit: boolean;
   selected: boolean;
+  dim?: boolean;
   onSelect: (id: string) => void;
   onStatus: (id: string, status: EntityStatus) => void;
   under?: string;
@@ -515,7 +523,9 @@ function Piece({
   const note = under ?? (piece.slot.full !== piece.slot.day ? piece.slot.full : '');
   return (
     <div
-      className={`wt-piece ${draft ? '' : 'is-canon'} ${selected ? 'is-selected' : ''}`}
+      className={`wt-piece ${draft ? '' : 'is-canon'} ${selected ? 'is-selected' : ''} ${
+        dim ? 'is-dim' : ''
+      }`}
       draggable={canEdit}
       onDragStart={(e) => {
         e.dataTransfer.setData('text/plain', entity.id);
