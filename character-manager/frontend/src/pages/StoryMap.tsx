@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { sourceApi, storyApi, type SourceStatus } from '../services/api';
+import { sourceApi, storyApi, type GateReport, type SourceStatus } from '../services/api';
 import { extractDriveId } from '../../../shared/sources';
 import type {
   NarrativeEntity,
@@ -102,6 +102,8 @@ export default function StoryMap() {
   const [sourceStatus, setSourceStatus] = useState<Map<string, SourceStatus>>(
     new Map()
   );
+  /** Staff-only: which roster characters reach each gated entry, by entry id. */
+  const [gates, setGates] = useState<Map<string, GateReport>>(new Map());
 
   useEffect(() => {
     storyApi
@@ -114,6 +116,16 @@ export default function StoryMap() {
         // link is meant to land on that entry, not below a full-height
         // table, so a deep link opens in the reading list instead.
         if (r.map.campaign?.spineKindId && !entryId) setView('campaign');
+        // The gate report names characters, so it is fetched only for
+        // staff. Players never ask for it and never receive it.
+        if (r.canEdit) {
+          storyApi
+            .gates(id)
+            .then((list) => setGates(new Map(list.map((g) => [g.entityId, g]))))
+            .catch(() => {
+              /* No report, no reachability line. The panel stands without it. */
+            });
+        }
       })
       .catch(() => setError('Could not load this project.'));
     sourceApi
@@ -623,7 +635,12 @@ export default function StoryMap() {
                       been deleted.
                     </p>
                   )}
-                  <Overview idx={idx} loose={loose} onOpen={open} />
+                  <Overview
+                    idx={idx}
+                    loose={loose}
+                    gates={[...gates.values()]}
+                    onOpen={open}
+                  />
                 </>
               ) : (
                 <EntityPanel
@@ -635,6 +652,7 @@ export default function StoryMap() {
                   onOpen={open}
                   onClose={() => setSelected(null)}
                   sourceStatus={sourceStatus}
+                  gate={gates.get(entity.id)}
                 />
               )}
             </SectionCard>
@@ -658,10 +676,13 @@ export default function StoryMap() {
 function Overview({
   idx,
   loose,
+  gates,
   onOpen,
 }: {
   idx: ReturnType<typeof indexMap>;
   loose: string[];
+  /** Staff-only gate reports. Empty for players. */
+  gates: GateReport[];
   onOpen: (id: string) => void;
 }) {
   const ranked = idx.map.entities
@@ -670,8 +691,33 @@ function Overview({
     .sort((a, b) => b.degree - a.degree)
     .slice(0, 8);
 
+  // Gated entries the whole roster is locked out of: the pre-event list of
+  // content nobody can currently open.
+  const unreachable = gates.filter((g) => g.reachedBy.length === 0);
+
   return (
     <>
+      {unreachable.length > 0 && (
+        <section>
+          <h2>
+            No one reaches these yet
+            <Hint align="right">
+              These entries are gated on a skill nobody on the roster has
+              bought. Fine if a future event grants it; worth catching before
+              the event if not.
+            </Hint>
+          </h2>
+          <ul className="story-hubs">
+            {unreachable.map((g) => (
+              <li key={g.entityId}>
+                <button onClick={() => onOpen(g.entityId)}>{g.name}</button>
+                <span className="muted">{g.requirement}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section>
         <h2>
           Most connected
@@ -743,6 +789,7 @@ function EntityPanel({
   onOpen,
   onClose,
   sourceStatus,
+  gate,
 }: {
   entity: NarrativeEntity;
   map: NarrativeMap;
@@ -752,6 +799,8 @@ function EntityPanel({
   onOpen: (id: string) => void;
   onClose: () => void;
   sourceStatus: Map<string, SourceStatus>;
+  /** Staff-only reachability for this entry, when it is gated. */
+  gate?: GateReport;
 }) {
   const [copied, setCopied] = useState(false);
   const [confirm, confirmDialog] = useConfirm();
@@ -948,6 +997,17 @@ function EntityPanel({
             </Hint>
           </h2>
           <p className="story-gate">{describeRequirement(entity.requires)}</p>
+          {/* Staff-only: who on the roster currently meets the requirement.
+              This is the report the hint above promises. */}
+          {gate &&
+            (gate.reachedBy.length === 0 ? (
+              <p className="story-reach is-none">No one on the roster reaches this yet.</p>
+            ) : (
+              <p className="story-reach">
+                Reached by {gate.reachedBy.slice(0, 8).join(', ')}
+                {gate.reachedBy.length > 8 && ` and ${gate.reachedBy.length - 8} more`}.
+              </p>
+            ))}
         </section>
       )}
 

@@ -230,12 +230,24 @@ export interface StoryMapResponse {
   canEdit: boolean;
 }
 
+export interface GateReport {
+  entityId: string;
+  name: string;
+  requirement: string;
+  /** Characters on the roster that currently meet the requirement. */
+  reachedBy: string[];
+}
+
 export const storyApi = {
   get: async (rulesetId: string): Promise<StoryMapResponse> =>
     (await api.get(`/rulesets/${rulesetId}/narrative`)).data,
 
   save: async (rulesetId: string, map: NarrativeMap): Promise<NarrativeMap> =>
     (await api.put(`/rulesets/${rulesetId}/narrative`, map)).data,
+
+  /** Staff only. Which gated entries the current roster can and cannot open. */
+  gates: async (rulesetId: string): Promise<GateReport[]> =>
+    (await api.get(`/rulesets/${rulesetId}/narrative/gates`)).data.gates,
 };
 
 export default api;

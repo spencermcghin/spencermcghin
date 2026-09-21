@@ -232,6 +232,14 @@
 
 .story-sources .source-chip { margin-left: 0.45rem; }
 
+/* Staff-only roster reachability under a gated entry. */
+.story-reach {
+  margin: 0.5rem 0 0;
+  font-size: var(--step-1);
+  color: var(--text-soft);
+}
+.story-reach.is-none { color: var(--accent); }
+
 /* Kind glyphs sit inside whatever text names a kind. */
 .kind-glyph { margin-right: 0.1em; opacity: 0.85; }
 

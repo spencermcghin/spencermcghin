@@ -13,7 +13,11 @@ import {
   createCharacter,
   listCharacters,
 } from '../controllers/characterController';
-import { getNarrative, saveNarrative } from '../controllers/narrativeController';
+import {
+  getNarrative,
+  getNarrativeGates,
+  saveNarrative,
+} from '../controllers/narrativeController';
 import {
   addSourceFolder,
   listSources,
@@ -72,7 +76,10 @@ router.post('/:id/sources/:docId/review', reviewSource);
 router.post('/:id/source-folders', addSourceFolder);
 router.delete('/:id/source-folders/:folderId', removeSourceFolder);
 
-// The story map belongs to a project the way its rules do.
+// The story map belongs to a project the way its rules do. The gates
+// report is declared before the bare narrative route so "gates" is not
+// read as part of the map path.
+router.get('/:rulesetId/narrative/gates', getNarrativeGates);
 router.get('/:rulesetId/narrative', getNarrative);
 router.put('/:rulesetId/narrative', saveNarrative);
 

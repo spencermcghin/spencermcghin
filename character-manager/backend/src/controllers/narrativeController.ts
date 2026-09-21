@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { emptyNarrativeMap, type NarrativeMap } from '../../../shared/narrative-schema';
-import { hubs, indexMap, orphans, validateMap } from '../../../shared/narrative';
+import { gatedContent, hubs, indexMap, orphans, validateMap } from '../../../shared/narrative';
+import { indexRuleset } from '../../../shared/engine';
 import { canEditRuleset, canViewProject } from '../auth/permissions';
 import { viewerFor } from '../auth/viewer';
 import { getStore } from '../db';
@@ -48,6 +49,38 @@ export async function getNarrative(req: Request, res: Response) {
       .filter((h) => h.degree > 0)
       .map((h) => ({ id: h.entity.id, name: h.entity.name, degree: h.degree })),
     canEdit: canEditRuleset(project.viewer),
+  });
+}
+
+/**
+ * Which gated story entries the current roster can and cannot open.
+ *
+ * Staff only, because it names characters and reads the whole roster. This
+ * is the report the entry panel already promises: before an event, staff
+ * ask which lore props are locked behind a check nobody passes. Computed
+ * here rather than on the client so the roster's full character data never
+ * has to leave the server.
+ */
+export async function getNarrativeGates(req: Request, res: Response) {
+  const project = await loadProject(req, res);
+  if (!project) return;
+  if (!canEditRuleset(project.viewer)) {
+    return res.status(403).json({ message: 'Only project staff can see this.' });
+  }
+
+  const stored = await getStore().getNarrative(project.rulesetId);
+  const map = stored ?? emptyNarrativeMap(project.rulesetId);
+  const rows = await getStore().listCharacters(project.rulesetId);
+  const characters = rows.map((r) => ({ name: r.character.name, character: r.character }));
+
+  const reports = gatedContent(map, characters, indexRuleset(project.ruleset));
+  res.json({
+    gates: reports.map((g) => ({
+      entityId: g.entity.id,
+      name: g.entity.name,
+      requirement: g.requirement,
+      reachedBy: g.reachedBy,
+    })),
   });
 }
 
