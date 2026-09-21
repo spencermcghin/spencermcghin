@@ -146,6 +146,13 @@ export default function Projects() {
                 <span className="role-badge">{p.role}</span>
               </p>
               {p.description && <p className="character-background">{p.description}</p>}
+              {p.myCharacter && (
+                <p className="project-continue">
+                  <Link to={`/characters/${p.myCharacter.id}`}>
+                    Continue as {p.myCharacter.name}
+                  </Link>
+                </p>
+              )}
               <div className="card-actions">
                 <Link to={`/projects/${p.id}`} className="button button-small">
                   Open

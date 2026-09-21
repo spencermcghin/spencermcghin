@@ -1367,6 +1367,71 @@ a.attribute-item:hover {
   color: var(--text-soft);
 }
 
+/* A member's own character, linked from the project card. */
+.project-continue {
+  margin: 0.35rem 0 0;
+  font-size: var(--step-1);
+}
+.project-continue a {
+  color: var(--accent);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+/* A member's own character, one click from the overview. */
+.your-character {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s var(--ease);
+}
+
+.your-character:hover { border-color: var(--border-strong); }
+
+.your-character-eyebrow {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.your-character h2 {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 500;
+}
+
+.your-character-balances {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  margin-left: auto;
+}
+
+.your-character-balances div { text-align: center; }
+
+.your-character-balances dt {
+  font-size: var(--step-0);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.your-character-balances dd {
+  margin: 0.1rem 0 0;
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  color: var(--accent);
+}
+
 /* ---------------- Bulk award ---------------- */
 
 .award-check {

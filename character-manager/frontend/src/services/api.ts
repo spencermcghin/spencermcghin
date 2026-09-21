@@ -103,6 +103,8 @@ export interface RulesetSummary {
   characterCount: number;
   updatedAt: string;
   role: ProjectRole;
+  /** The signed-in user's own character here, if they have one. */
+  myCharacter?: { id: string; name: string };
 }
 
 export interface Member {

@@ -13,6 +13,8 @@ export interface RulesetSummary {
   updatedAt: string;
   /** The requesting user's role in this project. */
   role: ProjectRole;
+  /** The requesting user's own character here, if they have one. */
+  myCharacter?: { id: string; name: string };
 }
 
 export interface User {

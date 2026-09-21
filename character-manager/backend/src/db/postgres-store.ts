@@ -351,9 +351,16 @@ export class PostgresStore implements Store {
               r.updated_at,
               m.role,
               (SELECT COUNT(*)::int FROM characters c WHERE c.ruleset_id = r.id)
-                AS character_count
+                AS character_count,
+              mine.id   AS mine_id,
+              mine.name AS mine_name
          FROM rulesets r
          JOIN project_members m ON m.ruleset_id = r.id AND m.user_id = $1
+         LEFT JOIN LATERAL (
+           SELECT c.id, c.name FROM characters c
+            WHERE c.ruleset_id = r.id AND c.owner_id = $1
+            ORDER BY c.created_at LIMIT 1
+         ) mine ON true
         ORDER BY r.updated_at DESC;`,
       [userId]
     );
@@ -366,6 +373,7 @@ export class PostgresStore implements Store {
       characterCount: row.character_count,
       updatedAt: new Date(row.updated_at).toISOString(),
       role: row.role as ProjectRole,
+      myCharacter: row.mine_id ? { id: row.mine_id, name: row.mine_name } : undefined,
     }));
   }
 

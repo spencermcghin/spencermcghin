@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   accessRoleApi,
@@ -11,6 +11,7 @@ import {
   type RosterEntry,
 } from '../services/api';
 import type { Ruleset } from '../../../shared/rules-schema';
+import { balances, indexRuleset } from '../../../shared/engine';
 import { useAuth } from '../auth/useAuth';
 import { useConfirm } from '../components/ConfirmDialog';
 import Loading from '../components/Loading';
@@ -38,6 +39,18 @@ export default function ProjectDetail() {
   const myRole: ProjectRole | null =
     members.find((m) => m.userId === user?.id)?.role ?? null;
   const isStaff = myRole === 'admin' || user?.appRole === 'admin';
+
+  /* The caller's own character, if they have one here, with its unspent
+     balances for the card that links straight to the sheet. The roster
+     carries the full character for a sheet the caller may open. */
+  const mine = roster.find((r) => r.isMine && r.character);
+  const myBalances = useMemo(() => {
+    if (!mine?.character || !ruleset) return [];
+    const bal = balances(mine.character, indexRuleset(ruleset));
+    return ruleset.currencies
+      .filter((c) => (bal[c.id] ?? 0) !== 0)
+      .map((c) => ({ id: c.id, name: c.name, amount: bal[c.id] ?? 0 }));
+  }, [mine, ruleset]);
 
   const load = useCallback(async () => {
     try {
@@ -210,6 +223,28 @@ export default function ProjectDetail() {
       {/* Its own block rather than a muted byline: on the ruleset a new
           account starts with, this paragraph is the orientation. */}
       {ruleset.description && <p className="project-blurb">{ruleset.description}</p>}
+
+      {/* A member's own sheet is their most common destination and today it
+          is the deepest page; this puts it one click from the overview. */}
+      {mine?.character && (
+        <Link to={`/characters/${mine.id}`} className="section-card your-character">
+          <div>
+            <span className="your-character-eyebrow">Your character</span>
+            <h2>{mine.character.name}</h2>
+          </div>
+          {myBalances.length > 0 && (
+            <dl className="your-character-balances">
+              {myBalances.map((b) => (
+                <div key={b.id}>
+                  <dt>{b.name}</dt>
+                  <dd>{b.amount}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          <span className="button button-small">Open sheet</span>
+        </Link>
+      )}
 
       <div className="character-info-grid">
         <SectionCard title="Ruleset">
